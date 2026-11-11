@@ -1,0 +1,119 @@
+{
+ "note": "Bot weapon tuning (damage, headshot/limb multipliers, burst pattern, reload).",
+ "bots": {
+  "carbine": {
+   "dmg": 9,
+   "head": 2.2,
+   "limb": 0.75,
+   "gap": 0.1,
+   "burst": [
+    3,
+    7
+   ],
+   "pause": [
+    0.22,
+    0.55
+   ],
+   "mag": 28,
+   "reload": 2.1
+  },
+  "sniper": {
+   "dmg": 70,
+   "head": 2,
+   "limb": 0.8,
+   "gap": 1.5,
+   "burst": [
+    1,
+    1
+   ],
+   "pause": [
+    1.1,
+    1.6
+   ],
+   "mag": 6,
+   "reload": 2.6
+  },
+  "wasp": {
+   "dmg": 6,
+   "head": 2,
+   "limb": 0.75,
+   "gap": 0.056,
+   "burst": [
+    6,
+    12
+   ],
+   "pause": [
+    0.2,
+    0.45
+   ],
+   "mag": 40,
+   "reload": 1.6
+  },
+  "breacher": {
+   "dmg": 7,
+   "head": 1.5,
+   "limb": 0.8,
+   "gap": 0.9,
+   "burst": [
+    1,
+    1
+   ],
+   "pause": [
+    0.8,
+    1.1
+   ],
+   "mag": 6,
+   "reload": 2.4,
+   "pellets": 8,
+   "spreadP": 0.06
+  },
+  "triad": {
+   "dmg": 13,
+   "head": 2,
+   "limb": 0.75,
+   "gap": 0.055,
+   "burst": [
+    3,
+    3
+   ],
+   "pause": [
+    0.32,
+    0.5
+   ],
+   "mag": 36,
+   "reload": 2
+  },
+  "judge": {
+   "dmg": 26,
+   "head": 2,
+   "limb": 0.75,
+   "gap": 0.45,
+   "burst": [
+    1,
+    1
+   ],
+   "pause": [
+    0.42,
+    0.7
+   ],
+   "mag": 6,
+   "reload": 2.2
+  },
+  "titan": {
+   "dmg": 5,
+   "head": 1.8,
+   "limb": 0.75,
+   "gap": 0.05,
+   "burst": [
+    12,
+    24
+   ],
+   "pause": [
+    0.35,
+    0.6
+   ],
+   "mag": 150,
+   "reload": 3.4
+  }
+ }
+}

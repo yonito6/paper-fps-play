@@ -1,0 +1,4 @@
+{
+  "about": "Deterministic render-cost budgets per add-on (qa/lib/budget.js). Shape: { \"<module id>\": { \"<exact check label>\": { \"passes\": n, \"calls\": n, \"tris\": fraction<1 or n, \"programs\": n, \"compiles\": n, \"textures\": n, \"texMB\": n } } }. Each value = how much MORE the module may cost than the same page without it (module on vs off, same camera). The budget written in the test is the default; an entry here overrides it (tune budgets without touching tests). Metrics are counts, identical on SwiftShader and a real GPU; frame-time / GPU-ms checks stay on the PC (perf lane / GPU attestation).",
+  "defaults": { "passes": 0, "programs": 0, "compiles": 0 }
+}

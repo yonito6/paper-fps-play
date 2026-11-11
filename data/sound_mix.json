@@ -1,0 +1,69 @@
+{
+  "about": "How other players' and bots' sounds are mixed in Sector Nine (same numbers as SOUND_MIX in index.html; qa/qa_sound.js checks they match). Within 'near' metres a sound always plays (hard safety cap per window only); within 'close' metres not even that cap applies (only 'absCap' per window, far above any real fight); between 'near' and 'range' sources share 'budget' sounds per 'window' seconds (far ones thin out first); beyond 'range' nothing plays. Falloff: gain = ref / (ref + roll * (distance - ref)), full volume inside ref. prio: 3 = enemy gunfire, 2 = footsteps / reloads / whizzes, 1 = impacts and the rest (lower prio stops earlier when the hard cap is reached: prio 3 at 100%, 2 at 75%, 1 at 50% of hardCap). voices: per-voice output volume (overrides the gun voice's own; someone else's gun plays at 0.8x of it before distance falloff) and layers (railCharge: the Helix recharge whine, 'delay' s after the shot, 'remote' = extra factor when it is someone else's gun).",
+  "v": 1,
+  "window": 0.5,
+  "hardCap": 64,
+  "categories": {
+    "shot": {
+      "near": 30,
+      "close": 15,
+      "range": 120,
+      "budget": 8,
+      "ref": 5,
+      "roll": 1.1,
+      "prio": 3
+    },
+    "foestep": {
+      "near": 15,
+      "close": 8,
+      "range": 40,
+      "budget": 6,
+      "ref": 3,
+      "roll": 1.25,
+      "prio": 2
+    },
+    "foley": {
+      "near": 15,
+      "close": 6,
+      "range": 30,
+      "budget": 4,
+      "ref": 3,
+      "roll": 1.2,
+      "prio": 2
+    },
+    "whiz": {
+      "near": 8,
+      "close": 4,
+      "range": 55,
+      "budget": 2,
+      "ref": 2,
+      "roll": 1,
+      "prio": 2
+    },
+    "impact": {
+      "near": 10,
+      "range": 55,
+      "budget": 3,
+      "ref": 3,
+      "roll": 1,
+      "prio": 1
+    },
+    "step": {
+      "near": 10,
+      "range": 55,
+      "budget": 3,
+      "ref": 3,
+      "roll": 1,
+      "prio": 1
+    },
+    "misc": {
+      "near": 15,
+      "range": 55,
+      "budget": 4,
+      "ref": 4,
+      "roll": 1,
+      "prio": 1
+    }
+  },
+  "absCap": 192
+}

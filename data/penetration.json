@@ -1,0 +1,14 @@
+{
+ "_note": "Wallbang rules shared by the game (index.html PEN) and the server (anticheat/data/penetration.json). path = metres the bullet travels INSIDE the solid (so a shallow angle is a longer path); crate-type boxes use a flat 'flat' metres (two thin skins). A shot passes only when path <= max * power; damage multiplier = 1 - path*cost/power (must stay >= minMult). Concrete, rock, towers and bunkers have no material = they block.",
+ "minMult": 0.12,
+ "materials": {
+  "drywall": {"code": 1, "cost": 0.8, "max": 0.6},
+  "wood": {"code": 2, "cost": 1.3, "max": 0.5},
+  "glass": {"code": 3, "cost": 0.4, "max": 0.5},
+  "crate": {"code": 4, "cost": 1.2, "max": 0.5, "flat": 0.12},
+  "metal": {"code": 5, "cost": 3.0, "max": 0.25},
+  "sheet": {"code": 6, "cost": 3.0, "max": 0.3, "flat": 0.1}
+ },
+ "alias": {"thick": "drywall", "hollow": "crate"},
+ "power": {"sniper": 1.3, "helix": 1.3, "void": 0.9, "titan": 0.8, "triad": 0.8, "carbine": 0.7, "cryo": 0.5, "judge": 0.3, "wasp": 0.3, "breacher": 0.25, "pistol": 0.2}
+}

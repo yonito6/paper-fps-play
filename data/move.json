@@ -1,0 +1,27 @@
+{
+ "note": "Player movement: speeds m/s, accelerations, jump velocities m/s, gravity m/s2, sizes m, health regen.",
+ "move": {
+  "run": 5.6,
+  "sprint": 8.8,
+  "adsSpeed": 3,
+  "crouchSpeed": 2.8,
+  "accelGround": 11,
+  "accelAir": 1.6,
+  "slideFriction": 1.3,
+  "jump": 7.9,
+  "doubleJump": 7.9,
+  "coyoteTime": 0.1,
+  "gravity": 20,
+  "dashGravity": 6,
+  "height": 1.8,
+  "crouchHeight": 1.2,
+  "radius": 0.4,
+  "stepUp": 0.38,
+  "regenDelay": 5,
+  "regenRate": 8,
+  "overdriveSpeed": 1.25,
+  "knifeSpeed": 1.12,
+  "chillSpeed": 0.55,
+  "chargeSpeed": 0.75
+ }
+}

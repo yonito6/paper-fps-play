@@ -1,0 +1,8 @@
+{
+ "about": "Explosive balance (frag grenade 'nade', plasma launcher 'nova', splashes). Same maths in index.html BLAST/blastBase/blastVis and server anticheat/blast.js. Distance is blast centre to the target's chest (feet + chest m). Damage = base(d) * visible fraction of 3 body points (head/chest/feet, weights w). No penetration: solid = 0.",
+ "full": 2, "edge": 5, "max": 5.5, "chip": 10, "pow": 3,
+ "kill": { "nade": 150, "nova": 130 },
+ "pts": [[1.6, 0.3], [1.0, 0.4], [0.15, 0.3]],
+ "chest": 1.0,
+ "selfMul": 0.45
+}
