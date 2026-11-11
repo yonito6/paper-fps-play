@@ -1,0 +1,20 @@
+{
+ "clips": {
+  "confetti": 2.2,
+  "headshot": 2.4,
+  "plane": 2.6,
+  "sniper": 2.8,
+  "shotgun": 2.4,
+  "boomerang": 2.4
+ },
+ "chars": {
+  "trooper": {
+   "pieces": 33,
+   "pieces_tris": 560,
+   "strips": 110,
+   "strips_tris": 3252,
+   "cut": 33,
+   "cut_tris": 600
+  }
+ }
+}

@@ -1,0 +1,290 @@
+{
+ "_readme": "First-person paper guns + origami hands (WEAPONS agent; code src/game/40-viewmodel.js PVM). map = engine weapon id -> paper gun id (data/paper/guns.json). Each gun root sits at guns.json art.hip at the hip; at full ADS the gun's `sight` empty is put on the camera axis at `eye` metres (exactly screen centre). hipRot = extra cant at the hip (degrees XYZ, fades to 0 at ADS). Hands: the CHARS rig (assets/paper/hands) posed with a named pose (paper_hands_poses.json), then its grip socket is put on the gun's grip_r (right) / grip_l (left) empty; rot = extra degrees XYZ in the grip's frame, off = extra metres. The hands are children of those empties, so they follow every clip (reload, pump, bolt, throw). scale = gun size (the GLBs are life size, 0.66 fits the screen like ref1/ref4); hip = root spot at the hip (camera space m); bones = per-gun overrides of the pose's bone rotations (degrees; 'hand' bends the wrist so the forearm runs down out of the screen).",
+ "map": {
+  "carbine": "rifle",
+  "breacher": "shotgun",
+  "sniper": "sniper",
+  "wasp": "smg",
+  "plane": "plane"
+ },
+ "eye": {
+  "rifle": 0.24,
+  "shotgun": 0.3,
+  "sniper": 0.2,
+  "smg": 0.22
+ },
+ "hipRot": {
+  "rifle": [
+   2,
+   7,
+   -5
+  ],
+  "shotgun": [
+   2,
+   7,
+   -5
+  ],
+  "sniper": [
+   2,
+   7,
+   -5
+  ],
+  "smg": [
+   2,
+   7,
+   -5
+  ],
+  "plane": [
+   0,
+   0,
+   0
+  ]
+ },
+ "hands": {
+  "rifle": {
+   "R": {
+    "pose": "rifle_trigger",
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "off": [
+     0,
+     0,
+     0
+    ],
+    "bones": {
+     "hand": [
+      20,
+      0,
+      -80
+     ]
+    }
+   },
+   "L": {
+    "pose": "rifle_support",
+    "yaw": 70,
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "off": [
+     0,
+     0,
+     0
+    ],
+    "bones": {
+     "hand": [
+      60,
+      0,
+      -30
+     ]
+    }
+   }
+  },
+  "smg": {
+   "R": {
+    "pose": "rifle_trigger",
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "off": [
+     0,
+     0,
+     0
+    ],
+    "bones": {
+     "hand": [
+      20,
+      0,
+      -80
+     ]
+    }
+   },
+   "L": {
+    "pose": "rifle_support",
+    "yaw": 70,
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "off": [
+     0,
+     0,
+     0
+    ],
+    "bones": {
+     "hand": [
+      60,
+      0,
+      -30
+     ]
+    }
+   }
+  },
+  "shotgun": {
+   "R": {
+    "pose": "rifle_trigger",
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "off": [
+     0,
+     0,
+     0
+    ],
+    "bones": {
+     "hand": [
+      20,
+      0,
+      -80
+     ]
+    }
+   },
+   "L": {
+    "pose": "pump",
+    "yaw": 70,
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "off": [
+     0,
+     0,
+     0
+    ],
+    "bones": {
+     "hand": [
+      60,
+      0,
+      -30
+     ]
+    }
+   }
+  },
+  "sniper": {
+   "R": {
+    "pose": "rifle_trigger",
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "off": [
+     0,
+     0,
+     0
+    ],
+    "bones": {
+     "hand": [
+      20,
+      0,
+      -80
+     ]
+    }
+   },
+   "L": {
+    "pose": "rifle_support",
+    "yaw": 70,
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "off": [
+     0,
+     0,
+     0
+    ],
+    "bones": {
+     "hand": [
+      60,
+      0,
+      -30
+     ]
+    }
+   }
+  },
+  "plane": {
+   "R": {
+    "pose": "plane_pinch",
+    "basis": "pinch",
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "off": [
+     0,
+     0,
+     0
+    ]
+   }
+  }
+ },
+ "plane": {
+  "_readme": "the held plane (ref3): hold = the plane root's rotation at the hip (degrees XYZ: nose to the right-forward, a little up); keys = the keys that pick the plane slot; returnToGun = after a throw's flight ends you get your last gun back.",
+  "hold": [
+   0,
+   -85,
+   -5
+  ],
+  "keys": [
+   "KeyG",
+   "Digit6"
+  ],
+  "returnToGun": true,
+  "throwRelease": 0.13,
+  "arc": {
+   "_readme": "dashed white throw-preview arc while the plane is held (ref4): from the plane's nose, bending up then down onto the crosshair line at `dist` m",
+   "dist": 8,
+   "lift": 0.25,
+   "dashes": 14,
+   "width": 0.005,
+   "opacity": 0.85
+  }
+ },
+ "scale": {
+  "rifle": 0.66,
+  "shotgun": 0.66,
+  "sniper": 0.66,
+  "smg": 0.7,
+  "plane": 0.8
+ },
+ "hip": {
+  "rifle": [
+   0.13,
+   -0.165,
+   -0.33
+  ],
+  "shotgun": [
+   0.14,
+   -0.165,
+   -0.34
+  ],
+  "sniper": [
+   0.13,
+   -0.16,
+   -0.33
+  ],
+  "smg": [
+   0.13,
+   -0.155,
+   -0.31
+  ],
+  "plane": [
+   0.07,
+   -0.05,
+   -0.4
+  ]
+ },
+ "handTint": 1.12
+}

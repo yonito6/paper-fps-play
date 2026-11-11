@@ -36,8 +36,16 @@ Colliders: axis-aligned boxes in `colliders` as `[minX, minY, minZ, maxX, maxY, 
 stairs, decks, raised floors), `rail` (thin wooden rails, 1.08 m), `tear` (the panel's box while intact; remove/shape it when torn), `floor`.
 
 ## Budgets (measured)
-See the MAP agent's final report for the current numbers (triangles, draw calls, texture memory); they are also printed by
-`build_map.py` (`[map] ... tris`) and `bake_map.py`.
+(build 2026-11-11, printed again by `build_map.py` / `export_glb.py`)
+- Triangles: **108k total** (gameplay town 51.6k + tearable panels 0.5k, background town / landmarks / clouds 56.2k). Above Sector Nine's 60k map-kit rule
+  because the background (mid-ring town, skyline, 2 clock towers, viaduct, clouds) is real geometry; it is all in the far meshes.
+- Draw calls: **5** for the whole static map (one per material) + **30 tearable panels x 2 materials = 60** while they are separate
+  (merge the intact ones per material, or instance, if this matters). 
+- Files: `desktown.glb` 17.2 MB (textures embedded ~6.4 MB; meshopt/Draco would cut the geometry part a lot), `lm.png` 9.1 MB / `lm_2k.png` 3.1 MB,
+  `lm_full.png` 8.2 MB / `lm_full_2k.png` 2.9 MB.
+- GPU texture memory (RGBA8 + mips): kraft diff+nor 2048 ~45 MB, mat 2048 ~22 MB, atlas 2048 ~22 MB, paper diff+nor 1024 ~11 MB,
+  edge ~0.3 MB, lightmap 4096 ~89 MB (2048 version ~22 MB) => **~190 MB at High, ~120 MB with the 2K lightmap**.
+- Colliders 350 boxes, 30 tearable panels, 12 firing/plane windows, 8 + 8 spawns, 12 camps, 8 static lamps.
 
 ## Shot marks / decals on every surface
 Every mesh has a proper material UV (world-projected, metres / tile) plus a unique lightmap UV and tangents, so runtime hole / dent

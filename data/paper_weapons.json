@@ -4,9 +4,11 @@
  "weapons": {
   "carbine":   { "name": "Fold-47",       "cls": "Assault rifle",  "mag": 30, "reserve": 90,  "maxReserve": 180, "rpm": 640, "dmg": 24, "head": 2.2, "falloff": [24, 70, 0.6], "reload": 1.85, "reloadEmpty": 2.25, "desc": "Folded blue card rifle. Steady at every range." },
   "breacher":  { "name": "Crease Pump",   "cls": "Pump shotgun",   "mag": 5,  "reserve": 24,  "maxReserve": 40,  "rpm": 75,  "dmg": 34, "pellets": 8, "head": 1.5, "falloff": [8, 16, 0.07], "reload": 2.4, "reloadEmpty": 2.4, "desc": "Eight paper pellets. Shreds anyone within 7 m." },
-  "sniper":    { "name": "Longfold",      "cls": "Sniper rifle",   "mag": 5,  "reserve": 20,  "maxReserve": 30,  "rpm": 55,  "desc": "Scoped. One shot kills and punches through every body in line." },
+  "sniper":    { "name": "Longfold",      "cls": "Sniper rifle",   "mag": 5,  "reserve": 20,  "maxReserve": 30,  "rpm": 55, "adsFov": 20, "adsSpeed": 30, "scopeSnap": true, "bolt": 0.75, "draw": 0.4, "oneShot": false, "dmg": 110, "head": 2, "armK": 1, "steady": true, "pierce": true, "falloff": null, "kick": 5,  "desc": "Bolt-action. Head, body or arm shot kills, a leg shot leaves them on a sliver. Instant paper-tube scope, 0.75 s bolt (switch weapons to skip it)." },
   "wasp":      { "name": "Snip-9",        "cls": "SMG",            "mag": 32, "reserve": 128, "maxReserve": 192, "rpm": 900, "dmg": 16, "head": 2.0, "falloff": [12, 32, 0.5], "reload": 1.5, "reloadEmpty": 1.8, "desc": "Fast and light. Shreds up close, weak past 15 m." },
   "boomerang": { "name": "Bend-Back",     "cls": "Boomerang",      "desc": "Hold to wind up, release to throw. Cuts through anyone in its path and flies back to your hand. Right click = blade punch." }
  },
- "plane": { "name": "Paper plane", "cls": "Throwable (G)", "carry": 2, "refillOnSpawn": true }
+ "plane": { "name": "Paper plane", "cls": "Throwable (own slot: G or 6)", "carry": 3, "regen": 10, "refillOnSpawn": true,
+  "rules": { "_note": "PLANES.R overrides (docs/MECHANICS.md section 5). m, s, rad/s; catchConeDeg = half-angle of the catch cone in degrees; catchSlow = slow motion after YOUR catch (s).", "speed": 15, "life": 7, "hp": 25, "hitR": 0.55, "turn": 2.4, "botTurn": 1.5, "sink": 0.06, "catchDist": 4.2, "catchConeDeg": 57, "catchBoost": 1.2, "blastKill": 120, "arm": 0.2, "slowmo": 0.9, "slowK": 0.3, "catchSlow": 0.45 },
+  "chase": { "back": 1.9, "up": 0.55, "look": 5, "fov": 82, "follow": 16 } }
 }

@@ -1,0 +1,1546 @@
+{
+ "about": "Paper FPS first-person hands. SAME format + rig as Sector Nine (modules/hands.js): poses = bone rotations (Euler XYZ degrees in each bone's own frame, on top of the rest pose; negative x curls a finger toward the palm). New paper poses: boomerang_hold/release, plane_pinch/release/steer, catch_open/closed, sniper_bolt. 'families' = Sector Nine viewmodel placements kept for the fork; for the paper guns align the hand's grip socket (grip_sockets) to the gun empties grip_r / grip_l.",
+ "poses": {
+  "flat": {
+   "bones": {}
+  },
+  "rifle_trigger": {
+   "bones": {
+    "hand": [
+     20,
+     0,
+     -35
+    ],
+    "index_01": [
+     -40,
+     0,
+     0
+    ],
+    "index_02": [
+     -50,
+     0,
+     0
+    ],
+    "index_03": [
+     -25,
+     0,
+     0
+    ],
+    "middle_01": [
+     -75,
+     0,
+     0
+    ],
+    "middle_02": [
+     -90,
+     0,
+     0
+    ],
+    "middle_03": [
+     -55,
+     0,
+     0
+    ],
+    "ring_01": [
+     -78,
+     0,
+     0
+    ],
+    "ring_02": [
+     -90,
+     0,
+     0
+    ],
+    "ring_03": [
+     -55,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -82,
+     0,
+     0
+    ],
+    "pinky_02": [
+     -88,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -50,
+     0,
+     0
+    ],
+    "thumb_01": [
+     -20,
+     0,
+     -30
+    ],
+    "thumb_02": [
+     -10,
+     0,
+     0
+    ],
+    "thumb_03": [
+     -20,
+     0,
+     0
+    ]
+   }
+  },
+  "pistol_trigger": {
+   "from": "rifle_trigger",
+   "bones": {
+    "hand": [
+     10,
+     0,
+     -25
+    ]
+   }
+  },
+  "rifle_support": {
+   "bones": {
+    "hand": [
+     15,
+     0,
+     -30
+    ],
+    "index_01": [
+     -45,
+     0,
+     0
+    ],
+    "index_02": [
+     -55,
+     0,
+     0
+    ],
+    "index_03": [
+     -35,
+     0,
+     0
+    ],
+    "middle_01": [
+     -45,
+     0,
+     0
+    ],
+    "middle_02": [
+     -55,
+     0,
+     0
+    ],
+    "middle_03": [
+     -35,
+     0,
+     0
+    ],
+    "ring_01": [
+     -45,
+     0,
+     0
+    ],
+    "ring_02": [
+     -55,
+     0,
+     0
+    ],
+    "ring_03": [
+     -35,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -45,
+     0,
+     0
+    ],
+    "pinky_02": [
+     -55,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -35,
+     0,
+     0
+    ],
+    "thumb_01": [
+     0,
+     0,
+     20
+    ],
+    "thumb_02": [
+     0,
+     0,
+     0
+    ],
+    "thumb_03": [
+     -5,
+     0,
+     0
+    ]
+   }
+  },
+  "pistol_support": {
+   "bones": {
+    "hand": [
+     10,
+     0,
+     -35
+    ],
+    "index_01": [
+     -55,
+     0,
+     0
+    ],
+    "index_02": [
+     -60,
+     0,
+     0
+    ],
+    "index_03": [
+     -40,
+     0,
+     0
+    ],
+    "middle_01": [
+     -55,
+     0,
+     0
+    ],
+    "middle_02": [
+     -60,
+     0,
+     0
+    ],
+    "middle_03": [
+     -40,
+     0,
+     0
+    ],
+    "ring_01": [
+     -55,
+     0,
+     0
+    ],
+    "ring_02": [
+     -60,
+     0,
+     0
+    ],
+    "ring_03": [
+     -40,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -55,
+     0,
+     0
+    ],
+    "pinky_02": [
+     -60,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -40,
+     0,
+     0
+    ],
+    "thumb_01": [
+     0,
+     0,
+     10
+    ],
+    "thumb_02": [
+     0,
+     0,
+     0
+    ],
+    "thumb_03": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  "vgrip": {
+   "bones": {
+    "hand": [
+     10,
+     0,
+     -30
+    ],
+    "index_01": [
+     -80,
+     0,
+     0
+    ],
+    "index_02": [
+     -95,
+     0,
+     0
+    ],
+    "index_03": [
+     -55,
+     0,
+     0
+    ],
+    "middle_01": [
+     -80,
+     0,
+     0
+    ],
+    "middle_02": [
+     -95,
+     0,
+     0
+    ],
+    "middle_03": [
+     -55,
+     0,
+     0
+    ],
+    "ring_01": [
+     -80,
+     0,
+     0
+    ],
+    "ring_02": [
+     -95,
+     0,
+     0
+    ],
+    "ring_03": [
+     -55,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -82,
+     0,
+     0
+    ],
+    "pinky_02": [
+     -92,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -50,
+     0,
+     0
+    ],
+    "thumb_01": [
+     -30,
+     0,
+     -40
+    ],
+    "thumb_02": [
+     -15,
+     0,
+     0
+    ],
+    "thumb_03": [
+     -20,
+     0,
+     0
+    ]
+   }
+  },
+  "pump": {
+   "from": "vgrip",
+   "bones": {
+    "index_01": [
+     -70,
+     0,
+     0
+    ],
+    "index_02": [
+     -85,
+     0,
+     0
+    ],
+    "index_03": [
+     -50,
+     0,
+     0
+    ],
+    "middle_01": [
+     -70,
+     0,
+     0
+    ],
+    "middle_02": [
+     -85,
+     0,
+     0
+    ],
+    "middle_03": [
+     -50,
+     0,
+     0
+    ],
+    "ring_01": [
+     -70,
+     0,
+     0
+    ],
+    "ring_02": [
+     -85,
+     0,
+     0
+    ],
+    "ring_03": [
+     -50,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -72,
+     0,
+     0
+    ],
+    "pinky_02": [
+     -82,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -45,
+     0,
+     0
+    ],
+    "thumb_01": [
+     -10,
+     0,
+     -20
+    ]
+   }
+  },
+  "fist": {
+   "bones": {
+    "hand": [
+     0,
+     0,
+     -10
+    ],
+    "index_01": [
+     -90,
+     0,
+     0
+    ],
+    "index_02": [
+     -100,
+     0,
+     0
+    ],
+    "index_03": [
+     -60,
+     0,
+     0
+    ],
+    "middle_01": [
+     -90,
+     0,
+     0
+    ],
+    "middle_02": [
+     -100,
+     0,
+     0
+    ],
+    "middle_03": [
+     -60,
+     0,
+     0
+    ],
+    "ring_01": [
+     -90,
+     0,
+     0
+    ],
+    "ring_02": [
+     -100,
+     0,
+     0
+    ],
+    "ring_03": [
+     -60,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -90,
+     0,
+     0
+    ],
+    "pinky_02": [
+     -98,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -55,
+     0,
+     0
+    ],
+    "thumb_01": [
+     -40,
+     0,
+     -50
+    ],
+    "thumb_02": [
+     -20,
+     0,
+     0
+    ],
+    "thumb_03": [
+     -25,
+     0,
+     0
+    ]
+   }
+  },
+  "open": {
+   "bones": {
+    "hand": [
+     0,
+     0,
+     -10
+    ],
+    "index_01": [
+     -12,
+     0,
+     0
+    ],
+    "index_02": [
+     -12,
+     0,
+     0
+    ],
+    "index_03": [
+     -6,
+     0,
+     0
+    ],
+    "middle_01": [
+     -14,
+     0,
+     0
+    ],
+    "middle_02": [
+     -14,
+     0,
+     0
+    ],
+    "middle_03": [
+     -6,
+     0,
+     0
+    ],
+    "ring_01": [
+     -18,
+     0,
+     0
+    ],
+    "ring_02": [
+     -16,
+     0,
+     0
+    ],
+    "ring_03": [
+     -8,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -22,
+     0,
+     0
+    ],
+    "pinky_02": [
+     -18,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -10,
+     0,
+     0
+    ],
+    "thumb_01": [
+     0,
+     0,
+     20
+    ],
+    "thumb_02": [
+     0,
+     0,
+     0
+    ],
+    "thumb_03": [
+     0,
+     0,
+     0
+    ]
+   }
+  },
+  "boomerang_hold": {
+   "bones": {
+    "index_01": [
+     -70,
+     0,
+     0
+    ],
+    "index_02": [
+     -85,
+     0,
+     0
+    ],
+    "index_03": [
+     -50,
+     0,
+     0
+    ],
+    "middle_01": [
+     -70,
+     0,
+     0
+    ],
+    "middle_02": [
+     -85,
+     0,
+     0
+    ],
+    "middle_03": [
+     -50,
+     0,
+     0
+    ],
+    "ring_01": [
+     -70,
+     0,
+     0
+    ],
+    "ring_02": [
+     -85,
+     0,
+     0
+    ],
+    "ring_03": [
+     -50,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -70,
+     0,
+     0
+    ],
+    "pinky_02": [
+     -85,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -50,
+     0,
+     0
+    ],
+    "hand": [
+     10,
+     0,
+     -20
+    ],
+    "thumb_01": [
+     -25,
+     0,
+     -35
+    ],
+    "thumb_02": [
+     -20,
+     0,
+     0
+    ],
+    "thumb_03": [
+     -25,
+     0,
+     0
+    ]
+   }
+  },
+  "boomerang_release": {
+   "from": "open",
+   "bones": {
+    "hand": [
+     -25,
+     0,
+     -10
+    ]
+   }
+  },
+  "plane_pinch": {
+   "bones": {
+    "index_01": [
+     -30,
+     0,
+     0
+    ],
+    "index_02": [
+     -40,
+     0,
+     0
+    ],
+    "index_03": [
+     -30,
+     0,
+     0
+    ],
+    "middle_01": [
+     -75,
+     0,
+     0
+    ],
+    "middle_02": [
+     -90,
+     0,
+     0
+    ],
+    "middle_03": [
+     -55,
+     0,
+     0
+    ],
+    "ring_01": [
+     -75,
+     0,
+     0
+    ],
+    "ring_02": [
+     -90,
+     0,
+     0
+    ],
+    "ring_03": [
+     -55,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -75,
+     0,
+     0
+    ],
+    "pinky_02": [
+     -90,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -55,
+     0,
+     0
+    ],
+    "thumb_01": [
+     -30,
+     0,
+     -15
+    ],
+    "thumb_02": [
+     -25,
+     0,
+     0
+    ],
+    "thumb_03": [
+     -20,
+     0,
+     0
+    ],
+    "hand": [
+     15,
+     0,
+     -10
+    ]
+   }
+  },
+  "plane_release": {
+   "from": "open",
+   "bones": {
+    "hand": [
+     -30,
+     0,
+     0
+    ],
+    "index_01": [
+     -5,
+     0,
+     0
+    ],
+    "thumb_01": [
+     -10,
+     0,
+     -35
+    ]
+   }
+  },
+  "plane_steer": {
+   "bones": {
+    "index_01": [
+     0,
+     0,
+     0
+    ],
+    "index_02": [
+     0,
+     0,
+     0
+    ],
+    "index_03": [
+     0,
+     0,
+     0
+    ],
+    "middle_01": [
+     -15,
+     0,
+     0
+    ],
+    "middle_02": [
+     -20,
+     0,
+     0
+    ],
+    "middle_03": [
+     -10,
+     0,
+     0
+    ],
+    "ring_01": [
+     -15,
+     0,
+     0
+    ],
+    "ring_02": [
+     -20,
+     0,
+     0
+    ],
+    "ring_03": [
+     -10,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -15,
+     0,
+     0
+    ],
+    "pinky_02": [
+     -20,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -10,
+     0,
+     0
+    ],
+    "hand": [
+     -10,
+     0,
+     0
+    ],
+    "thumb_01": [
+     -10,
+     0,
+     -25
+    ]
+   }
+  },
+  "catch_open": {
+   "bones": {
+    "index_01": [
+     -8,
+     0,
+     6
+    ],
+    "index_02": [
+     -10,
+     0,
+     0
+    ],
+    "index_03": [
+     -5,
+     0,
+     0
+    ],
+    "middle_01": [
+     -8,
+     0,
+     0
+    ],
+    "middle_02": [
+     -10,
+     0,
+     0
+    ],
+    "middle_03": [
+     -5,
+     0,
+     0
+    ],
+    "ring_01": [
+     -8,
+     0,
+     0
+    ],
+    "ring_02": [
+     -10,
+     0,
+     0
+    ],
+    "ring_03": [
+     -5,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -8,
+     0,
+     -10
+    ],
+    "pinky_02": [
+     -10,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -5,
+     0,
+     0
+    ],
+    "hand": [
+     -35,
+     0,
+     0
+    ],
+    "thumb_01": [
+     0,
+     0,
+     -45
+    ]
+   }
+  },
+  "catch_closed": {
+   "from": "fist",
+   "bones": {
+    "hand": [
+     -10,
+     0,
+     0
+    ]
+   }
+  },
+  "sniper_bolt": {
+   "bones": {
+    "index_01": [
+     -55,
+     0,
+     0
+    ],
+    "index_02": [
+     -75,
+     0,
+     0
+    ],
+    "index_03": [
+     -45,
+     0,
+     0
+    ],
+    "middle_01": [
+     -55,
+     0,
+     0
+    ],
+    "middle_02": [
+     -75,
+     0,
+     0
+    ],
+    "middle_03": [
+     -45,
+     0,
+     0
+    ],
+    "ring_01": [
+     -55,
+     0,
+     0
+    ],
+    "ring_02": [
+     -75,
+     0,
+     0
+    ],
+    "ring_03": [
+     -45,
+     0,
+     0
+    ],
+    "pinky_01": [
+     -55,
+     0,
+     0
+    ],
+    "pinky_02": [
+     -75,
+     0,
+     0
+    ],
+    "pinky_03": [
+     -45,
+     0,
+     0
+    ],
+    "hand": [
+     30,
+     0,
+     -20
+    ],
+    "thumb_01": [
+     -30,
+     0,
+     -10
+    ]
+   }
+  }
+ },
+ "families": {
+  "rifle": {
+   "R": {
+    "pose": "rifle_trigger",
+    "at": [
+     0.04,
+     -0.215,
+     0.105
+    ],
+    "rot": [
+     -12,
+     0,
+     -90
+    ]
+   },
+   "L": {
+    "pose": "rifle_support",
+    "at": [
+     0,
+     -0.0175,
+     -0.36
+    ],
+    "rot": [
+     180,
+     -90,
+     0
+    ]
+   }
+  },
+  "vgrip": {
+   "R": {
+    "pose": "rifle_trigger",
+    "at": [
+     0.04,
+     -0.215,
+     0.105
+    ],
+    "rot": [
+     -12,
+     0,
+     -90
+    ]
+   },
+   "L": {
+    "pose": "vgrip",
+    "at": [
+     0.017,
+     -0.08,
+     -0.36
+    ],
+    "rot": [
+     -10,
+     0,
+     -90
+    ]
+   }
+  },
+  "shotgun": {
+   "R": {
+    "pose": "rifle_trigger",
+    "at": [
+     0.04,
+     -0.215,
+     0.105
+    ],
+    "rot": [
+     -12,
+     0,
+     -90
+    ]
+   },
+   "L": {
+    "pose": "pump",
+    "at": [
+     0,
+     -0.0175,
+     -0.36
+    ],
+    "rot": [
+     180,
+     -90,
+     0
+    ]
+   }
+  },
+  "handgun": {
+   "R": {
+    "pose": "pistol_trigger",
+    "at": [
+     0.04,
+     -0.215,
+     0.105
+    ],
+    "rot": [
+     -12,
+     0,
+     -90
+    ]
+   },
+   "L": {
+    "pose": "pistol_support",
+    "at": [
+     -0.035,
+     -0.22,
+     -0.35
+    ],
+    "rot": [
+     -45,
+     0,
+     90
+    ]
+   }
+  },
+  "boomerang": {
+   "R": {
+    "pose": "fist",
+    "at": [
+     0,
+     0,
+     0.06
+    ],
+    "rot": [
+     0,
+     0,
+     -90
+    ],
+    "alt": {
+     "open": {
+      "pose": "open"
+     }
+    }
+   }
+  }
+ },
+ "weapons": {
+  "rifle": "rifle",
+  "smg": "rifle",
+  "sniper": "rifle",
+  "shotgun": "shotgun",
+  "pistol": "handgun",
+  "boomerang": "boomerang",
+  "plane": {
+   "family": "boomerang",
+   "R": {
+    "pose": "plane_pinch"
+   }
+  }
+ },
+ "grip_sockets": {
+  "_about": "three.js palm space of the POSED hand (wrist at origin, fingers toward -Z, back of hand +Y, palm facing -Y, thumb toward -X for the right hand). pos = where the gun's grip_r / grip_l empty goes; axes = the gun empty's X/Y/Z axes expressed in palm space (guns contract: -Z forward along the gun, +Y up the grip). Place hand: handWorld = gripWorld * inverse(socket). Tune in game if a finger clips.",
+  "rifle_trigger": {
+   "pos": [
+    0.0,
+    -0.035,
+    -0.075
+   ],
+   "axes": {
+    "x": [
+     0.0,
+     1,
+     0.0
+    ],
+    "y": [
+     -0.968,
+     0,
+     -0.25
+    ],
+    "z": [
+     -0.25,
+     0,
+     0.968
+    ]
+   },
+   "side": "R"
+  },
+  "pistol_trigger": {
+   "pos": [
+    0.0,
+    -0.035,
+    -0.075
+   ],
+   "axes": {
+    "x": [
+     0.0,
+     1,
+     0.0
+    ],
+    "y": [
+     -0.968,
+     0,
+     -0.25
+    ],
+    "z": [
+     -0.25,
+     0,
+     0.968
+    ]
+   },
+   "side": "R"
+  },
+  "vgrip": {
+   "pos": [
+    0.0,
+    -0.03,
+    -0.07
+   ],
+   "axes": {
+    "x": [
+     0.0,
+     1,
+     0.0
+    ],
+    "y": [
+     -0.968,
+     0,
+     -0.25
+    ],
+    "z": [
+     -0.25,
+     0,
+     0.968
+    ]
+   },
+   "side": "R"
+  },
+  "rifle_support": {
+   "pos": [
+    0.0,
+    -0.03,
+    -0.06
+   ],
+   "axes": {
+    "x": [
+     0.707,
+     0.252,
+     -0.661
+    ],
+    "y": [
+     0.0,
+     -0.935,
+     -0.356
+    ],
+    "z": [
+     0.707,
+     -0.252,
+     0.661
+    ]
+   },
+   "side": "L (left-hand palm space = X-mirror of the right)"
+  },
+  "pump": {
+   "pos": [
+    0.0,
+    -0.03,
+    -0.07
+   ],
+   "axes": {
+    "x": [
+     0.707,
+     0.252,
+     -0.661
+    ],
+    "y": [
+     0.0,
+     -0.935,
+     -0.356
+    ],
+    "z": [
+     0.707,
+     -0.252,
+     0.661
+    ]
+   },
+   "side": "L (left-hand palm space = X-mirror of the right)"
+  },
+  "boomerang_hold": {
+   "pos": [
+    0.0,
+    -0.03,
+    -0.07
+   ],
+   "axes": {
+    "x": [
+     0.0,
+     1,
+     0.0
+    ],
+    "y": [
+     -0.968,
+     0,
+     -0.25
+    ],
+    "z": [
+     -0.25,
+     0,
+     0.968
+    ]
+   },
+   "side": "R"
+  },
+  "plane_pinch": {
+   "pos": [
+    -0.04,
+    -0.005,
+    -0.125
+   ],
+   "axes": {
+    "x": [
+     0.0,
+     1,
+     0.0
+    ],
+    "y": [
+     -0.968,
+     0,
+     -0.25
+    ],
+    "z": [
+     -0.25,
+     0,
+     0.968
+    ]
+   },
+   "side": "R",
+   "note": "pinch point between thumb and index tip (plane tail)"
+  }
+ },
+ "hand_clips": {
+  "rifle": {
+   "*": [
+    [
+     0,
+     "rifle_trigger",
+     "rifle_support"
+    ]
+   ],
+   "reload": [
+    [
+     0,
+     "rifle_trigger",
+     "rifle_support"
+    ],
+    [
+     0.25,
+     "rifle_trigger",
+     "fist"
+    ],
+    [
+     1.55,
+     "rifle_trigger",
+     "rifle_support"
+    ]
+   ]
+  },
+  "smg": {
+   "*": [
+    [
+     0,
+     "rifle_trigger",
+     "rifle_support"
+    ]
+   ],
+   "reload": [
+    [
+     0,
+     "rifle_trigger",
+     "rifle_support"
+    ],
+    [
+     0.2,
+     "rifle_trigger",
+     "fist"
+    ],
+    [
+     1.25,
+     "rifle_trigger",
+     "rifle_support"
+    ]
+   ]
+  },
+  "sniper": {
+   "*": [
+    [
+     0,
+     "rifle_trigger",
+     "rifle_support"
+    ]
+   ],
+   "bolt": [
+    [
+     0,
+     "rifle_trigger",
+     "rifle_support"
+    ],
+    [
+     0.08,
+     "sniper_bolt",
+     "rifle_support"
+    ],
+    [
+     0.62,
+     "rifle_trigger",
+     "rifle_support"
+    ]
+   ],
+   "reload": [
+    [
+     0,
+     "rifle_trigger",
+     "rifle_support"
+    ],
+    [
+     0.25,
+     "rifle_trigger",
+     "fist"
+    ],
+    [
+     1.7,
+     "rifle_trigger",
+     "rifle_support"
+    ]
+   ]
+  },
+  "shotgun": {
+   "*": [
+    [
+     0,
+     "rifle_trigger",
+     "pump"
+    ]
+   ],
+   "reload_shell": [
+    [
+     0,
+     "rifle_trigger",
+     "fist"
+    ],
+    [
+     0.38,
+     "rifle_trigger",
+     "pump"
+    ]
+   ]
+  },
+  "boomerang": {
+   "*": [
+    [
+     0,
+     "boomerang_hold",
+     "open"
+    ]
+   ],
+   "throw": [
+    [
+     0,
+     "boomerang_hold",
+     "open"
+    ],
+    [
+     0.1,
+     "boomerang_release",
+     "open"
+    ]
+   ],
+   "catch": [
+    [
+     0,
+     "catch_open",
+     "open"
+    ],
+    [
+     0.12,
+     "boomerang_hold",
+     "open"
+    ]
+   ]
+  },
+  "plane": {
+   "*": [
+    [
+     0,
+     "plane_pinch",
+     "open"
+    ]
+   ],
+   "throw": [
+    [
+     0,
+     "plane_pinch",
+     "open"
+    ],
+    [
+     0.13,
+     "plane_release",
+     "open"
+    ]
+   ],
+   "steer": [
+    [
+     0,
+     "plane_steer",
+     null
+    ]
+   ],
+   "catch": [
+    [
+     0,
+     "catch_open",
+     "catch_open"
+    ],
+    [
+     0.18,
+     "catch_closed",
+     "catch_closed"
+    ],
+    [
+     0.4,
+     "plane_pinch",
+     null
+    ]
+   ]
+  },
+  "equip_unequip": "use the gun clip `equip` (played backwards for unequip); hands keep the gun * poses"
+ }
+}

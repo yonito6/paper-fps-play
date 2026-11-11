@@ -1,0 +1,117 @@
+{
+ "license": "CC0 1.0 (ambientCG, https://ambientcg.com/license); generated layers by render/paper/materials/build_textures.py",
+ "sources": {
+  "Cardboard001": "https://ambientcg.com/view?id=Cardboard001",
+  "Cardboard003": "https://ambientcg.com/view?id=Cardboard003",
+  "Cardboard004": "https://ambientcg.com/view?id=Cardboard004",
+  "Paper001": "https://ambientcg.com/view?id=Paper001",
+  "Paper002": "https://ambientcg.com/view?id=Paper002",
+  "Paper003": "https://ambientcg.com/view?id=Paper003",
+  "Paper004": "https://ambientcg.com/view?id=Paper004",
+  "Wood096": "https://ambientcg.com/view?id=Wood096"
+ },
+ "textures": {
+  "kraft": {
+   "tile_m": 1.35,
+   "from": "Cardboard004 + Paper004",
+   "what": "kraft corrugated-board liner (box faces, walls); flute ridges show through every 4.5 cm",
+   "size": [
+    2048,
+    2048,
+    "orm 1024"
+   ]
+  },
+  "paper": {
+   "tile_m": 1.0,
+   "from": "Paper002 + Paper003",
+   "what": "cream pressed-paper board (buildings, cream accents)",
+   "size": [
+    1024,
+    1024
+   ]
+  },
+  "white": {
+   "tile_m": 0.8,
+   "from": "Paper001",
+   "what": "white drawing paper",
+   "size": [
+    1024,
+    1024
+   ]
+  },
+  "origami": {
+   "tile_m": 0.6,
+   "from": "Paper003 + Paper001",
+   "what": "coloured origami paper (team blue #314cac / red #ba3428), creased, pale fibre flecks",
+   "size": [
+    1024,
+    1024
+   ]
+  },
+  "flute": {
+   "tile_m": [
+    "8 x board thickness",
+    "board thickness"
+   ],
+   "from": "generated cross-section + kraft fibre (Cardboard002)",
+   "what": "corrugated cut edge: U along the edge, one repeat = 8 flutes = 8 x the board thickness in metres; V = 0..1 across the thickness",
+   "size": [
+    2048,
+    256
+   ]
+  },
+  "ruler": {
+   "tile_m": [
+    null,
+    "U = 30 cm of ruler per repeat (set per ruler length)"
+   ],
+   "from": "Wood096 + drawn scale",
+   "what": "wooden ruler: V 0..0.5 marked face, V 0.5..1 plain wood (sides, underside)",
+   "size": [
+    2048,
+    512
+   ]
+  },
+  "wear": {
+   "tile_m": "decal (no wrap)",
+   "from": "Cardboard001 (torn liner) + Cardboard003 (scuffs) + generated glue/ink/tape",
+   "what": "RGBA decal atlas: torn liner showing flutes, scuffs, dent, glue lines, ink stamps, brown + clear tape. Cells in wear_atlas.json",
+   "size": [
+    2048,
+    2048
+   ]
+  },
+  "macro_var": {
+   "tile_m": 7.0,
+   "from": "generated",
+   "what": "low-frequency brightness variation, world-space, 7 m tile",
+   "size": [
+    256,
+    256
+   ]
+  }
+ },
+ "flute_pitch_m": 0.045,
+ "colors": {
+  "kraft_albedo": [
+   180,
+   131,
+   86
+  ],
+  "cream_albedo": [
+   229,
+   215,
+   190
+  ],
+  "team_blue": [
+   49,
+   76,
+   172
+  ],
+  "team_red": [
+   186,
+   52,
+   40
+  ]
+ }
+}

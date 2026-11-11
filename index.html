@@ -1,14 +1,15 @@
 <title>Foldiers</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Cpath d=%27M4 34 L60 6 L36 60 L30 38Z%27 fill=%27%23c0392b%27/%3E%3Cpath d=%27M30 38 L60 6%27 stroke=%27%23fff%27 stroke-width=%273%27/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
 <style>
 /* Layout: full-bleed WebGL viewport; HUD pinned to corners like an instrument cluster, compass across the top */
 :root{
   --bg:#0b0d10; --ink:#ece6d8; --dim:#8b9097; --sodium:#ff9a3c; --alert:#ff4a3d; --cyan:#7fe7ff;
   --panel:rgba(11,13,16,.66); --line:rgba(236,230,216,.18);
-  --display:"Big Shoulders Stencil Display", Impact, "Arial Narrow", sans-serif;
-  --mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --display:"Lilita One", "Arial Black", system-ui, sans-serif;
+  --mono:"Nunito", system-ui, sans-serif;   /* Foldiers: paper-craft fonts (the Sector Nine stencil/mono fonts are gone) */
   color-scheme:dark;
 }
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hidden;font-family:var(--mono)}
@@ -457,6 +458,8 @@ if (navigator.webdriver) { let plEl = null; const plFire = () => setTimeout(() =
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="modules/papermat_ktx2.js"></script>
+<script src="modules/papermat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/utils/SkeletonUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/utils/BufferGeometryUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -484,7 +487,7 @@ const QUALITY = { high: { maxPR: 1, shadow: 1536, bloom: true, msaa: 0 }, balanc
 const host = $('game');
 const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance', stencil: false });
 renderer.autoClear = false;
-renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;   // Foldiers: soft paper shadows
 renderer.outputEncoding = THREE.sRGBEncoding;
 host.appendChild(renderer.domElement);
 /* ================= WebGL robustness (tracker #131: "reading 'trim'" crash; black / frozen screens after a GPU reset) =================
@@ -1150,9 +1153,168 @@ const PAPER = (() => {
 function PAPER_EDGE_HOOK(sh) {
   sh.fragmentShader = sh.fragmentShader.replace('#include <output_fragment>', `
     { vec3 vdir = normalize(vViewPosition); float rim = pow(1.0 - abs(dot(normalize(normal), -vdir)), 3.0);
-      outgoingLight += diffuseColor.rgb * rim * 0.22 * vec3(1.0, .93, .8); }
+      outgoingLight += diffuseColor.rgb * rim * 0.07 * vec3(1.0, .93, .8); }   // (ART 2026-11-11: 0.22 washed out every grazing face)
     #include <output_fragment>`);
 }
+
+/* ================= ART pass (ART DIRECTOR, docs/ART_GAP.md): the whole frame vs the references ================= */
+// Numbers that make the frame match ref1-3 (warm low sun, warm bounce, deep blue sky, muted sage cutting mat, the REAL cardboard library
+// on the map, faceted paper shading on soldiers / hands / guns). Everything here is uniform-level or load-time: no extra passes, no
+// draw calls (post effects live in modules/paperpost.js). Unity: the same numbers go in data form (sun, hemisphere, sky gradient, LUT).
+const ART_LOOK = {
+  sun: 1.8, sunHex: 0xffd6a6,                       // ref: lit kraft (233,182,122) vs shade (172,126,74): ~2:1 linear, warm
+  hemiSky: 0x9cc0f2, hemiGround: 0x9a7452, hemi: .34, lmK: 1.15,   // bounce off the desk is warm kraft; the lightmap carries sky + AO
+  exposure: .72, envMap: .22, paperTint: 0xd6cbb9,   // the cream library paper is near white; the refs' cream buildings are a light tan
+  sky: { zen: [.06, .26, .82], mid: [.20, .44, .90], hor: [.48, .66, .92], low: [.34, .37, .33], cloudAmt: .85, cloud: [1, .99, .97], sunGlow: .3 },
+  mat: { desat: .70, gain: [1.62, 1.30, 1.26], lift: [4, 2, 0] },
+  fog: { col: [.80, .81, .85], density: .0056 },   // the refs' far town is softened by a light warm-grey haze   // cutting mat: (50,144,125) teal -> (118,142,128) muted sage like the refs
+  gun: { key: 0xffd6a6, keyI: 1.55, hemiSky: 0x9cc0f2, hemiGround: 0x9a7452, hemiI: .5, rimHex: 0xa8c4ff, rimI: .35, fillI: .18 },
+  char: { ground: [.56, .40, .27], sky: [.38, .50, .74], hemiK: .75, rim: .16, facet: .14, crease: .35 },
+};
+const ART_U = { ground: { value: new THREE.Color(...ART_LOOK.char.ground) }, sky: { value: new THREE.Color(...ART_LOOK.char.sky) }, k: { value: new THREE.Vector4(ART_LOOK.char.hemiK, ART_LOOK.char.rim, ART_LOOK.char.facet, ART_LOOK.char.crease) }, sun: { value: new THREE.Vector3(-.377, .454, .808) } };
+// quality tier at boot: CFG.q when the player chose one, else what graphics.js will pick (RTX / RX = High), so textures load once at the right size
+function artTier() {
+  let saved = null; try { saved = JSON.parse(localStorage.getItem('sector9-gfx') || 'null'); } catch (e) {}
+  if (saved && saved.user && saved.tier) return /ultra|high/.test(saved.tier) ? 'high' : saved.tier;
+  let gpu = ''; try { const gl = renderer.getContext(), x = gl.getExtension('WEBGL_debug_renderer_info'); gpu = String(x ? gl.getParameter(x.UNMASKED_RENDERER_WEBGL) : ''); } catch (e) {}
+  if (/swiftshader|llvmpipe|software/i.test(gpu)) return 'performance';
+  if (/intel|uhd|iris|hd graphics|mali|adreno/i.test(gpu) && !/arc/i.test(gpu)) return 'performance';
+  if (/rtx|radeon rx [67]\d{3}|apple m[2-9]/i.test(gpu)) return 'high';
+  return /high|balanced|performance/.test(CFG.q) ? CFG.q : 'balanced';
+}
+// the material library loads with the page (modules/papermat.js): KTX2 when its loader is on the page (4x less VRAM), JPG otherwise
+const ART = { tier: artTier(), lib: null, ready: false, mats: {}, log: [] };
+if (window.PaperMat) ART.lib = PaperMat.load({ tier: ART.tier, renderer, ktx2: !!THREE.KTX2Loader }).then(() => { ART.ready = true; }).catch(e => console.warn('[art] PaperMat', e));
+// --- the map: swap the GLB's generated materials for the library, re-light, re-colour the cutting mat, re-bake the sky
+if (typeof desktownFromData === 'function') {
+  const _dfd = desktownFromData;
+  desktownFromData = function (PM) {
+    try { artTearBases(); } catch (e) { console.warn('[art] tear bases', e); }
+    const r = _dfd.apply(this, arguments);
+    try { artMapPass(); } catch (e) { console.warn('[art] map pass', e); }
+    return r;
+  };
+}
+function artLibMat(kind, o) {
+  const DD = DESKTOWN_DATA, lm = DD && DD.lm;
+  return PaperMat.makeMaterial(kind, Object.assign({ vertexColors: true, envMapIntensity: ART_LOOK.envMap }, lm ? { lightMap: lm, lmSqrt: true, lmScale: DD.lmScale * DESKTOWN_LOOK.lmK * ART_LOOK.lmK } : {}, o));
+}
+// tear panels clone the GLB's base materials (26-desktown glMat): give those bases a library twin first so holes/flaps match the walls
+function artTearBases() {
+  if (!window.PaperMat || !DESKTOWN_DATA) return;
+  DESKTOWN_DATA.gltf.scene.traverse(o => { if (!o.isMesh || !o.material || o.material.userData.tearBase) return; const n = o.material.name;
+    if (n === 'pm_kraft' || n === 'pm_paper') { const m = PaperMat.makeMaterial(n === 'pm_kraft' ? 'kraft' : 'paper', { tile: n === 'pm_kraft' ? 1.35 / 2 : 1.0 / 2, envMapIntensity: ART_LOOK.envMap }); m.userData.tile = 2; m.userData.paper = n === 'pm_kraft' ? 'kraft' : 'cream'; o.material.userData.tearBase = m; } });
+}
+function artMapPass() {
+  const DD = DESKTOWN_DATA; if (!DD) return; const root = DD.gltf.scene, L = ART_LOOK;
+  if (window.PaperMat) {
+    const swap = {};
+    root.traverse(o => {
+      if (!o.isMesh || !o.material || !o.visible) return; const n = o.material.name; let m = swap[n];
+      if (!m) {
+        if (n === 'pm_kraft') m = artLibMat('kraft', { tile: 1.35 / 2 });          // GLB UV0 = metres / 2 m (assets/paper/map/README.md)
+        else if (n === 'pm_paper') m = artLibMat('paper', { tile: 1.0 / 2, color: L.paperTint });
+        else if (n === 'pm_edge') m = artLibMat('flute', {});                       // edge U = metres / 1.44 m = 8 flutes x 0.18 m board
+        else if (n === 'pm_mat') { artCuttingMat(o.material); return; }
+        else return;                                                                // pm_print (banners, awnings, notes, clock) keeps its atlas
+        swap[n] = m; ART.mats[n] = m;
+      }
+      o.material = m;
+    });
+  }
+  // light: warm low sun, warm desk bounce from below, blue sky from above (the lightmap already holds sky + AO + sun bounce)
+  if (typeof sun !== 'undefined' && sun) { sun.intensity = L.sun; sun.color.setHex(L.sunHex); ART_U.sun.value.copy(sun.position).normalize(); }
+  scene.traverse(l => { if (l.isHemisphereLight) { l.color.setHex(L.hemiSky); l.groundColor.setHex(L.hemiGround); l.intensity = L.hemi; } });
+  if (typeof grade !== 'undefined') grade.uniforms.uExposure.value = L.exposure;
+  if (scene.fog) { scene.fog.color.setRGB(...L.fog.col); scene.fog.density = L.fog.density; }
+  // sky: deeper blue, puffy paper clouds (re-baked once here: the cube map + environment)
+  try { const def = MAPS.find(m => m.id === 'desktown'); if (def && typeof bakeSky === 'function') { const sk = Object.assign({}, def.sky || DESKTOWN_LOOK, L.sky); bakeSky(artSkyMaterial(sk), def.accents); } } catch (e) { console.warn('[art] sky', e); }
+}
+// paper-cut sky for the re-bake: the same gradient / sun as skyMaterial2 (20-maps.js) but the clouds are flat white cut-outs with a
+// soft grey underside and a crisp edge (ref1-3), not wisps. Baked once into the sky cube + environment map: zero per-frame cost.
+function artSkyMaterial(k) {
+  const V = a => new THREE.Vector3(...a), C = a => new THREE.Color(...a);
+  return new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false,
+    uniforms: { uZen: { value: C(k.zen) }, uMid: { value: C(k.mid) }, uHor: { value: C(k.hor) }, uLow: { value: C(k.low) }, uSun: { value: V(k.sunDir || [-.5, .2, -.8]).normalize() }, uSunCol: { value: C(k.sunCol || [1, .9, .7]) },
+      uSunSize: { value: k.sunSize || 600 }, uSunGlow: { value: k.sunGlow ?? .5 }, uCloud: { value: C(k.cloud || [1, 1, 1]) }, uCloudAmt: { value: k.cloudAmt || 0 } },
+    vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position,1.0); gl_Position = p.xyww; }',
+    fragmentShader: `
+      uniform vec3 uZen, uMid, uHor, uLow, uSun, uSunCol, uCloud; uniform float uSunSize, uSunGlow, uCloudAmt; varying vec3 vDir;
+      float h21(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+      float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y); }
+      float fb(vec2 p){ float s=0., a=.5; for(int i=0;i<5;i++){ s+=a*vn(p); p*=2.03; a*=.5; } return s; }
+      // cumulus cut-outs: blobs (low frequency) with puffy bumps (mid frequency); 1 inside a cloud
+      float cloud(vec2 p){ float big = fb(p*.55 + 3.1), puff = fb(p*2.2 + 9.7); return big*.75 + puff*.35; }
+      void main(){
+        vec3 d = normalize(vDir); float h = d.y;
+        vec3 col = mix(uHor, uMid, smoothstep(0.,.25,h)); col = mix(col, uZen, smoothstep(.2,.8,h)); col = mix(col, uLow, smoothstep(0.,-.15,h));
+        float s = max(dot(d,uSun),0.);
+        col += uSunCol*pow(s,8.)*uSunGlow + uSunCol*pow(s,uSunSize)*30.;
+        if (uCloudAmt > 0. && h > -.02) {
+          vec2 cp = d.xz/(h+.22)*1.1; float c = cloud(cp);
+          float edge = smoothstep(.50,.53,c);                                  // crisp paper edge
+          float under = smoothstep(.50,.62,cloud(cp + vec2(0.,.06)));          // the cloud above this point: this is its underside
+          vec3 cc = mix(uCloud, uCloud*vec3(.80,.84,.92), under*.8);           // soft grey-blue underside, bright sunlit top
+          cc = mix(cc, uCloud*vec3(1.,.97,.9), pow(s,2.)*.25);                 // warm toward the sun
+          float fade = smoothstep(-.02,.12,h);                                // thin out at the horizon
+          col = mix(col, cc, edge*fade*uCloudAmt);
+        }
+        gl_FragColor = vec4(col,1.);
+      }`
+  });
+}
+// the cutting mat texture: the MAP's teal (50,144,125) -> the refs' muted sage (118,142,128); grid lines stay. 1024 px is plenty for a 10 m tile.
+function artCuttingMat(mat) {
+  const t = mat.map, im = t && t.image; if (!im || !im.width || t.userData.artMat) return; t.userData.artMat = 1;
+  const S = 1024, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0, S, S);
+  const id = g.getImageData(0, 0, S, S), d = id.data, { desat, gain, lift } = ART_LOOK.mat;
+  for (let i = 0; i < d.length; i += 4) {
+    const r = d[i], gg = d[i + 1], b = d[i + 2], l = .3 * r + .59 * gg + .11 * b;
+    d[i] = Math.min(255, (l + (r - l) * (1 - desat)) * gain[0] + lift[0]); d[i + 1] = Math.min(255, (l + (gg - l) * (1 - desat)) * gain[1] + lift[1]); d[i + 2] = Math.min(255, (l + (b - l) * (1 - desat)) * gain[2] + lift[2]);
+  }
+  g.putImageData(id, 0, 0); t.image = c; t.needsUpdate = true; mat.roughness = .9; mat.envMapIntensity = ART_LOOK.envMap;
+}
+// --- characters: faceted paper shading on the body material (DESIGN.md "Character shading"): warm desk bounce from below, cool sky from
+// above, each fold plane its own brightness, a soft rim, crease-edge light. One shared program for every soldier (same hook + cache key).
+function ART_CHAR_HOOK(sh) {
+  sh.uniforms.artGround = ART_U.ground; sh.uniforms.artSky = ART_U.sky; sh.uniforms.artK = ART_U.k; sh.uniforms.artSun = ART_U.sun;
+  sh.fragmentShader = sh.fragmentShader
+    .replace('#include <common>', '#include <common>\nuniform vec3 artGround, artSky, artSun; uniform vec4 artK;')
+    .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>
+    { vec3 nW = inverseTransformDirection(normal, viewMatrix);
+      float fh = fract(sin(dot(floor(nW * 4.0 + 0.5), vec3(12.9898, 78.233, 37.719))) * 43758.5453);   // one value per fold plane
+      float facet = 1.0 - artK.z * 0.5 + artK.z * fh;
+      vec3 hemi = mix(artGround, artSky, nW.y * 0.5 + 0.5) * artK.x;
+      reflectedLight.directDiffuse *= facet;
+      reflectedLight.indirectDiffuse += diffuseColor.rgb * hemi * facet;
+      vec3 vdir = normalize(vViewPosition); float ndv = saturate(dot(normalize(normal), vdir));
+      float rim = pow(1.0 - ndv, 3.0) * artK.y;                                            // thin paper edge catching the sky / sun
+      vec3 rimCol = mix(artSky, vec3(1.0, 0.92, 0.78), saturate(dot(nW, artSun) * 0.5 + 0.5));
+      reflectedLight.indirectDiffuse += diffuseColor.rgb * rimCol * rim * 2.0 + rimCol * rim * artK.w * 0.3; }`);
+}
+function artCharShade(r) {
+  if (!r || !r.model) return;
+  r.model.traverse(o => { if (!o.isMesh || !o.material) return; const m = o.material; if (m.userData.artChar || !m.isMeshStandardMaterial) return;
+    m.userData.artChar = 1; m.onBeforeCompile = ART_CHAR_HOOK; m.customProgramCacheKey = () => 'artChar1'; m.envMapIntensity = .15; m.needsUpdate = true; });
+  // the contact blob under the feet: stretched away from the sun (soft paper shadow on the desk)
+  try { const s = ART_U.sun.value; for (const c of r.root.children) if (c.isMesh && c.geometry === HB.blob) { c.scale.set(1.45, 1.05, 1); c.rotation.z = Math.atan2(-s.z, -s.x); c.position.set(-s.x * .22, .03, -s.z * .22); c.material = c.material.userData.art ? c.material : Object.assign(c.material.clone(), { opacity: .5, color: new THREE.Color(.12, .08, .05), userData: { art: 1 } }); } } catch (e) {}
+}
+if (typeof buildBot === 'function') { const _bb = buildBot; buildBot = function () { const r = _bb.apply(this, arguments); try { artCharShade(r); } catch (e) { console.warn('[art] char', e); } return r; }; }
+// --- first-person gun / hands: the gun scene's key light follows the map sun (camera space) with the same warm colour; blue sky / warm desk hemisphere
+const ART_GUN = { done: false, key: null, rim: null, fill: null, hemi: null, q: new THREE.Quaternion(), v: new THREE.Vector3() };
+function artGunLights() {
+  if (ART_GUN.done || typeof gunScene === 'undefined') return; ART_GUN.done = true; const G = ART_LOOK.gun;
+  for (const l of gunScene.children) {
+    if (l.isHemisphereLight) { ART_GUN.hemi = l; l.color.setHex(G.hemiSky); l.groundColor.setHex(G.hemiGround); l.intensity = G.hemiI; }
+    else if (l.isDirectionalLight) { if (l.intensity >= 1.4) { ART_GUN.key = l; l.color.setHex(G.key); l.intensity = G.keyI; } else if (l.intensity >= .8) { ART_GUN.rim = l; l.color.setHex(G.rimHex); l.intensity = G.rimI; } else { ART_GUN.fill = l; l.color.setHex(0xffe2c4); l.intensity = G.fillI; } }
+  }
+}
+function artFrame() {
+  if (!ART_GUN.done) artGunLights();
+  const k = ART_GUN.key; if (k && typeof camera !== 'undefined') { ART_GUN.q.copy(camera.quaternion).invert(); ART_GUN.v.copy(ART_U.sun.value).applyQuaternion(ART_GUN.q); if (ART_GUN.v.y < .15) ART_GUN.v.y = .15; k.position.copy(ART_GUN.v).multiplyScalar(3); if (ART_GUN.rim) ART_GUN.rim.position.set(-ART_GUN.v.x * 2.5, 1.2, -1.5); }
+}
+if (typeof frame === 'function') { const _fr = frame; frame = function () { try { artFrame(); } catch (e) {} return _fr.apply(this, arguments); }; }
 /* ================= living weapons ================= */
 // glowing coils that heat up while firing, energy cells, and a live ammo display on the receiver
 const GUNFX = {};
@@ -2068,7 +2230,7 @@ const crate = (x, z, s, mat, y = 0) => addBox(x, y, z, s, s, s, mat, { surface: 
 // Paper FPS: one map for v1, "Desk Town" (src/game/26-desktown.js). The 11 Sector Nine arenas were removed in the fork
 // (they live on in C:\Projects\sector-nine). A map def = {id,name,tag,tex,station,size,spawns,build}.
 const MAPS = [
-  { id: 'desktown', exposure: .82, name: 'Desk Town', tag: 'A cardboard toy town on a giant desk · 3 lanes · 4v4', tex: [], size: 84, station: [0, 0, -31], ...desktownDef(), build: () => desktownBuild() },
+  { id: 'desktown', exposure: .62, name: 'Desk Town', tag: 'A cardboard toy town on a giant desk · 3 lanes · 4v4', tex: [], size: 84, station: [0, 0, -31], ...desktownDef(), build: () => desktownBuild() },
 ];
 // rebuilt maps (render/maps/<id>.js, inlined by render/mapdev.py) replace the old entries of the same id
 const MAP_DEFS = {};
@@ -2090,14 +2252,15 @@ async function loadMap(id) {
   const ov = $('mapload'); ov.querySelector('b').textContent = def.name; ov.querySelector('span').textContent = def.tag; ov.hidden = false;
   await loadMapTex(def.tex);
   await new Promise(r => setTimeout(r, 30));
+  if (def.preload) { try { await def.preload(def); } catch (e) { console.warn('map preload', e); } }   // (Desk Town: the MAP agent's glTF + data)
   clearMap(); CUR_MAP = def.id; HALF = (def.size || 64) / 2; CAMPS = (def.camps || []).map(([x, y, z, yaw]) => ({ x, y, z, yaw, by: null }));
   MAPFX = { pads: [], tele: [], hazards: [], zones: [], lasers: [], spin: [], weather: null, update: null };
   if (def.kit && !(await Promise.all((Array.isArray(def.kit) ? def.kit : ['mapkit']).map(f => loadMapKit(f)))).every(Boolean)) { ov.querySelector('span').textContent = 'Could not load the map parts. Refresh to try again.'; return; }
   grade.uniforms.uExposure.value = def.exposure || .9;   // per-map brightness (sunny maps sit a bit lower)
-  intoMap(() => { def.build(); buildStation(...def.station); buildWallbangSpots(def.id); });
+  intoMap(() => { def.build(); if (def.station) buildStation(...def.station); buildWallbangSpots(def.id); });
   buildNav();
   for (const hz of MAPFX.hazards) for (let j = 0; j < NAV.N; j++) for (let i = 0; i < NAV.N; i++) { const c = j * NAV.N + i, x = cellX(c), z = cellZ(c); if (x > hz.x0 - .4 && x < hz.x1 + .4 && z > hz.z0 - .4 && z < hz.z1 + .4 && NAV.h[c] < .2) NAV.ok[c] = 0; }
-  genSpawns(); intoMap(() => buildPads()); mergeStatic();
+  genSpawns(); if (!def.noPads) intoMap(() => buildPads()); mergeStatic();   // (Desk Town: no glowing Sector Nine heal pads)
   if (DUST) DUST.visible = false;
   renderer.shadowMap.needsUpdate = true; targetsDirty = true;
   try { renderer.compile(scene, camera); } catch (e) {}
@@ -2126,21 +2289,110 @@ function desktownDef() {
   const sp = [];
   for (const s of [-1, 1]) for (const [x, z] of [[-6, 36], [-2, 37], [2, 37], [6, 36], [-9, 33], [9, 33], [0, 34]]) sp.push([x, s * z]);
   return {
+    preload: desktownPreload, noPads: true,
     spawns: sp,
     camps: [[-20, 4.5, -10, Math.PI], [-25, 4.5, -10, Math.PI], [-20, 4.5, 10, 0], [-25, 4.5, 10, 0], [17, 0, -14, Math.PI], [17, 0, 14, 0]],
   };
 }
-let DESKTOWN_DATA = null;   // data/paper/map_desktown.json (MAP agent) when it exists
+// look numbers (sun direction = towards the sun, game axes). From look.json: travel (0.3766, 0.8075, -0.454) blender -> game (0.377, -0.454, -0.808)
+const DESKTOWN_LOOK = { sunDir: [-.377, .454, .808], sunCol: [1, .8, .58], sunHex: 0xffdcb4, sun: 2.3, zen: [.08, .3, .9], mid: [.3, .52, .92], hor: [.62, .76, .95], low: [.32, .34, .3],
+  fog: [.78, .84, .93], fogD: .0042, hemiSky: 0x8fb0ec, hemiGround: 0x5d5844, hemi: .38, lmScale: 1.1, lmK: 1 / Math.PI, hemiLM: .2 };   // (lmK: three r147 legacy lights multiply a lightmap by PI)
+let DESKTOWN_DATA = null;   // { D: data/paper/map_desktown.json, gltf } from the MAP agent, when both exist
+// loads the MAP agent's Desk Town (assets/paper/map/desktown.glb + data/paper/map_desktown.json) before the build; falls back to the
+// grey-box layout below when they are missing or broken. Also sets the map size, spawns, camps and the team spawn layout.
+async function desktownPreload(def) {
+  if (window.__paperGreybox) { DESKTOWN_DATA = null; return; }
+  const v = '?v=' + Date.now();
+  const D = await fetch('data/paper/map_desktown.json' + v, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (!D || !Array.isArray(D.colliders)) { DESKTOWN_DATA = null; return; }
+  const gltf = await new THREE.GLTFLoader().loadAsync('assets/paper/map/desktown.glb' + v).catch(e => { console.warn('desktown.glb', e); return null; });
+  if (!gltf) { DESKTOWN_DATA = null; return; }
+  // baked light (MAP agent, render/paper/map/bake_meta.json): sky + lamps + sun bounce, used together with the live sun
+  const hi = !window.S9GFX || /high|ultra/.test(S9GFX.tier || 'high');
+  const meta = await fetch('render/paper/map/bake_meta.json' + v).then(r => r.ok ? r.json() : null).catch(() => null);
+  const lm = await new Promise(res => new THREE.TextureLoader().load('assets/paper/map/' + (hi ? 'lm.png' : 'lm_2k.png') + v, t => res(t), undefined, () => res(null)));
+  if (lm) { lm.flipY = false; lm.encoding = THREE.LinearEncoding; lm.generateMipmaps = true; lm.anisotropy = 4; }
+  DESKTOWN_DATA = { D, gltf, lm: lm && lm.image && lm.image.width >= 512 ? lm : null, lmScale: (meta && meta.lm && meta.lm.scale) || DESKTOWN_LOOK.lmScale };
+  const b = D.bounds || [-48, 0, -28, 48, 30, 34]; def.size = Math.ceil(2 * Math.max(Math.abs(b[0]), Math.abs(b[2]), Math.abs(b[3]), Math.abs(b[5])) + 2);
+  const sp = D.spawns || {}, pts = t => (sp[t] || []).map(s => [s.p[0], s.p[2]]);
+  def.spawns = [...pts('blue'), ...pts('red')];
+  def.camps = ((D.nav && D.nav.camps) || []).map(c => [c.p[0], c.p[1], c.p[2], c.yaw || 0]);
+  def.station = null;
+  try { const LS = window.MODE && MODE.layouts && MODE.layouts(); if (LS) LS.desktown = Object.assign({}, LS.desktown || {}, { atk: pts('blue'), def: pts('red') }); } catch (e) {}
+}
+// WALLBANG thickness class of a collider (data/penetration.json): thin card (<= 16 cm) = every gun goes through; double card
+// (<= 45 cm) = sniper only; crates = hollow (two skins); wood (ruler, trusses) = wood; pencils / clips / metal / floors / thick = block
+function wallClass(c) {
+  const n = String(c[7] || '').toLowerCase(), kind = c[6], t = Math.min(c[3] - c[0], c[4] - c[1], c[5] - c[2]);
+  if (kind === 'floor' || /pencil|clip|scissor|metal|cup|ground|mat\b/.test(n)) return null;
+  if (/crate|box/.test(n)) return 'crate';
+  if (/ruler|truss|wood|bridge/.test(n)) return t <= .5 ? 'wood' : null;
+  if (t <= .2) return 'card'; if (t <= .45) return 'card2'; return null;
+}
+// the delivered map: visual glTF (5 merged meshes) + invisible box proxies for bullets / sight / marks + colliders + tearable panels
+function desktownFromData(PM) {
+  const { D, gltf } = DESKTOWN_DATA, root = gltf.scene;
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    let p = o, tear = false; while (p) { if (/^T_/.test(p.name)) { tear = true; break; } p = p.parent; }
+    if (tear) { o.visible = false; return; }
+    o.castShadow = o.receiveShadow = true; o.userData.noProbe = true;
+    if (o.material && DESKTOWN_DATA.lm && o.geometry.attributes.uv2) desktownLM(o.material);
+    const m = o.material; if (m && window.S9GFX && S9GFX.tier === 'performance' && window.PAPER_UI && PAPER_UI.shrink) for (const k of ['map', 'normalMap', 'lightMap', 'roughnessMap']) if (m[k]) PAPER_UI.shrink(m[k], 1024);
+    if (m) { m.envMapIntensity = .35; if (m.map) m.map.anisotropy = 16; if (m.normalMap) m.normalMap.anisotropy = 8; if (!m.onBeforeCompile || m.onBeforeCompile === THREE.Material.prototype.onBeforeCompile) { m.onBeforeCompile = PAPER_EDGE_HOOK; m.customProgramCacheKey = () => 'paperEdgeGl' + (m.vertexColors ? 'v' : '') + (m.lightMap ? 'l' : ''); } }
+  });
+  scene.add(root); root.updateMatrixWorld(true);
+  // proxies: one invisible box per collider (raycasts: bullets, sight lines, planes, shot marks); the note says which mark it takes
+  const pmat = {}, proxyMat = note => { const n = String(note || '').toLowerCase(), k = /ruler|truss|bridge|stair|wood|tree|crate|box/.test(n) ? (/crate|box/.test(n) ? 'kraft' : 'wood') : /clip|scissor|tape/.test(n) ? 'black' : /cutting mat|floor/.test(n) ? 'mat' : /paper|note|awning|window|kiosk/.test(n) ? 'cream' : 'kraft';
+    return pmat[k] || (pmat[k] = Object.assign(new THREE.MeshBasicMaterial({ visible: false }), { userData: { paper: k } })); };
+  const box = new THREE.BoxGeometry(1, 1, 1); box.userData = {};
+  for (const c of D.colliders) {
+    const kind = c[6]; if (kind === 'tear') continue;
+    const bx = new THREE.Box3(new THREE.Vector3(c[0], c[1], c[2]), new THREE.Vector3(c[3], c[4], c[5])); if (kind === 'walk' || kind === 'floor') bx.walk = true;
+    world.colliders.push(bx);
+    const m = new THREE.Mesh(box, proxyMat(c[7] + ' ' + kind)); m.scale.set(Math.max(.01, c[3] - c[0]), Math.max(.01, c[4] - c[1]), Math.max(.01, c[5] - c[2])); m.position.set((c[0] + c[3]) / 2, (c[1] + c[4]) / 2, (c[2] + c[5]) / 2);
+    m.visible = false; m.userData.surface = /wood|ruler|crate/.test(String(c[7])) ? 'wood' : 'paper'; m.userData.keepGeo = true;
+    { const pen = wallClass(c); if (pen) { bx.pen = pen; m.userData.penBoxes = [bx]; m.userData.wall = pen; } }   // WALLBANG class (docs/MECHANICS.md)
+    m.updateMatrixWorld(); scene.add(m); world.meshes.push(m);
+  }
+  const gm = {}; root.traverse(o => { if (o.isMesh && o.material && o.material.name && !gm[o.material.name]) gm[o.material.name] = o.material; });
+  const TB = new Map(), glMat = name => { const b = gm[name]; if (!b) return null; if (TB.has(b)) return TB.get(b); const c = b.clone(); c.vertexColors = false; c.lightMap = null; c.onBeforeCompile = THREE.Material.prototype.onBeforeCompile; c.userData = { tile: 2, paper: /paper/.test(name) ? 'cream' : 'kraft' }; c.color.multiplyScalar(.92); TB.set(b, c); return c; };   // (a Map, never userData: Material.clone JSON-copies userData)
+  // tearable panels (the MAP agent's list): crease line -> the flap on the lower / left side of it, hinged on the panel edge
+  for (const t of D.tearable || []) {
+    const n = t.normal || [0, 0, 1], w = t.w, h = t.h, cr = (t.creases || [])[0];
+    let flap = null;
+    if (cr) { const horiz = Math.abs(cr[3] - cr[1]) < Math.abs(cr[2] - cr[0]);
+      if (horiz) { const v = clamp((cr[1] + cr[3]) / 2, .2, .9) * h; flap = { u0: w * .06, u1: w * .94, v0: Math.min(h * .06, v - .3), v1: v, hinge: 'bottom' }; }
+      else { const u = clamp((cr[0] + cr[2]) / 2, .2, .9) * w; flap = { u0: w * .06, u1: u, v0: h * .06, v1: h * .94, hinge: 'left' }; } }
+    TEAR.add({ x: t.centre[0], y: t.centre[1] - h / 2, z: t.centre[2], w, h, t: Math.min(.08, t.t || .06), rot: Math.atan2(n[0], n[2]), mat: glMat(/paper/.test(t.mat || '') ? 'pm_paper' : 'pm_kraft') || PM(/paper/.test(t.mat || '') ? 'cream' : 'kraft'), flap });
+  }
+  if (typeof PAPER !== 'undefined' && PAPER.onMapBuilt) try { PAPER.onMapBuilt(root); } catch (e) { console.warn('onMapBuilt', e); }   // look hook (ART director)
+}
+// baked lightmap on a map material: texel^2 x scale = linear light (bake_meta.json), on uv2 (TEXCOORD_1)
+function desktownLM(m) {
+  if (m.userData.lm) return; m.userData.lm = 1; m.userData.s9g = 1; m.userData.gm = 999;   // (graphics add-ons must not replace this hook)
+  m.lightMap = DESKTOWN_DATA.lm; m.lightMapIntensity = DESKTOWN_DATA.lmScale * DESKTOWN_LOOK.lmK;
+  m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('#include <lights_fragment_maps>', THREE.ShaderChunk.lights_fragment_maps.replace('vec4 lightMapTexel = texture2D( lightMap, vUv2 );', 'vec4 lightMapTexel = texture2D( lightMap, vUv2 ); lightMapTexel.rgb *= lightMapTexel.rgb;')); PAPER_EDGE_HOOK(sh); };
+  m.customProgramCacheKey = () => 'deskLM1' + (m.vertexColors ? 'v' : '');
+  m.needsUpdate = true;
+}
 function desktownBuild() {
   const PM = PAPER.mat;
-  const sky = { zen: [.16, .38, .82], mid: [.42, .66, .95], hor: [.86, .9, .94], low: [.55, .48, .4], sunDir: [-.55, .42, -.72], sunCol: [1, .86, .62], sunSize: 700, sunGlow: .55, cloud: [1, .98, .95], cloudAmt: .75 };
-  themed({ sky, fog: [.8, .86, .94, .0065], hemi: [0xcfe2ff, 0xc9a27a, .85], sunLight: [0xffe0b0, 2.3], accents: [[[1.4, 1.2, .9], 0, 10, 30]], build() {
+  // light = the MAP agent's look (render/paper/map/look.json, mirrored in data/paper_look.json): sun from the south-west at 27 deg,
+  // warm; deep blue sky; low cool fill so the shade side of every fold reads; light haze far away only
+  const L = DESKTOWN_LOOK, sky = { zen: L.zen, mid: L.mid, hor: L.hor, low: L.low, sunDir: L.sunDir, sunCol: L.sunCol, sunSize: 900, sunGlow: .45, cloud: [1, .99, .96], cloudAmt: .6 };
+  themed({ sky, fog: [...L.fog, L.fogD], hemi: [L.hemiSky, L.hemiGround, DESKTOWN_DATA && DESKTOWN_DATA.lm ? L.hemiLM : L.hemi], sunLight: [L.sunHex, L.sun], accents: [[[1.4, 1.2, .9], 0, 10, 30]], build() {
     MAT.step = PM('kraft');
+    if (DESKTOWN_DATA) { desktownFromData(PM); return; }
     mFloor(PM('mat'), 0x8a6440);
     desktownLayout(PM);
     desktownBackdrop(PM);
   } })();
-  if (sun) { sun.shadow.mapSize.set(2048, 2048); sun.shadow.radius = 3; }
+  if (sun) {   // shadow frustum fitted to the play area (sharper texels), 4096 on High+
+    const big = !window.S9GFX || !S9GFX.tier || /high|ultra/.test(S9GFX.tier); sun.shadow.mapSize.set(big ? 4096 : 2048, big ? 4096 : 2048); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
+    sun.position.copy(new THREE.Vector3(...L.sunDir).normalize()).multiplyScalar(90);
+    Object.assign(sun.shadow.camera, { left: -62, right: 62, top: 62, bottom: -62, near: 10, far: 220 }); sun.shadow.camera.updateProjectionMatrix(); sun.shadow.bias = -.0003; sun.shadow.normalBias = .04;
+  }
 }
 function desktownLayout(PM) {
   const kraft = PM('kraft'), cream = PM('cream'), white = PM('white'), wood = PM('wood'), corr = PM('corr'), black = PM('black', { rough: .5 }), stripes = PM('stripes'), win = PM('window'), note = PM('note');
@@ -2513,7 +2765,7 @@ const PAPER_MARKS = (() => {
     const t = new THREE.CanvasTexture(atlas()); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8;
     const m = new THREE.MeshStandardMaterial({ map: t, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, roughness: .92, metalness: 0, envMapIntensity: .3 });
     m.onBeforeCompile = sh => { sh.vertexShader = 'attribute vec2 aCell;\n' + sh.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n  vUv = vUv * vec2(.25, .5) + aCell;'); };
-    m.customProgramCacheKey = () => 'paperMarks1';
+    m.customProgramCacheKey = () => 'paperMarks1'; m.userData.s9g = 1; m.userData.gm = 999;   // keep the graphics add-ons off this shader (atlas cells)
     im = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), m, R.max); im.frustumCulled = false; im.renderOrder = 1; im.receiveShadow = true; im.userData.noProbe = true;
     cellAttr = new THREE.InstancedBufferAttribute(new Float32Array(R.max * 2), 2); im.geometry.setAttribute('aCell', cellAttr);
     o.position.set(0, -50, 0); o.scale.setScalar(0); o.updateMatrix(); for (let i = 0; i < R.max; i++) im.setMatrixAt(i, o.matrix);
@@ -3046,6 +3298,342 @@ function buildSniper() {
   GUNFX.sniper = addGunAccents(g, 'sniper');
   return { group: g, mag, magPos: new THREE.Vector3(), leftArm: left, rear, flash, reticle: new THREE.Group() };
 }
+
+/* ================= PVM: the paper guns + origami hands in first person (WEAPONS agent, 2026-11-11) ================= */
+// Data: data/paper/viewmodel.json (placement, hands, plane hold), data/paper/guns.json (GUNS agent: GLBs, hip, attach points, clips),
+// assets/paper/hands (CHARS agent's rig + poses). Each paper weapon gets its own viewmodel entry in WM (scale 1, so the engine's
+// hip -> ADS lerp lands the gun's `sight` EXACTLY on the camera axis: adsPos = (0, 0, -eye) - sight). The engine still drives sway,
+// bob, kick, reload dip and the draw dip on that group; PVM.update adds the GLB clips for the moving parts (mag, pump, bolt, plane
+// wings / throw) and the hands are children of the grip empties, so they stay on the grip through every clip.
+// The rig is posed once per grip pose and baked into a static mesh (no skinning cost); 1 material for all hands.
+const PVM = (() => {
+  const T = THREE, D2R = Math.PI / 180;
+  const S = { ready: false, err: null, data: null, guns: null, vm: {}, icons: {}, hand: { mat: null, geo: new Map(), rig: null, poses: null }, stats: { bakes: 0, loadMs: 0 } };
+  const getJSON = u => fetch(u, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  /* ---- hands: bake a posed rig into palm space (wrist at the origin, fingers -Z, palm -Y, thumb -X for the right hand) ---- */
+  function parseRig(gltf) {
+    const meshes = []; gltf.scene.traverse(o => { if (o.isSkinnedMesh) meshes.push(o); });
+    const mesh = meshes[0], skel = mesh.skeleton, by = {}; skel.bones.forEach(b => { by[b.name] = b; });
+    gltf.scene.updateMatrixWorld(true);
+    return { scene: gltf.scene, meshes, skel, bones: skel.bones, by, rest: skel.bones.map(b => b.quaternion.clone()), handRest: by.hand.matrixWorld.clone(), map: mesh.material && mesh.material.map };
+  }
+  function poseBones(name) { const P = S.hand.poses.poses[name]; if (!P) throw new Error('hand pose ' + name); return Object.assign({}, P.from ? poseBones(P.from) : {}, P.bones || {}); }
+  function setPose(bp) {
+    const R = S.hand.rig, q = new T.Quaternion(), e = new T.Euler();
+    R.bones.forEach((b, i) => b.quaternion.copy(R.rest[i]));
+    for (const n in bp || {}) { const b = R.by[n], v = bp[n]; if (!b || !v) continue; e.set(v[0] * D2R, v[1] * D2R, v[2] * D2R, 'XYZ'); b.quaternion.multiply(q.setFromEuler(e)); }
+    R.scene.updateMatrixWorld(true);
+  }
+  const comp = (a, i, k) => k === 0 ? a.getX(i) : k === 1 ? a.getY(i) : k === 2 ? a.getZ(i) : a.getW(i);
+  function handGeo(pose, side, extra) {
+    const key = pose + '|' + side + '|' + (extra ? JSON.stringify(extra) : ''); let g = S.hand.geo.get(key); if (g) return g;
+    const R = S.hand.rig; setPose(Object.assign(poseBones(pose), extra || {}));
+    const palm = new T.Matrix4().multiplyMatrices(R.handRest, new T.Matrix4().copy(R.by.hand.matrixWorld).invert()), pal3 = new T.Matrix3().setFromMatrix4(palm);
+    const skinM = R.bones.map((b, i) => new T.Matrix4().multiplyMatrices(b.matrixWorld, R.skel.boneInverses[i]));
+    let nv = 0, ni = 0; for (const m of R.meshes) { nv += m.geometry.attributes.position.count; ni += m.geometry.index.count; }
+    const pos = new Float32Array(nv * 3), nor = new Float32Array(nv * 3), uv = new Float32Array(nv * 2), idx = new Uint16Array(ni);
+    const v = new T.Vector3(), n = new T.Vector3(), acc = new T.Matrix4(), tmp = new T.Matrix4(), n3 = new T.Matrix3(), mir = side === 'L';
+    let ov = 0, oi = 0;
+    for (const m of R.meshes) {
+      const G = m.geometry, Pa = G.attributes.position, N = G.attributes.normal, U = G.attributes.uv, SI = G.attributes.skinIndex, SW = G.attributes.skinWeight, I = G.index.array;
+      for (let i = 0; i < Pa.count; i++) {
+        acc.elements.fill(0);
+        for (let k = 0; k < 4; k++) { const w = comp(SW, i, k); if (!w) continue; tmp.multiplyMatrices(skinM[comp(SI, i, k)], m.bindMatrix); for (let e = 0; e < 16; e++) acc.elements[e] += tmp.elements[e] * w; }
+        v.fromBufferAttribute(Pa, i).applyMatrix4(acc).applyMatrix4(palm);
+        n.fromBufferAttribute(N, i).applyMatrix3(n3.setFromMatrix4(acc)).applyMatrix3(pal3).normalize();
+        const o = (ov + i) * 3; pos[o] = mir ? -v.x : v.x; pos[o + 1] = v.y; pos[o + 2] = v.z; nor[o] = mir ? -n.x : n.x; nor[o + 1] = n.y; nor[o + 2] = n.z;
+        if (U) { uv[(ov + i) * 2] = U.getX(i); uv[(ov + i) * 2 + 1] = U.getY(i); }
+      }
+      for (let k = 0; k < I.length; k += 3) { idx[oi + k] = I[k] + ov; idx[oi + k + 1] = I[mir ? k + 2 : k + 1] + ov; idx[oi + k + 2] = I[mir ? k + 1 : k + 2] + ov; }
+      ov += Pa.count; oi += I.length;
+    }
+    g = new T.BufferGeometry(); g.setAttribute('position', new T.BufferAttribute(pos, 3)); g.setAttribute('normal', new T.BufferAttribute(nor, 3)); g.setAttribute('uv', new T.BufferAttribute(uv, 2)); g.setIndex(new T.BufferAttribute(idx, 1));
+    g.computeBoundingSphere(); setPose(null); S.hand.geo.set(key, g); S.stats.bakes++; return g;
+  }
+  // palm space -> grip frame. Right hand on grip_r (+Y up the grip, -Z forward): palm faces the grip (gun -X), fingers wrap forward,
+  // pinky-to-index runs up the grip. Left hand on grip_l: palm up under the fore-end, fingers toward the far side and forward (yaw).
+  const BASIS = {
+    R: () => new T.Matrix4().makeBasis(new T.Vector3(0, -1, 0), new T.Vector3(1, 0, 0), new T.Vector3(0, 0, 1)),
+    L: yaw => new T.Matrix4().makeRotationY((yaw || 0) * D2R).multiply(new T.Matrix4().makeBasis(new T.Vector3(0, 0, -1), new T.Vector3(0, -1, 0), new T.Vector3(-1, 0, 0))),
+    // ref3: the hand comes up from below, fingers up, the pinch (thumb + index) on the plane's tail
+    pinch: () => new T.Matrix4().makeBasis(new T.Vector3(0, 0, 1), new T.Vector3(-1, 0, 0), new T.Vector3(0, -1, 0)),
+  };
+  function placeHand(mesh, side, c) {
+    const sock = new T.Vector3(...((S.hand.poses.grip_sockets || {})[c.pose] || [0, -.03, -.07])); if (side === 'L') sock.x = -sock.x;
+    const M = c.basis === 'pinch' ? BASIS.pinch() : side === 'L' ? BASIS.L(c.yaw) : BASIS.R();
+    const r = c.rot || [0, 0, 0]; M.premultiply(new T.Matrix4().makeRotationFromEuler(new T.Euler(r[0] * D2R, r[1] * D2R, r[2] * D2R, 'XYZ')));
+    mesh.quaternion.setFromRotationMatrix(M);
+    mesh.position.copy(sock.applyMatrix4(new T.Matrix4().extractRotation(M))).negate().add(new T.Vector3(...(c.off || [0, 0, 0])));
+    mesh.userData.cfg = c; mesh.userData.side = side;
+  }
+  function addHands(gid, root) {
+    const H = (S.data.hands || {})[gid] || {}, out = {};
+    for (const side of ['R', 'L']) {
+      const c = H[side]; if (!c) continue; const grip = root.getObjectByName(side === 'R' ? 'grip_r' : 'grip_l'); if (!grip) continue;
+      const m = new T.Mesh(handGeo(c.pose, side, c.bones), S.hand.mat); m.name = 'paperHand_' + side; m.frustumCulled = false; m.castShadow = m.receiveShadow = false; m.userData.noProbe = true;
+      placeHand(m, side, c); grip.add(m); out[side] = m;
+    }
+    return out;
+  }
+  /* ---- one paper viewmodel ---- */
+  let flashMat = null;
+  function makeFlash() {
+    const g = new T.Group(); g.visible = false;
+    if (!flashMat) { const tx = new T.TextureLoader().load('assets/paper/guns/fx/muzzle_puff_4x4.png'); tx.encoding = T.sRGBEncoding; tx.repeat.set(.25, .25); tx.offset.set(.25, .5);
+      flashMat = new T.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false, side: T.DoubleSide, color: new T.Color(1.6, 1.45, 1.25), toneMapped: false }); }
+    const a = new T.Mesh(new T.PlaneGeometry(.16, .16), flashMat); a.position.z = -.03; g.add(a);
+    const b = new T.Mesh(new T.PlaneGeometry(.1, .22), flashMat); b.rotation.set(0, Math.PI / 2, Math.PI / 2); b.position.z = -.08; g.add(b);
+    const c = b.clone(); c.rotation.set(0, Math.PI / 2, 0); g.add(c);
+    g.traverse(o => { o.frustumCulled = false; o.renderOrder = 3; }); return g;
+  }
+  function build(eid, gid, gltf) {
+    const art = gid === 'plane' ? S.guns.plane.art : S.guns.guns[gid].art, root = gltf.scene;
+    root.traverse(o => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = false; o.frustumCulled = false; o.userData.noProbe = true; if (o.material) o.material.envMapIntensity = .5; } });
+    const holder = new T.Group(), pose = new T.Group(); holder.add(pose); pose.add(root); holder.name = 'pvm_' + gid; holder.visible = false;
+    const sightN = root.getObjectByName('sight'), muzzleN = root.getObjectByName('muzzle');
+    const sight = sightN ? sightN.position.clone() : new T.Vector3(0, .15, 0);
+    const flash = makeFlash(); if (muzzleN && gid !== 'plane') muzzleN.add(flash); else pose.add(flash);
+    // clips: the engine moves the whole gun (sway, kick, reload dip, ADS); clips move only the parts, except the throw / bolt / inspect
+    const mixer = new T.AnimationMixer(root), act = {};
+    for (const c of gltf.animations || []) {
+      const keepVm = c.name === 'throw' || c.name === 'bolt' || c.name === 'inspect';
+      const clip = keepVm ? c : new T.AnimationClip(c.name, c.duration, c.tracks.filter(t => !/^vm\./.test(t.name)));
+      const a = mixer.clipAction(clip); a.setLoop(T.LoopOnce, 1); a.clampWhenFinished = c.name === 'throw'; act[c.name] = a;
+    }
+    let hands = {}; try { if (S.hand.rig) hands = addHands(gid, root); } catch (e) { console.warn('paper hands on', gid, e); }
+    const vm = { group: holder, mag: new T.Group(), magPos: new T.Vector3(), leftArm: new T.Group(), rear: new T.Group(), flash, reticle: new T.Group(), hip: new T.Vector3(), adsPos: new T.Vector3(),
+      paper: root, pose, gid, eid, art, mixer, act, hands, hipRot: [0, 0, 0], sight, eye: .2, sc: 1, planeNode: root.getObjectByName('plane'), seq: null };
+    apply(vm); gunScene.add(holder); return vm;
+  }
+  // placement from the data (also re-run live by the tuning tools): scale, hip spot, ADS eye distance, hip cant, hands
+  function apply(vm) {
+    const d = S.data, gid = vm.gid, art = vm.art;
+    vm.sc = (d.scale || {})[gid] ?? 1; vm.pose.scale.setScalar(vm.sc);
+    vm.hip.set(...(((d.hip || {})[gid]) || art.hip));
+    vm.eye = (d.eye || {})[gid] ?? art.eye ?? .2;
+    vm.adsPos.set(0, 0, -vm.eye).addScaledVector(vm.sight, -vm.sc);   // full ADS: the sight sits on the camera axis, eye m ahead
+    vm.hipRot = ((d.hipRot || {})[gid] || [0, 0, 0]).map(x => x * D2R);
+    if (gid === 'plane') { const h = (d.plane && d.plane.hold) || [0, 0, 0]; vm.paper.rotation.set(h[0] * D2R, h[1] * D2R, h[2] * D2R); }
+    const H = (d.hands || {})[gid] || {};
+    for (const side in vm.hands) { const m = vm.hands[side], c = H[side]; if (!c) continue; m.geometry = handGeo(c.pose, side, c.bones); placeHand(m, side, c); }
+  }
+  function applyAll() { for (const id in S.vm) apply(S.vm[id]); }
+  /* ---- load everything, swap the engine viewmodels ---- */
+  async function load() {
+    if (S.loading) return S.loading;
+    return S.loading = (async () => {
+      const t0 = performance.now();
+      try {
+        const [vmd, guns, poses, pw] = await Promise.all([getJSON('data/paper/viewmodel.json'), getJSON('data/paper/guns.json'), getJSON('assets/paper/hands/paper_hands_poses.json'), getJSON('data/paper_weapons.json')]);
+        if (!vmd || !guns) throw new Error('viewmodel data missing'); S.data = vmd; S.guns = guns;
+        if (pw && pw.plane && typeof PLANES !== 'undefined') PLANES.config(pw.plane);
+        const L = new T.GLTFLoader();
+        if (poses) { try { const hg = await L.loadAsync('assets/paper/hands/paper_hand.glb'); S.hand.poses = poses; S.hand.rig = parseRig(hg);
+          S.hand.mat = new T.MeshStandardMaterial({ map: S.hand.rig.map || null, roughness: .9, metalness: 0, envMapIntensity: .35, side: T.DoubleSide }); S.hand.mat.name = 'paper_hands'; S.hand.mat.color.setScalar(vmd.handTint || 1); } catch (e) { console.warn('paper hands', e); S.hand.rig = null; } }
+        for (const [eid, gid] of Object.entries(vmd.map)) {
+          const art = gid === 'plane' ? guns.plane && guns.plane.art : guns.guns[gid] && guns.guns[gid].art; if (!art) continue;
+          if (art.hudIcon) S.icons[eid] = art.hudIcon;
+          try {
+            const gl = await L.loadAsync(art.glb); const vm = build(eid, gid, gl), old = WM[eid];
+            if (old && old.group) gunScene.remove(old.group);
+            WM[eid] = vm; S.vm[eid] = vm;
+          } catch (e) { console.warn('paper gun', gid, e); }
+        }
+        if (typeof P !== 'undefined' && P.weapon && WM[P.weapon]) setModel(P.weapon);
+        scopeCss();         warm(); S.ready = true;
+      } catch (e) { S.err = String(e && e.message || e); console.warn('PVM', e); }
+      S.stats.loadMs = Math.round(performance.now() - t0);
+      return S;
+    })();
+  }
+  // the sniper scope = a rolled-paper tube: smooth FOV zoom (the sniper's adsFov) + this CSS overlay on #scope (no second render):
+  // a round lens, the paper tube's rolled layers around it, a thin pencil crosshair with a small red dot
+  function scopeCss() {
+    if (document.getElementById('pvmScopeCss')) return; const st = document.createElement('style'); st.id = 'pvmScopeCss';
+    st.textContent = ['#scope{background:radial-gradient(circle at center,transparent 0 35vmin,rgba(40,26,12,.35) 36.4vmin,#8a6237 36.6vmin,#b48a58 37.4vmin,#6d4b29 38vmin,#a77f4f 38.7vmin,#5a3d21 39.4vmin,#94703f 40.1vmin,#3c2814 41vmin,#20150b 44vmin,#140d07 100vmax)!important;transition:opacity .08s}',
+      "#scope::before{content:'';position:absolute;left:50%;top:50%;width:72vmin;height:72vmin;transform:translate(-50%,-50%);border-radius:50%;box-shadow:inset 0 0 6vmin 1vmin rgba(30,18,6,.55)}",
+      '#scope i{background:#2b2420!important;box-shadow:none!important}#scope .h{height:2px!important;margin-top:-1px}#scope .v{width:2px!important;margin-left:-1px}',
+      '#scope .h,#scope .v{-webkit-mask:radial-gradient(circle at center,transparent 0 1.6vmin,#000 1.7vmin 36vmin,transparent 36.1vmin);mask:radial-gradient(circle at center,transparent 0 1.6vmin,#000 1.7vmin 36vmin,transparent 36.1vmin)}',
+      '#scope .tl,#scope .tr,#scope .tb{display:none!important}#scope .dot{width:5px!important;height:5px!important;margin:-2.5px 0 0 -2.5px!important;background:#c0392b!important;box-shadow:0 0 0 1px rgba(255,255,255,.6)!important}'].join('\n');
+    document.head.appendChild(st);
+  }
+  // compile every paper program now (both render targets), never on the first equip / ADS / throw
+  function warm() {
+    if (!arc) arc = arcMesh(((S.data.plane && S.data.plane.arc) || {}).dashes || 11);
+    arc.visible = true;
+    const vis = []; for (const id in S.vm) S.vm[id].group.traverse(o => { vis.push([o, o.visible]); o.visible = true; });
+    try { const prev = renderer.getRenderTarget(); renderer.setRenderTarget(rt); renderer.compile(gunScene, gunCam); renderer.setRenderTarget(null); renderer.compile(gunScene, gunCam); renderer.setRenderTarget(prev); } catch (e) { console.warn('PVM warm', e); }
+    for (const [o, v] of vis) o.visible = v; arc.visible = false;
+  }
+  /* ---- per frame (after the engine's updateViewmodel placed the group) ---- */
+  let lastW = null, lastReload = 0, lastFlash = 0, lastBolt = 0;
+  function play(vm, name, speed = 1) {
+    const a = vm.act[name]; if (!a) return null;
+    for (const k in vm.act) if (vm.act[k] !== a) vm.act[k].stop();
+    a.reset(); a.timeScale = speed; a.play(); return a;
+  }
+  function reloadSeq(vm) {
+    const dur = Math.max(.2, P.reloadDur || 1);
+    if (vm.gid === 'shotgun' && vm.act.reload_shell) {   // pump gun: start, one shell per missing round (what the reserve allows), end - fitted into the reload time
+      const n = Math.max(1, Math.min(P.mag - P.ammo, P.reserve, 8)), parts = ['reload_start', ...Array(n).fill('reload_shell'), 'reload_end'];
+      const total = parts.reduce((s, p) => s + vm.act[p].getClip().duration, 0); vm.seq = { parts, i: 0, k: total / dur }; nextSeq(vm);
+    } else if (vm.act.reload) play(vm, 'reload', vm.act.reload.getClip().duration / dur);
+  }
+  function nextSeq(vm) { const q = vm.seq; if (!q) return; if (q.i >= q.parts.length) { vm.seq = null; return; } const a = play(vm, q.parts[q.i++], q.k); q.t = a ? a.getClip().duration / q.k : 0; }
+  function update(dt) {
+    const vm = S.vm[P.weapon];
+    if (P.weapon !== lastW) { lastW = P.weapon; if (arc) arc.visible = false; lastReload = 0; lastFlash = 0; if (vm) { for (const k in vm.act) vm.act[k].stop(); vm.seq = null; if (vm.act.equip) play(vm, 'equip', vm.act.equip.getClip().duration / Math.max(.2, P.switchDur || .45)); if (vm.gid === 'plane') planeShow(vm); } }
+    if (!vm) return;
+    const k = 1 - P.ads;
+    vm.pose.rotation.set(vm.hipRot[0] * k, vm.hipRot[1] * k, vm.hipRot[2] * k);
+    if (vm.act.inspect && vm.act.inspect.isRunning() && (P.ads > .05 || P.reload > 0 || mouseDown)) vm.act.inspect.stop();
+    if (P.reload > 0 && lastReload <= 0) reloadSeq(vm);
+    if (P.reload <= 0 && lastReload > 0) vm.seq = null;
+    lastReload = P.reload;
+    if (P.flashT > lastFlash + 1e-4 && vm.flash.visible) { if (vm.act.fire) play(vm, 'fire', 1); if (flashMat) flashMat.map.offset.set((Math.random() * 4 | 0) * .25, (2 + (Math.random() * 2 | 0)) * .25); vm.flash.rotation.z = Math.random() * 6.28; }
+    lastFlash = P.flashT;
+    if (P.boltT > 0 && lastBolt <= 0 && vm.act.bolt && vm.gid === 'sniper') play(vm, 'bolt', vm.act.bolt.getClip().duration / Math.max(.2, P.boltDur || .75));
+    lastBolt = P.boltT;
+    if (vm.seq) { vm.seq.t -= dt; if (vm.seq.t <= 0) nextSeq(vm); }
+    if (vm.gid === 'plane') planeVM(vm, dt);
+    if (PLANES.S.steering) vm.group.visible = false;   // flying the plane: your view is the chase camera
+    vm.mixer.update(dt);
+  }
+  /* ---- the plane slot (ref3: pinched in the hand, nose to the right-forward) ---- */
+  const PL = { throwT: 0, pending: false, tipShown: false };
+  // the throw preview (ref4): a dashed white arc from the plane's nose to the crosshair line, drawn in the gun pass (camera space,
+  // over the world like a HUD). One mesh, quads rebuilt in place each frame (11 dashes, no allocations).
+  let arc = null; const _p0 = new T.Vector3(), _p1 = new T.Vector3(), _p2 = new T.Vector3(), _q = new T.Vector3(), _t = new T.Vector3(), _sd = new T.Vector3();
+  function arcMesh(n) {
+    const g = new T.BufferGeometry(), pos = new Float32Array(n * 12), idx = [];
+    for (let i = 0; i < n; i++) { const o = i * 4; idx.push(o, o + 1, o + 2, o + 2, o + 1, o + 3); }
+    g.setAttribute('position', new T.BufferAttribute(pos, 3).setUsage(T.DynamicDrawUsage)); g.setIndex(idx);
+    const m = new T.Mesh(g, new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .85, depthTest: false, depthWrite: false, side: T.DoubleSide, toneMapped: false }));
+    m.frustumCulled = false; m.renderOrder = 6; m.visible = false; m.userData.noProbe = true; gunScene.add(m); return m;
+  }
+  const bez = (t, a, b, c, out) => out.copy(a).multiplyScalar((1 - t) * (1 - t)).addScaledVector(b, 2 * (1 - t) * t).addScaledVector(c, t * t);
+  function planeArc(vm, show) {
+    const A = (S.data.plane && S.data.plane.arc) || {}, n = A.dashes || 11;
+    if (!arc) { arc = arcMesh(n); }
+    arc.visible = show; if (!show) return;
+    const nose = vm.paper.getObjectByName('muzzle'); vm.group.updateMatrixWorld(true); nose.getWorldPosition(_p0);   // gun scene = camera space
+    const D = A.dist || 9; _p2.set(0, D * .06 - .25, -D); _p1.copy(_p0).lerp(_p2, .45); _p1.y += A.lift ?? .6;
+    const pos = arc.geometry.attributes.position.array, w = A.width || .012;
+    for (let i = 0; i < n; i++) {
+      const ta = (i + .15) / n, tb = (i + .65) / n; bez(ta, _p0, _p1, _p2, _q); bez(tb, _p0, _p1, _p2, _t);
+      _sd.subVectors(_t, _q).cross(_q).normalize().multiplyScalar(w * (.5 + -_q.z * .5));   // about the same thickness on screen near and far
+      const o = i * 12; pos[o] = _q.x - _sd.x; pos[o + 1] = _q.y - _sd.y; pos[o + 2] = _q.z - _sd.z; pos[o + 3] = _q.x + _sd.x; pos[o + 4] = _q.y + _sd.y; pos[o + 5] = _q.z + _sd.z;
+      pos[o + 6] = _t.x - _sd.x; pos[o + 7] = _t.y - _sd.y; pos[o + 8] = _t.z - _sd.z; pos[o + 9] = _t.x + _sd.x; pos[o + 10] = _t.y + _sd.y; pos[o + 11] = _t.z + _sd.z;
+    }
+    arc.geometry.attributes.position.needsUpdate = true; arc.material.opacity = A.opacity ?? .85;
+  }
+  function planeShow(vm) { if (vm.planeNode) { vm.planeNode.visible = (P.nades | 0) > 0; } }
+  function planeVM(vm, dt) {
+    if (PL.pending) { PL.throwT += dt; if (PL.throwT >= ((S.data.plane && S.data.plane.throwRelease) || .13)) { PL.pending = false; if (vm.planeNode) vm.planeNode.visible = false; if (!PLANES.playerThrow()) planeShow(vm); } }
+    else if (!PLANES.S.steering && vm.planeNode && !vm.planeNode.visible && (P.nades | 0) > 0) { planeShow(vm); if (vm.act.equip) play(vm, 'equip', 1.4); }
+    planeArc(vm, !PL.pending && !PLANES.S.steering && vm.planeNode && vm.planeNode.visible && P.switchT <= 0 && vm.group.visible);
+  }
+  // left click with the plane out: throw it (the hand flicks forward, the plane leaves the hand at throwRelease s)
+  function planeThrow() {
+    const vm = S.vm.plane; if (!vm || P.weapon !== 'plane' || PL.pending || PLANES.S.steering || P.switchT > 0 || (P.nades | 0) <= 0) return false;
+    PL.pending = true; PL.throwT = 0; if (vm.act.throw) play(vm, 'throw', 1.2); return true;
+  }
+  // G / 6: take the plane out (again: back to the last gun); while steering: let go
+  function planeKey() {
+    if (state !== 'play' || P.dead) return;
+    if (PLANES.S.steering) { PLANES.stopSteer(); return; }
+    if (P.weapon === 'plane') { switchWeapon(lastGun()); return; }
+    if (!P.store.plane) P.store.plane = { ammo: 0, reserve: 0 };
+    switchWeapon('plane'); tip();
+  }
+  const lastGun = () => P.lastW && P.lastW !== 'plane' && WEAPONS[P.lastW] ? P.lastW : SLOTS()[0];
+  // the flight is over (popped, let go, shot down, you died): back to your gun
+  function flightOver() { PL.pending = false; if (state === 'play' && !P.dead && P.weapon === 'plane' && !(S.data && S.data.plane && S.data.plane.returnToGun === false)) switchWeapon(lastGun()); }
+  function tip() {
+    let seen = false; try { seen = localStorage.getItem('foldiers-tip-plane') === '1'; } catch (e) {}
+    if (seen || PL.tipShown) return; PL.tipShown = true; try { localStorage.setItem('foldiers-tip-plane', '1'); } catch (e) {}
+    try { PLANES.tip('Paper plane: click to throw it, steer it with the mouse, click again to pop it.', 5); } catch (e) {}
+  }
+  // Y: the inspect turn (not while aiming, reloading, drawing or firing)
+  function inspect() { const vm = S.vm[P.weapon]; if (!vm || !vm.act.inspect || P.ads > .05 || P.reload > 0 || P.switchT > 0 || mouseDown) return false; play(vm, 'inspect', 1); return true; }
+  /* ---- self test (qa/paper/core.js + qa/paper/weapons.js): ADS on every gun (FOV + sight on screen centre), hands on the grips
+     (also mid-reload), no shader compiled by equip / ADS / plane, the plane slot (hold, arc, throw, chase camera, steer, pop, back to
+     the gun) and the catch (big prompt, F, slow motion, you steer it). Runs in the page during a live match. ---- */
+  async function selfTest() {
+    const C = {}, ok = (k, v, info) => { C[k] = { ok: !!v, info: info || '' }; }, wait = ms => new Promise(r => setTimeout(r, ms));
+    const until = async (f, ms) => { const t0 = performance.now(); while (!f() && performance.now() - t0 < ms) await wait(30); return f(); };
+    ok('paper viewmodels loaded', S.ready && ['carbine', 'breacher', 'sniper', 'wasp', 'plane'].every(id => WM[id] === S.vm[id]), Object.keys(S.vm).join(','));
+    window.__god = true; P.shield = 1e9; const prog0 = renderer.info.programs.length, keys0 = new Set(renderer.info.programs.map(x => x.cacheKey)), seen = new Set(keys0), where = [], chk = lab => { for (const x of renderer.info.programs) if (!seen.has(x.cacheKey)) { seen.add(x.cacheKey); where.push(lab); } }, v = new T.Vector3(), g = new T.Vector3();
+    const sockErr = (vm) => { let worst = 0; vm.group.updateMatrixWorld(true);
+      for (const side in vm.hands) { const m = vm.hands[side], c = m.userData.cfg, sk = new T.Vector3(...S.hand.poses.grip_sockets[c.pose]); if (side === 'L') sk.x = -sk.x;
+        m.localToWorld(v.copy(sk)); m.parent.getWorldPosition(g); worst = Math.max(worst, v.distanceTo(g) - new T.Vector3(...(c.off || [0, 0, 0])).length() * vm.sc); } return worst; };
+    for (const id of ['carbine', 'breacher', 'sniper', 'wasp']) {
+      const vm = S.vm[id]; if (P.weapon !== id) switchWeapon(id); await until(() => P.switchT <= 0, 2000); await wait(150);
+      ok(id + ': right hand on grip_r, left hand on grip_l', vm.hands.R && vm.hands.R.parent.name === 'grip_r' && vm.hands.L && vm.hands.L.parent.name === 'grip_l' && sockErr(vm) < .004, 'socket error ' + (sockErr(vm) * 1000).toFixed(1) + ' mm');
+      adsHeld = true; await until(() => P.ads > .995, 2500); await wait(120);
+      vm.group.updateMatrixWorld(true); vm.paper.getObjectByName('sight').getWorldPosition(v); v.project(gunCam);
+      const fovOk = Math.abs(camera.fov - W().adsFov) < 1.5;
+      ok(id + ': ADS zooms (FOV ' + Math.round(camera.fov) + ' of ' + W().adsFov + ') and the sight sits on screen centre', fovOk && Math.abs(v.x) < .02 && Math.abs(v.y) < .02, 'sight at ' + v.x.toFixed(3) + ', ' + v.y.toFixed(3) + ' (screen -1..1)');
+      if (W().scope) ok(id + ': scope view (paper tube overlay on, gun hidden)', getComputedStyle(document.getElementById('scope')).opacity === '1' && !vm.group.visible);
+      adsHeld = false; await until(() => P.ads < .01, 2000);
+      // reload: the left hand follows grip_l to the mag / shell port and stays attached
+      const gl = vm.paper.getObjectByName('grip_l'), gl0 = gl.position.clone(); P.ammo = 1; P.reserve = Math.max(P.reserve, 10); startReload();
+      let moved = 0, err = 0; const t0 = performance.now(); while (P.reload > 0 && performance.now() - t0 < 4000) { moved = Math.max(moved, gl.position.distanceTo(gl0)); err = Math.max(err, sockErr(vm)); await wait(40); }
+      ok(id + ': reload clip plays, hands stay on the grips', moved > .01 && err < .004, 'grip_l travelled ' + (moved * 100).toFixed(1) + ' cm, socket error ' + (err * 1000).toFixed(1) + ' mm');
+    }
+    chk('guns');
+    // bolt-action sniper (Obelisk rules): a shot starts the bolt, the right hand works the knob (bolt clip), the scope drops out and
+    // snaps back by itself while aim is held; switching weapons cancels the bolt
+    { const vm = S.vm.sniper; switchWeapon('sniper'); await until(() => P.switchT <= 0, 2000); await wait(100); P.ammo = Math.max(P.ammo, 2); P.reload = 0;
+      adsHeld = true; await until(() => P.ads > .99, 1500); const snap = P.ads === 1 && Math.abs(camera.fov - W().adsFov) < .5;
+      const gr = vm.paper.getObjectByName('grip_r'), gr0 = gr.getWorldPosition(new T.Vector3()); P.fireCd = 0; fire();
+      let handMoved = 0, out = false; const t0 = performance.now(); while (P.boltT > 0 && performance.now() - t0 < 2500) { handMoved = Math.max(handMoved, gr.getWorldPosition(g).distanceTo(gr0)); if (P.ads === 0) out = true; await wait(30); }
+      await until(() => P.ads === 1, 600); const back = P.ads === 1;
+      ok('sniper: bolt action (0.75 s bolt, hand on the knob, scope drops out then snaps back)', W().bolt > 0 && handMoved > .03 && out && back && snap, 'bolt ' + W().bolt + ' s, hand moved ' + (handMoved * 100).toFixed(1) + ' cm, scope out=' + out + ' back=' + back + ' instant=' + snap);
+      P.fireCd = 0; P.ammo = Math.max(P.ammo, 2); fire(); await wait(60); const b0 = P.boltT; switchWeapon('carbine'); await wait(30);
+      ok('sniper: switching weapons cancels the bolt (quick-switch)', b0 > 0 && P.boltT === 0, 'bolt left ' + b0.toFixed(2) + ' -> ' + P.boltT);
+      adsHeld = false; await until(() => P.switchT <= 0, 1500); }
+    chk('sniper shots');
+    // the plane slot
+    PLANES.reset(); const n0 = P.nades; planeKey(); await until(() => P.weapon === 'plane' && P.switchT <= 0, 2000); await wait(200);
+    const pv = S.vm.plane;
+    ok('plane slot: G takes the plane out, pinched in the hand', P.weapon === 'plane' && pv.group.visible && pv.planeNode.visible && pv.hands.R && pv.hands.R.parent.name === 'grip_r' && sockErr(pv) < .004, 'planes ' + n0);
+    ok('plane slot: dashed aim arc shows', !!arc && arc.visible);
+    ok('plane slot: HUD shows the planes (' + document.querySelectorAll('#wxPlanes i').length + ')', document.querySelectorAll('#wxPlanes i').length === PLANES.R.carry && document.getElementById('wxPlanes').classList.contains('sel'));
+    const cv = renderer.domElement, md = b => cv.dispatchEvent(new MouseEvent('mousedown', { button: b, bubbles: true }));
+    md(0); dispatchEvent(new MouseEvent('mouseup', { button: 0 }));
+    await until(() => !!PLANES.S.steering, 1500); const fp = PLANES.S.steering; await wait(250);
+    ok('plane: left click throws it, the chase camera follows it, hint on', !!fp && P.nades === n0 - 1 && PLANES.CH.on && camera.position.distanceTo(fp.pos) < 5 && document.getElementById('wxFly').classList.contains('on'), fp ? 'camera-plane ' + camera.position.distanceTo(fp.pos).toFixed(2) + ' m' : 'no plane');
+    if (fp) {
+      const y0 = Math.atan2(-fp.dir.x, -fp.dir.z); PLANES.steerLook(-150, 0); await wait(200);
+      ok('plane: the mouse steers it', fp.dead || Math.abs(Math.atan2(-fp.dir.x, -fp.dir.z) - y0) > .04, 'turned ' + (Math.atan2(-fp.dir.x, -fp.dir.z) - y0).toFixed(2) + ' rad');
+      const ex = PLANES.S.stats.exploded; if (!fp.dead) { md(0); dispatchEvent(new MouseEvent('mouseup', { button: 0 })); await wait(80); }
+      ok('plane: click again pops it (paper blast)', fp.dead && PLANES.S.stats.exploded > ex - (fp.dead ? 1 : 0));
+      await until(() => P.weapon !== 'plane', 1500);
+      ok('plane: after the flight you get your gun back', P.weapon !== 'plane' && !PLANES.S.steering && !PLANES.CH.on, P.weapon);
+    }
+    chk('plane throw/pop');
+    // right click lets go
+    planeKey(); await until(() => P.weapon === 'plane' && P.switchT <= 0, 2000); await wait(150); md(0); dispatchEvent(new MouseEvent('mouseup', { button: 0 }));
+    await until(() => !!PLANES.S.steering, 1500); const fq = PLANES.S.steering; md(2); dispatchEvent(new MouseEvent('mouseup', { button: 2 })); await wait(100);
+    ok('plane: right click lets go (it flies on, view comes back)', !!fq && !PLANES.S.steering, fq ? '' : 'no throw'); if (fq) PLANES.pop(fq, true);
+    // catch: an enemy plane right in front -> big prompt -> F -> slow motion, you steer it
+    await until(() => P.switchT <= 0 && P.weapon !== 'plane', 1500);
+    const red = robots.find(r => r.mxTeam === 'def' && !r.dead) || robots.find(r => r.mxTeam === 'def');
+    camera.getWorldDirection(v); v.y = 0; v.normalize(); const from = camera.position.clone().addScaledVector(v, 2.5);
+    const cp = PLANES.spawn(red, from, v.clone().negate(), null); cp.speed = .3; cp.age = 1; cp.botTarget = null; cp.steer = null;
+    await wait(150); const prompt = document.getElementById('wxCatch').classList.contains('on');
+    ok('catch: big "F CATCH!" prompt when an enemy plane is close in front', prompt);
+    dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyF' })); dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyF' })); await wait(60);
+    ok('catch: F catches it, short slow motion, you steer it back (RETURN TO SENDER)', cp.owner === PLAYER_ENT && PLANES.S.steering === cp && (window.SLOWMO || 0) > 0, 'slowmo ' + (window.SLOWMO || 0).toFixed(2));
+    PLANES.pop(cp, true); await wait(200); chk('catch');
+    const newP = renderer.info.programs.filter(x => !keys0.has(x.cacheKey)).map(x => x.name + (x.cacheKey || '').slice(0, 40));
+    ok('no shader compiled by equip / ADS / scope / bolt / plane / catch', newP.length === 0, prog0 + ' -> ' + renderer.info.programs.length + ' programs, new in: ' + where.join(', ') + ' ' + newP.join(' | '));
+    window.__god = false; PLANES.reset(); if (P.weapon === 'plane') switchWeapon(SLOTS()[0]);
+    return { checks: C };
+  }
+  return { S, PL, load, update, warm, inspect, selfTest, apply, applyAll, planeThrow, planeKey, flightOver, handGeo, placeHand, get icons() { return S.icons; } };
+})();
 /* ================= players: armoured soldiers driven by AI ================= */
 // Soldier model (three.js example asset) + Quaternius Universal Animation Library moves (CC0), retargeted offline into anims.json
 const BOT_NAMES = ['Viper', 'NovaKid', 'xRaze', 'Kairo', 'Mirage_7', 'Hexen', 'Drift', 'BlackFang', 'Zer0', 'Lynx_', 'Orbit', 'SaintOps', 'Pyro_91', 'Echo', 'Wraith', 'Kestrel', 'Vandal', 'Juno', 'Ghost404', 'Talon', 'Rook', 'Static', 'Nyx', 'K1ller_Q'];
@@ -4248,6 +4836,13 @@ Object.assign(WEAPONS, {
     stats: [100, 34, 58, 94], desc: 'Never runs out. Hold to wind up, release to throw: kills in one hit, then flies back to your hand. Right click punches.' },
 });
 WEAPONS.boomerang.label = 'Vortex · boomerang';
+// Paper plane (owner 2026-11-11): its own weapon slot (G or 6), held pinched in the hand like ref3. Left click throws it; while it flies the
+// mouse steers it (chase camera), click pops it, right click lets go; then you get your last gun back. Count = P.nades (refolds over time,
+// PLANES.R.carry / regen). Not in GUN_IDS: bots throw planes through PLANES.botAI, not as a held gun. Flight rules: 67-planes.js.
+WEAPONS.plane = { name: 'Paper Plane', cls: 'Throwable', mode: 'plane', infinite: true, mag: 1, reserve: 0, maxReserve: 0, rpm: 60, auto: false, dmg: 0, head: 1, hip: 0, ads: 0, adsFov: 78, adsSpeed: 10, reload: 1, reloadEmpty: 1, kick: 0, move: 1.05, draw: .35,
+  stats: [90, 40, 70, 60], desc: 'Click to throw, steer it with the mouse, click to pop. Catch enemy planes with F.' };
+WEAPONS.plane.label = 'Paper Plane · throwable';
+ICON.plane = '<svg viewBox="0 0 40 22" width="34" height="18"><path d="M1 11 L39 1 L22 21 L18 13Z" fill="currentColor"/></svg>';
 GUN_IDS.push('boomerang'); NET_W.push('boomerang');
 // Paper FPS v1 uses five guns: assault rifle (carbine), pump shotgun (breacher), sniper, SMG (wasp), boomerang. The other Sector Nine
 // guns stay defined (online / data compatibility) but are not offered, built or given to bots.
@@ -4562,8 +5157,9 @@ function updateStation(dt) {
 const camRight = V3(), shotDir = V3(), muzzleW = V3();
 function fire() {
   const w = W();
-  if (P.weapon === 'knife') return fireShot();
+  if (P.weapon === 'knife') { if (KSLICE.S.active) return; return fireShot(); }
   if (w.mode === 'boomerang') return;   // thrown on trigger release (updateBoom)
+  if (w.mode === 'plane') return;   // thrown on click (PVM.planeThrow, 40-viewmodel.js)
   if (w.mode === 'burst') { if (P.burstLeft > 0 || P.reload > 0 || P.switchT > 0) return; if (P.ammo <= 0) return fireShot(); P.burstLeft = w.burst; P.burstT = 0; return; }
   if (w.mode === 'proj') return fireProj();
   if (w.mode === 'arc') return fireArc();
@@ -4573,7 +5169,7 @@ function fire() {
 // ---- wallbang (rules mirror data/penetration.json and the server's anticheat/pen) ----
 // path = metres the bullet travels INSIDE the solid along its own direction (a shallow angle = a longer path = less gets through)
 const PEN = { minMult: .12, alias: { thick: 'drywall', hollow: 'crate' },
-  materials: { drywall: { code: 1, cost: .8, max: .6 }, wood: { code: 2, cost: 1.3, max: .5 }, glass: { code: 3, cost: .4, max: .5 }, crate: { code: 4, cost: 1.2, max: .5, flat: .12 }, sheet: { code: 6, cost: 3, max: .3, flat: .1 }, metal: { code: 5, cost: 3, max: .25 } },
+  materials: { card: { code: 7, cost: .6, max: .5, flat: .1 }, card2: { code: 8, cost: 1.1, max: .6 }, drywall: { code: 1, cost: .8, max: .6 }, wood: { code: 2, cost: 1.3, max: .5 }, glass: { code: 3, cost: .4, max: .5 }, crate: { code: 4, cost: 1.2, max: .5, flat: .12 }, sheet: { code: 6, cost: 3, max: .3, flat: .1 }, metal: { code: 5, cost: 3, max: .25 } },
   power: { sniper: 1.3, helix: 1.3, void: .9, titan: .8, triad: .8, carbine: .7, cryo: .5, judge: .3, wasp: .3, breacher: .25, pistol: .2 } };
 function penMatOf(pen) { return PEN.alias[pen] || pen; }
 // damage multiplier for a gun's power through `path` metres of material, or -1 when it cannot go through
@@ -4597,8 +5193,8 @@ const PEN_LOSS = { sniper: .55, obelisk: .4, helix: .45, titan: 1.2, triad: 1.1,
 // bullet holes on both faces of a wall the shot went through + a spark burst where it comes out
 function penMarks(h, dir, th) {
   const n = h.face ? _v2.copy(h.face.normal).transformDirection(h.object.matrixWorld) : _v2.set(0, 1, 0);
-  decal(h.point, n, .7, 'hole'); const ex = _pv.copy(h.point).addScaledVector(dir, th); decal(ex, dir, .7, 'hole');
-  for (let i = 0; i < 7; i++) FX.spawn(ex, dir.x * 4 + rand(-2, 2), dir.y * 4 + rand(-1, 2.5), dir.z * 4 + rand(-2, 2), 6, 3.4, 1.1, rand(.02, .04), rand(.12, .28), 14, 1);
+  const ex = _pv.copy(h.point).addScaledVector(dir, th); PAPER_MARKS.hit(h.object, h.point, n, P.weapon); PAPER_MARKS.hit(h.object, ex.clone(), dir.clone(), P.weapon);   // entry + exit marks
+  PFX.chips(ex, dir, h.object.material && h.object.material.color, h.object.material && h.object.material.userData && h.object.material.userData.paper, 6);
 }
 function fireShot() {
   P.shield = 0; // attacking ends your spawn protection
@@ -4640,6 +5236,7 @@ function fireShot() {
         for (const h of hits) {
           if (h.distance < skipTo) continue;
           const r = h.object.userData.robot;
+          if (!r && h.object.userData.tear !== undefined) { TEAR.hit(h.object, h.point, shotDir, id); mult *= TEAR.R.throughK; through++; continue; }
           if (!r) { const pn = penHit(h, shotDir), pm = pn ? penCalc(pw, pn.mat, pn.t) : -1; end.copy(h.point); wallHit = h; if (pm < 0) break; mult *= pm; if (mult < PEN.minMult) break; through++; skipTo = h.distance + pn.t + .01; penMarks(h, shotDir, pn.t); wallHit = null; continue; }
           if (through) { r.wbT = G.time; r.wbBy = PLAYER_ENT; }
           if (seen.has(r) || r.dead) continue; seen.add(r); P.collat = seen.size;
@@ -4650,6 +5247,7 @@ function fireShot() {
         let mult = 1, through = 0, skipTo = -1;
         for (const h of hits) {
           if (h.distance < skipTo) continue;
+          if (h.object.userData.tear !== undefined) { TEAR.hit(h.object, h.point, shotDir, id); mult *= TEAR.R.throughK; through++; continue; }   // thin cardboard: hole + the bullet goes on (60 %)
           end.copy(h.point); const r = h.object.userData.robot;
           if (r) { if (r.dead) continue;
             const zone = h.object.userData.zone, crit = zone === 'head';
@@ -4772,7 +5370,7 @@ function killEntity(v, k, weapon, crit, dir) {
 // Deterministic: the state of a panel is a pure function of its ordered list of hits (u, v, side); the mask texture and
 // the raycast both read that state. Bounded: MAX_HOLES per panel (further hits grow the nearest hole), so cost stays flat.
 const TEAR = (() => {
-  const R = { holeR: .07, holeVis: 1.0, rayK: .9, mergeD: .34, slitK: .75, maxHoles: 48, growK: 1.08, growMax: .32, crSeg: .2, crReach: .2, crNeed: .7, ppm: 40, flapTime: .45, flapAngle: 1.9 };
+  const R = { holeR: .09, holeVis: 1.0, rimK: 1.5, rayK: .9, shotgunBig: .2, throughK: .6, cutR: .022, cutMax: 1.8, cutSpeed: .7, mergeD: .36, slitK: .75, maxHoles: 48, growK: 1.08, growMax: .32, crSeg: .2, crReach: .2, crNeed: .7, ppm: 40, flapTime: .45, flapAngle: 1.9 };
   const panels = [];
   const _inv = new THREE.Matrix4(), _lp = new THREE.Vector3(), _tmp = [];
   // a tiny seeded random per (panel, hole): the ragged outline of a hole never depends on Math.random
@@ -4781,12 +5379,18 @@ const TEAR = (() => {
   function holeHook(sh) {
     sh.uniforms.uHole = this.userData.uHole;
     sh.vertexShader = 'attribute vec2 huv;\nvarying vec2 vHuv;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vHuv = huv;');
-    sh.fragmentShader = 'uniform sampler2D uHole;\nvarying vec2 vHuv;\n' + sh.fragmentShader.replace('void main() {', 'void main() {\n if (texture2D(uHole, vHuv).r > .5) discard;');
+    sh.fragmentShader = 'uniform sampler2D uHole;\nvarying vec2 vHuv;\n' + sh.fragmentShader.replace('void main() {', 'void main() {\n vec4 hm = texture2D(uHole, vHuv); if (hm.r > .5) discard;');
+    // the torn rim: pale torn liner outside, dark corrugated flutes right at the cut (mask green channel = rim band)
+    if (this.isMeshStandardMaterial) sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+      { float g = hm.g; float fl = .5 + .5 * sin((vHuv.x * 3.0 + vHuv.y) * 520.0);
+        vec3 core = vec3(.97, .95, .91) * (.88 + .12 * fl), lip = vec3(.18, .14, .1);
+        diffuseColor.rgb = mix(diffuseColor.rgb, core, smoothstep(.06, .3, g));
+        diffuseColor.rgb = mix(diffuseColor.rgb, lip, smoothstep(.82, .97, g) * .8); }`);
     if (this.isMeshStandardMaterial) PAPER_EDGE_HOOK(sh);
   }
   function tearMaterials(base, holeTex) {
-    const m = base.clone(); m.onBeforeCompile = null; m.userData = Object.assign({}, base.userData, { uHole: { value: holeTex } });
-    m.onBeforeCompile = holeHook; m.customProgramCacheKey = () => 'tearHole1';
+    const m = base.clone(); m.onBeforeCompile = THREE.Material.prototype.onBeforeCompile; m.userData = Object.assign({}, base.userData, { uHole: { value: holeTex }, s9g: 1, gm: 999 });   // s9g/gm: the graphics add-ons must not replace this shader hook (it cuts the holes)
+    m.onBeforeCompile = holeHook; m.customProgramCacheKey = () => 'tearHole3';
     const d = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking }); d.userData.uHole = m.userData.uHole;
     d.onBeforeCompile = holeHook; d.customProgramCacheKey = () => 'tearHoleDepth1';
     return [m, d];
@@ -4832,6 +5436,7 @@ const TEAR = (() => {
     for (const c of P_.cuts) if (u > c[0] && u < c[2] && v > c[1] && v < c[3]) return true;
     const f = P_.flap; if (f && f.open && u > f.u0 && u < f.u1 && v > f.v0 && v < f.v1) return true;
     for (const q of P_.holes) { const r = q.r * R.rayK; if ((u - q.u) * (u - q.u) + (v - q.v) * (v - q.v) < r * r) return true; }
+    for (const L of P_.knife || []) { if (L.closed && inPoly(L.pts, u, v)) return true; for (let i = 1; i < L.pts.length; i++) if (segD2(u, v, L.pts[i - 1], L.pts[i]) < R.cutR * R.cutR * R.rayK * R.rayK) return true; }
     for (const s of P_.slits) { const ax = s.b[0] - s.a[0], ay = s.b[1] - s.a[1], L2 = ax * ax + ay * ay || 1e-6; const k = clamp(((u - s.a[0]) * ax + (v - s.a[1]) * ay) / L2, 0, 1); const dx = u - s.a[0] - ax * k, dy = v - s.a[1] - ay * k; if (dx * dx + dy * dy < s.r * s.r * R.rayK * R.rayK) return true; }
     return false;
   }
@@ -4860,14 +5465,37 @@ const TEAR = (() => {
     }
     return 'hole';
   }
+  const segD2 = (u, v, a, b) => { const ax = b[0] - a[0], ay = b[1] - a[1], L2 = ax * ax + ay * ay || 1e-9, k = clamp(((u - a[0]) * ax + (v - a[1]) * ay) / L2, 0, 1), dx = u - a[0] - ax * k, dy = v - a[1] - ay * k; return dx * dx + dy * dy; };
+  const inPoly = (pts, u, v) => { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > v) !== (yj > v) && u < (xj - xi) * (v - yi) / ((yj - yi) || 1e-9) + xi) c = !c; } return c; };
+  /* KNIFE CUT (cutter out, hold left click near thin card, drag): a polyline in panel metres. Closed (end within .22 m of the
+     start and area >= .02 m2) = the piece inside falls out. Deterministic: the polyline itself is the event. */
+  function cutApply(P_, pts) {
+    if (pts.length < 2) return null; P_.knife = P_.knife || []; let len = 0; for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    const e = pts[pts.length - 1], s0 = pts[0]; let area = 0; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) area += (pts[j][0] + pts[i][0]) * (pts[j][1] - pts[i][1]);
+    const closed = pts.length >= 4 && Math.hypot(e[0] - s0[0], e[1] - s0[1]) < .22 && Math.abs(area / 2) >= .02;
+    P_.knife.push({ pts: pts.map(p => [p[0], p[1]]), closed }); P_.hits.push(['cut', pts.length, closed]); return { len, closed, area: Math.abs(area / 2) };
+  }
+  function cut(mesh, pts) { const P_ = panels[mesh.userData.tear]; if (!P_) return null; const r = cutApply(P_, pts); redraw(P_);
+    if (r && r.closed) hangPiece(P_, pts);
+    if (r && r.closed) { const c = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]); const w = new THREE.Vector3(c[0] - P_.w / 2, c[1] - P_.h / 2, 0).applyMatrix4(P_.mesh.matrixWorld); PFX.burst(w, { n: 18, cols: [P_.mat.color, PFX.TEAMC.cream], speed: 1.5, up: .5, size: [.05, .12] }); }
+    return r; }
+  // the cut-out piece as a sheet hinged on its lowest edge, swinging down + out toward the cutter's side
+  function hangPiece(P_, pts) {
+    let minV = 1e9; for (const p of pts) minV = Math.min(minV, p[1]); const sh = new THREE.Shape(pts.map(p => new THREE.Vector2(p[0] - P_.w / 2, p[1] - minV)));
+    const g = new THREE.ShapeGeometry(sh); const mat = P_.mat.clone(); mat.side = THREE.DoubleSide; mat.onBeforeCompile = THREE.Material.prototype.onBeforeCompile; mat.userData = Object.assign({}, P_.mat.userData, { s9g: 1, gm: 999 });
+    const m = new THREE.Mesh(g, mat); m.castShadow = true; m.userData.noProbe = true; const piv = new THREE.Group(); piv.position.set(0, minV - P_.h / 2, P_.t * .6); piv.add(m); P_.mesh.add(piv);
+    (P_.pieces = P_.pieces || []).push({ piv, k: 0 });
+  }
+  const uvOf = (mesh, pt) => { const P_ = panels[mesh.userData.tear]; if (!P_) return null; const [u, v] = toLocal(P_, pt); return [clamp(u, 0, P_.w), clamp(v, 0, P_.h)]; };
   // world hit -> hole (called by fireShot / botShoot / explosions). Returns 'hole' | 'flap' | null.
-  const WR = { sniper: 1.5, breacher: .8, carbine: 1, wasp: .9, pistol: .9, boomerang: 1.4, plane: 2.5 };
+  const WR = { sniper: 1.05, breacher: .85, carbine: .95, wasp: .7, carbine: 1, wasp: .9, pistol: .9, boomerang: 1.4, plane: 2.5 };
   function hit(mesh, point, dir, weapon) {
     const P_ = panels[mesh.userData.tear]; if (!P_ || !P_.mesh.parent) return null;
     const [u, v, z] = toLocal(P_, point);
     _lp.copy(dir).transformDirection(_inv.copy(P_.mesh.matrixWorld).invert());
     const side = _lp.z < 0 ? 1 : -1;   // shot travelling toward -Z hit the front (+Z) face
-    const res = apply(P_, clamp(u, 0, P_.w), clamp(v, 0, P_.h), side, R.holeR * (WR[weapon] || 1));
+    let res = apply(P_, clamp(u, 0, P_.w), clamp(v, 0, P_.h), side, R.holeR * (WR[weapon] || 1));
+    if (weapon === 'breacher' && P_.bigAt !== G.time) { P_.bigAt = G.time; const r2 = apply(P_, clamp(u, 0, P_.w), clamp(v, 0, P_.h), side, R.shotgunBig); if (r2 === 'flap') res = 'flap'; }
     redraw(P_); if (res === 'flap') openFlap(P_);
     // paper chips from both faces
     if (typeof PFX !== 'undefined') { const n = new THREE.Vector3(0, 0, side).transformDirection(P_.mesh.matrixWorld); PFX.chips(point, n, P_.mat.color, P_.mat.userData.paper, res === 'flap' ? 40 : 7); }
@@ -4878,7 +5506,15 @@ const TEAR = (() => {
   // mask: white = open. Ragged star holes, jagged slits, the open flap and the pre-cut windows.
   function redraw(P_) {
     const c = P_.ctx, ppm = R.ppm, H = P_.h, X = u => u * ppm, Y = v => (H - v) * ppm;
-    c.fillStyle = '#000'; c.fillRect(0, 0, P_.cv.width, P_.cv.height); c.fillStyle = '#fff'; c.strokeStyle = '#fff';
+    c.fillStyle = '#000'; c.fillRect(0, 0, P_.cv.width, P_.cv.height);
+    // rim pass (green): a soft band round every opening = torn liner + flutes in the shader
+    c.save(); c.shadowColor = '#0f0'; c.shadowBlur = 5; c.fillStyle = 'rgb(0,150,0)'; c.strokeStyle = 'rgb(0,150,0)';
+    for (const q of P_.holes) { const rr = hrand(P_.id + 3, q.i + 9), n = 11; c.beginPath(); for (let i = 0; i < n * 2; i++) { const a = i / (n * 2) * 6.283, r = q.r * R.rimK * (i % 2 ? .78 + rr() * .2 : 1 + rr() * .45); const x = X(q.u + Math.cos(a) * r), y = Y(q.v + Math.sin(a) * r); i ? c.lineTo(x, y) : c.moveTo(x, y); } c.closePath(); c.fill(); }
+    for (const s of P_.slits) { c.lineWidth = s.r * 2 * R.rimK * ppm; c.lineCap = 'round'; c.beginPath(); c.moveTo(X(s.a[0]), Y(s.a[1])); c.lineTo(X(s.b[0]), Y(s.b[1])); c.stroke(); }
+    for (const k of P_.cuts) { c.lineWidth = 6; c.strokeRect(X(k[0]), Y(k[3]), (k[2] - k[0]) * ppm, (k[3] - k[1]) * ppm); }
+    for (const L of P_.knife || []) { c.lineWidth = R.cutR * 2 * R.rimK * ppm + 3; c.lineCap = c.lineJoin = 'round'; c.beginPath(); L.pts.forEach((p, i) => i ? c.lineTo(X(p[0]), Y(p[1])) : c.moveTo(X(p[0]), Y(p[1]))); if (L.closed) c.closePath(); c.stroke(); }
+    c.restore(); c.fillStyle = '#fff'; c.strokeStyle = '#fff';
+    for (const L of P_.knife || []) { c.lineWidth = R.cutR * 2 * ppm; c.lineCap = c.lineJoin = 'round'; c.beginPath(); L.pts.forEach((p, i) => i ? c.lineTo(X(p[0]), Y(p[1])) : c.moveTo(X(p[0]), Y(p[1]))); if (L.closed) { c.closePath(); c.fill(); } c.stroke(); }
     for (const k of P_.cuts) c.fillRect(X(k[0]), Y(k[3]), (k[2] - k[0]) * ppm, (k[3] - k[1]) * ppm);
     const f = P_.flap; if (f && f.open) { const rr = hrand(P_.id, 999); c.beginPath(); const pts = [[f.u0, f.v0], [f.u1, f.v0], [f.u1, f.v1], [f.u0, f.v1]];
       pts.forEach((p, i) => { const q = pts[(i + 1) % 4]; for (let s = 0; s <= 8; s++) { const k = s / 8, j = (rr() - .5) * .05; const x = p[0] + (q[0] - p[0]) * k + j, y = p[1] + (q[1] - p[1]) * k + j; if (!i && !s) c.moveTo(X(x), Y(y)); else c.lineTo(X(x), Y(y)); } }); c.fill(); }
@@ -4896,13 +5532,14 @@ const TEAR = (() => {
     piv.add(m); P_.mesh.add(piv); f.mesh = piv; f.k = 0;
   }
   function update(dt) {
+    for (const P_ of panels) if (P_.pieces) for (const q of P_.pieces) if (q.k < 1) { q.k = Math.min(1, q.k + dt / .6); const e = 1 - Math.pow(1 - q.k, 3); q.piv.rotation.x = 1.75 * e + Math.sin(q.k * Math.PI) * .15; }
     for (const P_ of panels) { const f = P_.flap; if (!f || !f.mesh || f.k >= 1) continue;
       f.k = Math.min(1, f.k + dt / R.flapTime); const e = 1 - Math.pow(1 - f.k, 3), a = R.flapAngle * e * -f.side + Math.sin(f.k * Math.PI) * .12;
       if (f.hinge === 'top') f.mesh.rotation.x = -a; else if (f.hinge === 'bottom') f.mesh.rotation.x = a; else if (f.hinge === 'left') f.mesh.rotation.y = -a; else f.mesh.rotation.y = a; }
   }
   // every panel back to new (match start); the flap meshes are removed
   function reset() {
-    for (const P_ of panels) { P_.holes.length = 0; P_.slits.length = 0; P_.hits.length = 0; const f = P_.flap; if (f) { f.open = false; f.k = 0; f.segs.fill(0); if (f.mesh) { P_.mesh.remove(f.mesh); f.mesh.traverse(o => o.geometry && o.geometry.dispose()); f.mesh = null; } } redraw(P_); }
+    for (const P_ of panels) { P_.holes.length = 0; P_.slits.length = 0; P_.hits.length = 0; P_.knife = []; if (P_.pieces) { for (const q of P_.pieces) P_.mesh.remove(q.piv); P_.pieces = []; } const f = P_.flap; if (f) { f.open = false; f.k = 0; f.segs.fill(0); if (f.mesh) { P_.mesh.remove(f.mesh); f.mesh.traverse(o => o.geometry && o.geometry.dispose()); f.mesh = null; } } redraw(P_); }
     TEAR.stats.holes = 0; TEAR.stats.flaps = 0;
   }
   // an explosion next to cardboard: a big ragged hole where the panel is closest (within `reach` m)
@@ -4914,7 +5551,7 @@ const TEAR = (() => {
   // replay a hit list on a fresh copy of a panel's state (determinism check; also how an online client rebuilds a panel)
   function replay(id, hits) { const P_ = panels[id]; const S = { id, w: P_.w, h: P_.h, cuts: P_.cuts, holes: [], slits: [], hits: [], flap: P_.flap ? Object.assign({}, P_.flap, { open: false, segs: new Uint8Array(P_.flap.segs.length) }) : null };
     for (const h of hits) apply(S, h[0], h[1], h[2], h[3]); return { holes: S.holes.map(q => [q.u, q.v, q.r]), slits: S.slits.length, flap: S.flap ? S.flap.open : null }; }
-  return { R, panels, add, hit, blast, apply, openAt, openAtWorld, update, reset, clear, replay, stats: { holes: 0, flaps: 0 } };
+  return { R, panels, add, hit, blast, apply, cut, cutApply, uvOf, redraw, openAt, openAtWorld, update, reset, clear, replay, stats: { holes: 0, flaps: 0 } };
 })();
 /* ================= deaths that match what killed you ================= */
 const DEATH_OF = { nova: 'blast', seeker: 'blast', nade: 'blast', breacher: 'blast', judge: 'blast', cryo: 'freeze', inferno: 'burn', arc: 'shock', helix: 'vapor', void: 'vapor',
@@ -5317,7 +5954,7 @@ const PAPER_DEATHS = (() => {
       const enemy = x => x.mxBot ? x.mxTeam === 'def' : true; let r = null;
       for (let i = 0; i < 80 && !r; i++) { r = robots.find(x => enemy(x) && !x.dead) || null; if (!r) { for (const x of robots) if (enemy(x) && x.dead && x.deadT > .5) x.respawnT = Math.min(x.respawnT, x.deadT); await wait(100); } }
       if (!r) { out[want] = { ok: false, info: 'no living enemy bot' }; continue; }
-      r.root.position.set(0, 0, -30 + dist); r.percT = 1e9; r.thinkT = 1e9; r.shield = 0; P.pos.set(0, 0, -30);
+      r.root.position.copy(TF.p(0, 0, -30 + dist)); r.percT = 1e9; r.thinkT = 1e9; r.shield = 0; P.pos.copy(TF.p(0, 0, -30));
       const live0 = PFX.live; damageEntity(r, 9999, crit, chest(r).clone(), new THREE.Vector3(0, 0, 1), crit ? 'head' : 'body', PLAYER_ENT, w);
       const k = r.pd && r.pd.k; await wait(120); const burst = PFX.live > live0;
       let gone = false; for (let i = 0; i < 40 && !gone; i++) { await wait(100); gone = !r.root.visible || !r.dead; }
@@ -5330,19 +5967,31 @@ const PAPER_DEATHS = (() => {
 })();
 /* ================= PAPER PLANES: throw, steer, explode, shoot down, CATCH + RETURN (signature mechanic 2) ================= */
 // Rules (docs/MECHANICS.md "Paper planes"; numbers PLANES.R, mirrored in data/paper_weapons.json "plane"):
-// - G: hold to aim, let go to throw. The plane flies at R.speed and the thrower STEERS it with the mouse (turn rate capped);
-//   your own view freezes and a picture-in-picture shows the plane's view: you are vulnerable meanwhile. Left click = pop it now,
-//   G or right click = let go (it flies straight; your view comes back). It drops slowly and lives R.life seconds.
+// - The plane is a WEAPON slot (G or 6; owner playtest 2026-11-11): held pinched in the hand (40-viewmodel.js PVM), left click throws it.
+//   It flies at R.speed and the thrower STEERS it with the mouse (turn rate capped); the camera becomes a chase camera behind the plane
+//   (one render, no picture-in-picture): you are vulnerable meanwhile. Left click = pop it now, right click or G = let go (it flies on,
+//   sinking; your view comes back and you get your last gun back). It drops slowly and lives R.life seconds. R.carry planes, each
+//   refolds in R.regen s. Numbers: data/paper_weapons.json "plane".rules (applied by config()).
 // - It explodes on impact with anything solid or a body (paper burst, blast damage BLAST with kill R.blastKill, tears cardboard).
 // - It has R.hp hit points: bullets that pass within R.hitR of it damage it; at 0 it pops harmlessly (a little paper burst).
 // - CATCH: an enemy of the plane's current owner presses F while the plane is within R.catchDist and inside R.catchCone of
 //   their view: it becomes theirs, turns round toward the thrower's launch point, gets R.catchBoost speed and fresh life,
-//   and they steer it. A caught plane that kills its original thrower = "RETURN TO SENDER!" (callout + short slow motion).
+//   and they steer it. Catching = big "F CATCH!" prompt, then "RETURN TO SENDER!" + a short slow motion (R.catchSlow s) while you
+//   line it up; a caught plane that kills its original thrower = "RETURN TO SENDER!" banner + slow motion.
 // - Bots throw planes at enemies they last saw behind cover, home them in, dodge incoming planes, sometimes shoot them down
 //   and sometimes catch them (chance by difficulty) and send them back.
 // Deterministic flight: position/direction integrate only from inputs (steer deltas), so an online version can replay them.
+// test frame for the self tests (planes, deaths): an open stretch of the map. Old greybox frame: origin (0, -30), forward +z.
+// TF.p(x, y, z) maps a point written in that old frame (z measured from -30 forward, x lateral) into the current map.
+const TF = {
+  o() { return typeof DESKTOWN_DATA !== 'undefined' && DESKTOWN_DATA ? [-16, 5.5, 1, 0] : [0, -30, 0, 1]; },
+  p(x, y, z) { const [ox, oz, fx, fz] = TF.o(), d = z + 30; return new THREE.Vector3(ox + fx * d - fz * x, y, oz + fz * d + fx * x); },
+  d(k) { const [, , fx, fz] = TF.o(); return new THREE.Vector3(fx * k, 0, fz * k); },
+  yaw() { const [, , fx, fz] = TF.o(); return Math.atan2(-fx, -fz); },
+  park() { return typeof DESKTOWN_DATA !== 'undefined' && DESKTOWN_DATA ? new THREE.Vector3(40, 0, 25) : new THREE.Vector3(-26, 0, 38); },
+};
 const PLANES = (() => {
-  const R = { speed: 15, life: 7, hp: 25, hitR: .55, turn: 2.4, botTurn: 1.5, sink: .06, catchDist: 4.2, catchCone: Math.cos(1.0), catchBoost: 1.2, blastKill: 120, arm: .2, carry: 2, regen: 10, slowmo: .9, slowK: .3 };
+  const R = { speed: 15, life: 7, hp: 25, hitR: .55, turn: 2.4, botTurn: 1.5, sink: .06, catchDist: 4.2, catchCone: Math.cos(1.0), catchBoost: 1.2, blastKill: 120, arm: .2, carry: 3, regen: 10, slowmo: .9, slowK: .3, catchSlow: .45 };
   const list = []; let seq = 0, geo = null, mats = {}, pipCam = null;
   const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _rc = new THREE.Raycaster(), _hits = [];
   const S = { steering: null, stats: { thrown: 0, caught: 0, shotDown: 0, exploded: 0, returns: 0, botThrows: 0, botCatches: 0, botShotDown: 0 } };
@@ -5397,7 +6046,7 @@ const PLANES = (() => {
     p.dir.subVectors(p.launch, p.pos).normalize(); p.m.material = matFor(teamOf(e)); p.botTarget = p.orig;
     S.stats.caught++; try { sfx.equip(); sfx.knifeHit(); } catch (x) {}
     PFX.burst(p.pos, { n: 12, cols: [PFX.TEAMC.white], speed: 2, up: 1, life: .8 });
-    if (e === PLAYER_ENT) { S.steering = p; callout('CAUGHT IT!', 'multi'); }
+    if (e === PLAYER_ENT) { S.steering = p; S.caughtAt = G.time; window.SLOWMO = Math.max(window.SLOWMO || 0, R.catchSlow); callout('RETURN TO SENDER!', 'multi'); try { banner('CAUGHT!', 'Steer it back at whoever threw it'); } catch (x) {} }
     else if (p.orig === PLAYER_ENT) callout('YOUR PLANE WAS CAUGHT!', 'multi');
     return true;
   }
@@ -5448,7 +6097,7 @@ const PLANES = (() => {
     for (let i = list.length - 1; i >= 0; i--) {
       const p = list[i]; if (p.dead) { list.splice(i, 1); continue; }
       p.age += dt; p.life -= dt; let tr = 0;
-      if (p.steer === PLAYER_ENT && S.steering === p) { tr = turn(p, p.inYaw || 0, p.inPitch || 0, dt, R.turn); p.inYaw = p.inPitch = 0; }
+      if (p.steer === PLAYER_ENT && S.steering === p) { const m = R.turn * dt, ay = clamp(p.inYaw || 0, -m, m), ap = clamp(p.inPitch || 0, -m, m); tr = turn(p, ay, ap, dt, R.turn); p.inYaw = ((p.inYaw || 0) - ay) * .9; p.inPitch = ((p.inPitch || 0) - ap) * .9; }   // input over the turn cap carries to the next steps (decaying)
       else if (p.steer && !p.steer.isPlayer && p.steer !== PLAYER_ENT) {   // bot homing: toward its target's chest (the original thrower for a caught plane)
         const tgt = p.botTarget && entAlive(p.botTarget) ? entChest(p.botTarget, _c) : p.botAt || null;
         if (tgt) { const want = _a.subVectors(tgt, p.pos).normalize(); const cy = Math.atan2(-p.dir.x, -p.dir.z), wy = Math.atan2(-want.x, -want.z); let dy = wy - cy; while (dy > Math.PI) dy -= 2 * Math.PI; while (dy < -Math.PI) dy += 2 * Math.PI;
@@ -5466,29 +6115,76 @@ const PLANES = (() => {
       if (boom || p.life <= 0) pop(p, !boom && p.life <= 0 && false);
     }
     if (S.steering && (S.steering.dead || P.dead || state !== 'play')) S.steering = null;
+    if (S.wasSteer && !S.steering) { CH.on = false; try { PVM.flightOver(); } catch (e) {} }
+    S.wasSteer = !!S.steering;
     for (const r of robots) if (!r.remote && r.mxBot !== false) botAI(r, dt);
-    hud();
+    hud(dt);
   }
-  // HUD: plane count, catch prompt, steering picture-in-picture frame
-  let lastHud = '';
-  function hud() {
-    const pip = document.getElementById('pPip'), tip = document.getElementById('pTip'), n = document.getElementById('pPlaneN'), pl = document.getElementById('pPlane');
-    if (n) { const s = '×' + (P.nades | 0); if (n.textContent !== s) n.textContent = s; pl.classList.toggle('empty', (P.nades | 0) <= 0); }
-    const c = state === 'play' && !P.dead && !S.steering ? catchable(PLAYER_ENT) : null, t = c ? '<kbd>F</kbd> CATCH THE PLANE!' : S.steering ? 'Steering your plane · <kbd>click</kbd> pop · <kbd>G</kbd> let go' : '';
-    if (tip && t !== lastHud) { lastHud = t; tip.innerHTML = t; tip.style.display = t ? 'block' : 'none'; }
-    if (pip) pip.style.display = S.steering ? 'block' : 'none';
+  // HUD (paper style, ids wx*): the plane slot (key + one paper plane per carried plane, the refolding one fills up), the big
+  // catch prompt, the flying hint, the first-time tip. DOM writes only when something changed.
+  const HCSS = [
+    '#pPlane,#pPip,#pTip{display:none!important}',
+    "#wxPlanes{position:absolute;right:26px;bottom:78px;display:flex;align-items:center;gap:6px;font:900 15px 'Nunito',system-ui,sans-serif;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.5);transition:transform .15s;transform-origin:right center}",
+    '#wxPlanes.sel{transform:scale(1.15)}#wxPlanes kbd{font:inherit;background:#fff;color:#2b2420;padding:1px 7px;border-radius:3px;margin-right:4px;box-shadow:0 2px 0 rgba(0,0,0,.3)}',
+    '#wxPlanes i{position:relative;width:30px;height:17px;display:block;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35))}',
+    "#wxPlanes i::before,#wxPlanes i::after{content:'';position:absolute;top:0;bottom:0;left:0;clip-path:polygon(0 50%,30px 0,16px 17px,13px 10px)}",
+    '#wxPlanes i::before{right:0;background:rgba(255,255,255,.3)}#wxPlanes i::after{width:var(--f,100%);background:#fff}',
+    "#wxCatch{position:absolute;left:50%;top:calc(50% + 60px);display:none;align-items:center;gap:16px;font:400 54px 'Lilita One','Arial Black',sans-serif;color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.35);white-space:nowrap;transform:translateX(-50%);animation:wxPulse .42s ease-in-out infinite alternate}",
+    '#wxCatch kbd{font:inherit;font-size:46px;background:#fff;color:#c0392b;padding:0 18px;border-radius:8px;box-shadow:0 5px 0 rgba(0,0,0,.3)}',
+    '#wxCatch.on{display:flex}@keyframes wxPulse{from{transform:translateX(-50%) scale(1)}to{transform:translateX(-50%) scale(1.08)}}',
+    "#wxFly{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);display:none;font:900 19px 'Nunito',system-ui,sans-serif;color:#2b2420;background:#efe5cf;padding:8px 18px;box-shadow:0 3px 0 rgba(0,0,0,.25);white-space:nowrap}",
+    '#wxFly b{color:#2f4fb0}#wxFly.on{display:block}',
+    "#wxTip{position:absolute;left:50%;top:calc(50% + 140px);transform:translateX(-50%) rotate(-1deg);display:none;font:900 18px 'Nunito',system-ui,sans-serif;color:#2b2420;background:#fff7c8;padding:8px 16px;box-shadow:0 3px 0 rgba(0,0,0,.25);white-space:nowrap}",
+    '#wxTip.on{display:block}#hud.wxFlying #xh{display:none}',
+    '@media (max-width:700px){#wxCatch{font-size:34px}#wxCatch kbd{font-size:30px}#wxFly,#wxTip{font-size:14px;white-space:normal;width:86vw;text-align:center}}',
+    '@media (prefers-reduced-motion:reduce){#wxCatch{animation:none}}'].join('\n');
+  function hudEl(id) {
+    let el = document.getElementById(id); if (el) return el;
+    if (!document.getElementById('wxPlaneCss')) { const st = document.createElement('style'); st.id = 'wxPlaneCss'; st.textContent = HCSS; document.head.appendChild(st); }
+    el = document.createElement('div'); el.id = id; (document.getElementById('hud') || document.body).appendChild(el);
+    if (id === 'wxCatch') el.innerHTML = '<kbd>F</kbd>CATCH!';
+    if (id === 'wxFly') el.innerHTML = '<b>Mouse</b>: steer &middot; <b>Click</b>: pop &middot; <b>Right click</b>: let go';
+    return el;
   }
-  // picture-in-picture: the plane's view, drawn into the top-right corner after the main picture
-  function renderPip() {
-    const p = S.steering; if (!p || p.dead || !pipCam) return;
-    const el = document.getElementById('pPip'); if (!el) return; const r = el.getBoundingClientRect(), H = renderer.domElement.clientHeight;
-    pipCam.position.copy(p.pos).addScaledVector(p.dir, -1.1); pipCam.position.y += .35; pipCam.lookAt(_a.copy(p.pos).addScaledVector(p.dir, 6)); pipCam.aspect = r.width / r.height; pipCam.updateProjectionMatrix();
-    const at = renderer.getRenderTarget(); renderer.setRenderTarget(null); renderer.setScissorTest(true);
-    renderer.setScissor(r.left, H - r.bottom, r.width, r.height); renderer.setViewport(r.left, H - r.bottom, r.width, r.height);
-    const ac = renderer.autoClear; renderer.autoClear = true; renderer.render(scene, pipCam); renderer.autoClear = ac;
-    renderer.setScissorTest(false); renderer.setViewport(0, 0, renderer.domElement.clientWidth, H); renderer.setRenderTarget(at);
+  let lastHud = '', lastSlots = '', lastFly = null, lastSel = null;
+  function hud(dt) {
+    const n = P.nades | 0, f = n < R.carry ? clamp(1 - (P.nadeT || 0) / R.regen, 0, 1) : 1, key = n + ':' + Math.round(f * 20) + ':' + R.carry;
+    if (key !== lastSlots) { lastSlots = key; let h = '<kbd>G</kbd>'; for (let i = 0; i < R.carry; i++) h += '<i style="--f:' + (i < n ? 100 : i === n ? Math.round(f * 100) : 0) + '%"></i>'; hudEl('wxPlanes').innerHTML = h; }
+    const sel = P.weapon === 'plane'; if (sel !== lastSel) { lastSel = sel; hudEl('wxPlanes').classList.toggle('sel', sel); }
+    if (sel && (P.ammo !== n || P.reserve !== R.carry)) { P.ammo = n; P.reserve = R.carry; try { updateHud(); } catch (e) {} }
+    const c = state === 'play' && !P.dead && !S.steering ? catchable(PLAYER_ENT) : null, t = c ? 'catch' : '';
+    if (t !== lastHud) { lastHud = t; hudEl('wxCatch').classList.toggle('on', !!c); if (c) { try { sfx.adsIn(); } catch (e) {} } }
+    const fly = !!S.steering && state === 'play'; if (fly !== lastFly) { lastFly = fly; hudEl('wxFly').classList.toggle('on', fly); const hd = document.getElementById('hud'); if (hd) hd.classList.toggle('wxFlying', fly); }
+    if (tipT > 0) { tipT -= dt || 0; if (tipT <= 0) hudEl('wxTip').classList.remove('on'); }
   }
-  function reset() { for (const p of list) { p.dead = true; scene.remove(p.m); } list.length = 0; S.steering = null; P.nades = R.carry; }
+  // chase camera while you fly the plane (replaces the old picture-in-picture, a second full-scene render every frame).
+  // The main camera itself moves behind the plane (same single render), smoothed; your body stays where it was.
+  const CH = { back: 2.4, up: .7, look: 5, fov: 82, follow: 10, on: false, pos: new THREE.Vector3(), tgt: new THREE.Vector3() };
+  function chaseCam(rdt) {
+    const p = S.steering; if (!p || p.dead) { CH.on = false; return; }
+    const want = _a.copy(p.pos).addScaledVector(p.dir, -CH.back); want.y += CH.up;
+    // keep the camera out of walls: pull it toward the plane if something solid is between them
+    _rc.set(p.pos, _b.subVectors(want, p.pos).normalize()); _rc.far = CH.back + CH.up; _hits.length = 0; for (const m of world.meshes) { m.raycast(_rc, _hits); if (_hits.length) break; }
+    if (_hits.length) { _hits.sort((x, y) => x.distance - y.distance); want.copy(p.pos).addScaledVector(_b, Math.max(.3, _hits[0].distance - .2)); }
+    const tg = _c.copy(p.pos).addScaledVector(p.dir, CH.look);
+    if (!CH.on) { CH.on = true; CH.pos.copy(camera.position); CH.tgt.copy(tg); }
+    const k = 1 - Math.exp(-CH.follow * Math.min(rdt, .1)); CH.pos.lerp(want, k); CH.tgt.lerp(tg, Math.min(1, k * 1.5));
+    camera.position.copy(CH.pos); camera.lookAt(CH.tgt); camera.rotation.z += clamp(-(p.roll || 0) * .25, -.25, .25);
+    P.fov = damp(P.fov, CH.fov, 6, rdt); if (Math.abs(camera.fov - P.fov) > .01) { camera.fov = P.fov; camera.updateProjectionMatrix(); }
+  }
+  function renderPip() {}   // (kept for the frame loop's call; the chase camera above replaced the picture-in-picture)
+  function reset() { for (const p of list) { p.dead = true; scene.remove(p.m); } list.length = 0; S.steering = null; P.nades = R.carry; P.nadeT = R.regen; }
+  // numbers from data/paper_weapons.json "plane" (Unity-portable): rules = R overrides (catchConeDeg in degrees), carry, regen, chase camera
+  function config(pl) {
+    const r = pl && pl.rules || {}; for (const k in r) if (k in R && typeof r[k] === 'number') R[k] = r[k];
+    if (typeof r.catchConeDeg === 'number') R.catchCone = Math.cos(r.catchConeDeg * Math.PI / 180);
+    if (typeof pl.carry === 'number') R.carry = pl.carry; if (typeof pl.regen === 'number') R.regen = pl.regen;
+    if (pl.chase) for (const k in pl.chase) if (typeof pl.chase[k] === 'number') CH[k] = pl.chase[k];
+    if (typeof P !== 'undefined' && (P.nades | 0) > R.carry) P.nades = R.carry;
+  }
+  // a one-line paper tip under the crosshair (first-time help)
+  let tipT = 0;
+  function tip(text, secs) { const el = hudEl('wxTip'); el.textContent = text; el.classList.add('on'); tipT = secs || 4; }
   /* self test (qa/paper/core.js): throw, steer, hit, shoot down, catch + return to sender, all in this page */
   async function selfTest() {
     const C = {}, ok = (k, v, info) => { C[k] = { ok: !!v, info: info || '' }; }, wait = ms => new Promise(r => setTimeout(r, ms));
@@ -5496,49 +6192,50 @@ const PLANES = (() => {
     for (let i = 0; i < 80 && robots.some(x => x.dead); i++) await wait(100);
     const s = window.__s9, reds = robots.filter(r => r.mxBot && r.mxTeam === 'def').sort((a, b) => a.dead - b.dead), T = reds[0], bot2 = reds[1];
     const freeze = b => { b.percT = 1e9; b.thinkT = 1e9; b.hasGoal = false; b.vel && b.vel.set(0, 0, 0); b.shield = 0; b.mode = 'x'; };
-    reds.forEach(freeze); robots.forEach(b => { if (b !== T && b !== bot2) b.root.position.set(-26, 0, 38); });
-    P.nades = R.carry; P.pos.set(0, 0, -30); P.yaw = Math.PI; P.pitch = .02; window.__god = true;
-    T.root.position.set(0, 0, -18); T.hp = 100; T.dead = false; T.root.visible = true; bot2.root.position.set(-26, 0, 30);
+    reds.forEach(freeze); robots.forEach(b => { if (b !== T && b !== bot2) b.root.position.copy(TF.park()); });
+    P.nades = R.carry; P.pos.copy(TF.p(0, 0, -30)); P.yaw = TF.yaw(); P.pitch = .02; window.__god = true;
+    T.root.position.copy(TF.p(0, 0, -18)); T.hp = 100; T.dead = false; T.root.visible = true; bot2.root.position.copy(TF.park());
+    await wait(200);   // (the camera takes the new view on the next frame)
     const n0 = P.nades; const thrown = playerThrow(); const p1 = list[list.length - 1];
     ok('throw (G)', thrown && p1 && P.nades === n0 - 1, `planes left ${P.nades}`); await wait(120);
-    ok('steering takes the mouse (picture-in-picture on)', S.steering === p1 && document.getElementById('pPip').style.display === 'block');
+    ok('steering takes the mouse (chase camera + hint on)', S.steering === p1 && CH.on && camera.position.distanceTo(p1.pos) < 6 && document.getElementById('wxFly').classList.contains('on'), 'cam-to-plane ' + camera.position.distanceTo(p1.pos).toFixed(2) + ' m');
     const y0 = Math.atan2(-p1.dir.x, -p1.dir.z); const yawP = P.yaw; steerLook(-120, 0); await wait(250);
     ok('steer with the mouse turns the plane, not the view', Math.abs(Math.atan2(-p1.dir.x, -p1.dir.z) - y0) > .05 && Math.abs(P.yaw - yawP) < 1e-6, `plane yaw ${(Math.atan2(-p1.dir.x, -p1.dir.z) - y0).toFixed(2)} rad`);
     // aim it back at the target and let it hit
     p1.dir.subVectors(entChest(T, _c), p1.pos).normalize(); const hp0 = T.hp;
     for (let i = 0; i < 40 && !p1.dead; i++) { p1.dir.subVectors(entChest(T, _c), p1.pos).normalize(); await wait(50); }
-    ok('hits and explodes (blast damage)', p1.dead && (T.dead || T.hp < hp0), `target hp ${Math.round(T.hp)} dead=${T.dead}`);
+    ok('hits and explodes (blast damage)', p1.dead && (T.dead || T.hp < hp0), `target hp ${Math.round(T.hp)} dead=${T.dead} plane at ${p1.pos.toArray().map(v => v.toFixed(1))} target at ${T.root.position.toArray().map(v => v.toFixed(1))} shield=${T.shield}`);
     ok('view comes back after the plane is gone', !S.steering);
     await wait(300);
     // shoot down: a red plane flying at the player; real bullets from the player's gun
-    if (T.dead) { T.dead = false; T.hp = 100; resetDeathFx(T); T.root.visible = true; } T.root.position.set(0, 0, -18); freeze(T);
-    const p2 = spawn(T, new THREE.Vector3(0, 1.6, -22), new THREE.Vector3(0, 0, -1), null); p2.speed = 2; p2.botTarget = null;
+    if (T.dead) { T.dead = false; T.hp = 100; resetDeathFx(T); T.root.visible = true; } T.root.position.copy(TF.p(0, 0, -18)); freeze(T);
+    const p2 = spawn(T, TF.p(0, 1.6, -22), TF.d(-1), null); p2.speed = 2; p2.botTarget = null;
     let shots = 0; for (let i = 0; i < 12 && !p2.dead; i++) { shot(camera.position.clone(), _a.subVectors(p2.pos, camera.position).normalize().clone(), 60, 13, PLAYER_ENT); shots++; await wait(30); }
     ok('shoot down (small HP)', p2.dead, `${shots} hits of 13 dmg (hp ${R.hp})`);
     // catch: a red bot's plane flies at the player; F catches it; steered back it kills the thrower = RETURN TO SENDER
-    T.hp = 100; T.root.position.set(0, 0, -16); freeze(T); P.pos.set(0, 0, -30); P.yaw = Math.PI; P.pitch = 0;
-    const p3 = spawn(T, new THREE.Vector3(0, 1.55, -27.5), new THREE.Vector3(0, 0, -1), T); p3.speed = .5; p3.botTarget = null; p3.steer = null; p3.age = 1;
-    await wait(100); const prompt = (document.getElementById('pTip').textContent || '').includes('CATCH');
-    ok('catch prompt shows when a plane is close and in front', prompt, document.getElementById('pTip').textContent);
+    T.hp = 100; T.root.position.copy(TF.p(0, 0, -16)); freeze(T); P.pos.copy(TF.p(0, 0, -30)); P.yaw = TF.yaw(); P.pitch = 0;
+    const p3 = spawn(T, TF.p(0, 1.55, -27.5), TF.d(-1), T); p3.speed = .5; p3.botTarget = null; p3.steer = null; p3.age = 1;
+    await wait(100); const prompt = document.getElementById('wxCatch').classList.contains('on');
+    ok('catch prompt (big F CATCH!) shows when a plane is close and in front', prompt, document.getElementById('wxCatch').textContent);
     dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyF' })); dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyF' }));
-    ok('F catches it (now yours, turned round)', p3.owner === PLAYER_ENT && S.steering === p3 && p3.dir.z > .5, `owner=${p3.owner === PLAYER_ENT ? 'you' : 'them'} dirZ=${p3.dir.z.toFixed(2)}`);
+    ok('F catches it (now yours, turned round)', p3.owner === PLAYER_ENT && S.steering === p3 && p3.dir.dot(TF.d(1)) > .5, `owner=${p3.owner === PLAYER_ENT ? 'you' : 'them'} dirFwd=${p3.dir.dot(TF.d(1)).toFixed(2)}`);
     const ret0 = S.stats.returns; T.hp = 30;
     for (let i = 0; i < 60 && !p3.dead; i++) { p3.dir.subVectors(entChest(T, _c), p3.pos).normalize(); await wait(40); }
-    ok('steer it back: RETURN TO SENDER (callout + slow motion)', S.stats.returns > ret0 && T.dead, `returns=${S.stats.returns} slowmo=${(window.SLOWMO || 0).toFixed(2)} target dead=${T.dead}`);
+    ok('steer it back: RETURN TO SENDER (callout + slow motion)', S.stats.returns > ret0 && T.dead, `returns=${S.stats.returns} slowmo=${(window.SLOWMO || 0).toFixed(2)} target dead=${T.dead} hp=${Math.round(T.hp)} plane dead=${p3.dead} at ${p3.pos.toArray().map(v => v.toFixed(1))} T at ${T.root.position.toArray().map(v => v.toFixed(1))} owner=${p3.owner === PLAYER_ENT}`);
     // bots: a bot throws one, and a bot can catch the player's plane
     await wait(600); window.__god = true; const b = reds.find(x => !x.dead) || T; if (b.dead) { b.dead = false; b.hp = 100; b.root.visible = true; }
-    b.root.position.set(4, 0, -16); const t0 = S.stats.botThrows; botThrow(b, new THREE.Vector3(0, 1, -30));
+    b.root.position.copy(TF.p(4, 0, -16)); const t0 = S.stats.botThrows; botThrow(b, TF.p(0, 1, -30));
     ok('bots throw planes (homing)', S.stats.botThrows > t0 && list.some(q => q.owner === b && !q.dead));
     for (const q of list) if (q.owner === b) pop(q, true);
-    P.nades = R.carry; b.root.position.set(0, 0, -26); b.aimYaw = Math.PI; b.root.rotation.y = Math.PI; freeze(b);
-    const sd = S.steering = null; const p4 = spawn(PLAYER_ENT, new THREE.Vector3(0, 1.5, -24.5), new THREE.Vector3(0, 0, -1), PLAYER_ENT); p4.speed = .3; p4.age = 1;
+    P.nades = R.carry; b.root.position.copy(TF.p(0, 0, -26)); b.aimYaw = TF.yaw(); b.root.rotation.y = b.aimYaw; freeze(b);
+    const sd = S.steering = null; const p4 = spawn(PLAYER_ENT, TF.p(0, 1.5, -24.5), TF.d(-1), PLAYER_ENT); p4.speed = .3; p4.age = 1;
     const diff = S9BotModes.cfg.diff; S9BotModes.cfg.diff = 'hard'; const rnd = Math.random; Math.random = () => 0;
     try { botAI(b, .016); } finally { Math.random = rnd; S9BotModes.cfg.diff = diff; }
     ok('bots catch planes and send them back', p4.owner === b && p4.botTarget === PLAYER_ENT, `owner=${p4.owner === b ? 'bot' : 'you'}`);
     pop(p4, true); window.__god = false;
     return { checks: C, stats: Object.assign({}, S.stats) };
   }
-  return { R, list, S, spawn, warm, update, playerThrow, playerCatch, stopSteer, steerLook, damage, shot, pop, botThrow, botAI, renderPip, reset, catchable, selfTest };
+  return { R, CH, list, S, spawn, warm, update, playerThrow, playerCatch, stopSteer, steerLook, damage, shot, pop, botThrow, botAI, renderPip, chaseCam, reset, catchable, config, tip, hud, selfTest };
 })();
 /* ================= online 1v1 (claude.ai room: presence stream, shooter-side hits) ================= */
 const NET = { on: false, room: null, lobby: null, opp: null, oppPeer: null, nick: '', code: '', snaps: [], seq: { shot: 0, hit: 0, nade: 0 }, hits: [], last: { shot: 0, hit: 0, nade: 0, dead: false, D: 0 }, rtt: 0, pingT: 0, losT: 0, sendT: 0 };
@@ -6447,6 +7144,61 @@ function restoreReplay() {
   REC.saved.length = 0;
 }
 
+/* ================= MELEE SLICE: cut a peek hole in thin cardboard with the paper cutter ================= */
+// Rules (docs/MECHANICS.md "Knife slice"): with the cutter out (V), aim at a sliceable (tearable) thin cardboard surface within
+// KSLICE.R.reach m: a small scissors icon shows. HOLD left click = slice mode: the cut follows the crosshair across that panel at
+// most R.speed m/s (slow on purpose), up to R.max m per hold; release = the cut stays (a slit you can see / shoot through). A
+// cut that comes back near its start and encloses >= .02 m2 drops the piece out (a clean peek hole). Cutting is loud: enemies hear
+// tearing card (noise every .25 s). A TAP (released within R.tap s) on the same panel, or holding left click anywhere else, is the
+// normal melee attack. Aiming the cutter at thick card / props within reach shows "too thick". Deterministic: the polyline.
+const KSLICE = (() => {
+  const R = { reach: 2.2, speed: .9, max: 1.8, step: .03, tap: .18 };
+  const rc = new THREE.Raycaster(), _d = new THREE.Vector3();
+  const S = { near: null, thick: false, active: null, stats: { cuts: 0, closed: 0 } };
+  function aimHit() {
+    camera.getWorldDirection(_d); rc.set(camera.position, _d); rc.far = R.reach + .6; if (targetsDirty) rebuildTargets();
+    const h = rc.intersectObjects(world.meshes, false)[0]; return h && h.distance <= R.reach + (S.active ? .6 : 0) ? h : null;
+  }
+  // mousedown with the cutter out: start slicing if we are on thin card (returns true = the attack is held back)
+  function tryStart() {
+    if (P.weapon !== 'knife' || state !== 'play' || P.dead) return false;
+    const h = aimHit(); if (!h || h.object.userData.tear === undefined) return false;
+    const P_ = TEAR.panels[h.object.userData.tear], uv = TEAR.uvOf(h.object, h.point);
+    const L = { pts: [uv], closed: false, live: true }; P_.knife = P_.knife || []; P_.knife.push(L);
+    S.active = { mesh: h.object, P_: P_, L, len: 0, t0: performance.now(), noiseT: 0, cur: uv.slice() }; return true;
+  }
+  function stop() {
+    const A = S.active; if (!A) return; S.active = null; const P_ = A.P_, L = A.L;
+    if (performance.now() - A.t0 < R.tap * 1000 && A.len < .05) {   // a tap: no cut, a normal swing
+      P_.knife.splice(P_.knife.indexOf(L), 1); TEAR.redraw(P_); try { knifeAttack(false); } catch (e) {} return; }
+    P_.knife.splice(P_.knife.indexOf(L), 1); const r = TEAR.cut(A.mesh, L.pts);   // re-applied through the deterministic path
+    S.stats.cuts++; if (r && r.closed) { S.stats.closed++; callout('PEEK HOLE!', 'multi'); }
+  }
+  function update(dt) {
+    if (P.weapon !== 'knife' || state !== 'play') { if (S.active) stop(); S.near = null; S.thick = false; icon(); return; }
+    const h = aimHit(); S.near = h && h.object.userData.tear !== undefined ? h.object : null; S.thick = !!h && !S.near;
+    const A = S.active;
+    if (A) {
+      if (!mouseDown && !A.hold) { stop(); icon(); return; }
+      if (h && h.object === A.mesh && A.len < R.max) {
+        const uv = TEAR.uvOf(A.mesh, h.point), c = A.cur, dx = uv[0] - c[0], dy = uv[1] - c[1], d = Math.hypot(dx, dy), m = Math.min(d, R.speed * dt);
+        if (d > 1e-4) { c[0] += dx / d * m; c[1] += dy / d * m; }
+        const last = A.L.pts[A.L.pts.length - 1];
+        if (Math.hypot(c[0] - last[0], c[1] - last[1]) >= R.step) { A.len += Math.hypot(c[0] - last[0], c[1] - last[1]); A.L.pts.push(c.slice()); TEAR.redraw(A.P_);
+          if ((A.noiseT -= dt) <= 0) { A.noiseT = .25; noise(camera.position, 30, PLAYER_ENT); try { sfx.knifeHit(); } catch (e) {} PFX.chips(h.point, _d.clone().negate(), A.P_.mat.color, A.P_.mat.userData.paper, 2); } }
+      }
+      if (A.len >= R.max) stop();
+    }
+    icon();
+  }
+  let last = '';
+  function icon() {
+    const el = document.getElementById('pSlice'); if (!el) return;
+    const t = S.active ? 'cutting… release to stop' : S.near ? 'hold left click to cut' : S.thick ? 'too thick to cut' : '';
+    if (t !== last) { last = t; el.textContent = t; el.style.display = t ? 'block' : 'none'; el.classList.toggle('no', !S.active && !S.near); }
+  }
+  return { R, S, tryStart, stop, update };
+})();
 /* ================= update: player ================= */
 const fwd = V3(), right = V3(), wish = V3();
 // every movement number in one place (exported to data/move.json for the Unity version)
@@ -6510,7 +7262,7 @@ function updatePlayer(dt, rdt) {
   if (P.hp < 30) { G.heartT -= dt; if (G.heartT <= 0) { sfx.heart(); G.heartT = .85; } }
   // ADS
   // a bolt gun drops out of the scope while the bolt cycles and comes back by itself if you still hold aim (CS2 style)
-  const adsT = adsHeld && P.reload <= 0 && !sprint && P.switchT <= dt + 1e-9 && P.weapon !== 'knife' && P.weapon !== 'boomerang' && !(W().bolt && P.boltT > 0) ? 1 : 0;
+  const adsT = adsHeld && P.reload <= 0 && !sprint && P.switchT <= dt + 1e-9 && P.weapon !== 'knife' && P.weapon !== 'boomerang' && P.weapon !== 'plane' && !(W().bolt && P.boltT > 0) ? 1 : 0;
   { const a0 = P.ads; P.ads = W().scopeSnap ? adsT : damp(P.ads, adsT, W().adsSpeed, rdt); if (W().scopeSnap && P.ads !== a0) P.fovSnap = true; }   // scopeSnap: in / out on this very frame (the camera FOV follows below)
   P.switchT = Math.max(0, P.switchT - dt); P.boltT = Math.max(0, P.boltT - dt);
   updateStation(dt);
@@ -6603,6 +7355,7 @@ function updateCamera(dt, rdt) {
   if (W().scopeSnap && (P.ads > 0 || P.fovSnap)) { P.fov = fovT; P.fovSnap = false; } else P.fov = damp(P.fov, fovT, 12, rdt);   // the snap scope has no zoom tween (in or out)
   if (Math.abs(camera.fov - P.fov) > .01) { camera.fov = P.fov; camera.updateProjectionMatrix(); }
   const gf = lerp(60, 50, P.ads); if (Math.abs(gunCam.fov - gf) > .01) { gunCam.fov = gf; gunCam.updateProjectionMatrix(); }
+  if (PLANES.S.steering) PLANES.chaseCam(rdt);   // flying your paper plane: the camera follows it (one render, no picture-in-picture)
 }
 function updateViewmodel(dt) {
   const ads = P.ads, hs = Math.hypot(P.vel.x, P.vel.z), bobAmt = reduceMotion ? 0 : clamp(hs / 6, 0, 1.3) * (1 - ads * .9);
@@ -6654,6 +7407,7 @@ function updateViewmodel(dt) {
   updateGunFx(dt);
   const scoped = !!W().scope && ads > .85;
   gun.visible = !scoped; setStyle($('scope'), 'opacity', scoped ? '1' : '0');
+  PVM.update(dt);   // paper guns: part clips (mag, pump, bolt, plane), hip cant, plane slot (40-viewmodel.js)
 }
 
 /* ================= update: bots (perception → decision → movement → aim/fire → animation) ================= */
@@ -7205,7 +7959,7 @@ function syncSettings() { for (const p of ['m', 'p']) { $(p + 'sens').value = CF
 /* ================= input ================= */
 function look(dx, dy) {
   if (PLANES.S.steering && PLANES.steerLook(dx, dy)) return;   // steering your paper plane: the mouse flies it
-  const s = .0021 * CFG.sens * lerp(1, W().adsFov / 78, P.ads);
+  const s = .0021 * CFG.sens * lerp(1, Math.tan(W().adsFov * Math.PI / 360) / Math.tan(78 * Math.PI / 360), P.ads);   // scoped / ADS: the mouse slows with the zoom (tan ratio: same on-screen move per hand move)
   P.yaw -= dx * s; P.pitch = clamp(P.pitch - dy * s, -1.5, 1.5);
   springs.swayX.v -= dx * .0016 * FEEL.sway; springs.swayY.v += dy * .0016 * FEEL.sway;
 }
@@ -7220,6 +7974,8 @@ document.addEventListener('mousemove', e => {
 renderer.domElement.addEventListener('mousedown', e => {
   if (state !== 'play') return;
   if (PLANES.S.steering) { if (e.button === 0) PLANES.pop(PLANES.S.steering); else if (e.button === 2) PLANES.stopSteer(); return; }
+  if (e.button === 0 && P.weapon === 'knife' && KSLICE.tryStart()) { mouseDown = true; P.trigReady = false; if (!document.pointerLockElement) lock(); return; }   // cutter on thin card: slice
+  if (P.weapon === 'plane') { if (e.button === 0) PVM.planeThrow(); if (!document.pointerLockElement) lock(); return; }   // the plane slot: click throws (right click does nothing)
   if (e.button === 0) { mouseDown = true; P.trigReady = true; if (P.switchT > 0) P.drawClick = G.time; if (noLock) lookDrag = true; }   // drawClick: a tap during a weapon draw fires when the draw ends
   if (e.button === 2) { if (P.weapon === 'knife') knifeAttack(true); else if (P.weapon === 'boomerang') { BOOM.rDown = true; BOOM.rT = 0; } else { adsHeld = true; sfx.adsIn(); } }
   if (!document.pointerLockElement) lock();
@@ -7239,7 +7995,8 @@ addEventListener('keydown', e => {
   if (e.code === 'Space' && !e.repeat) P.jumpQ = .15;
   if (e.code === 'KeyC' && !e.repeat) { if (P.sprint && P.onGround && Math.hypot(P.vel.x, P.vel.z) > 6) startSlide(); else P.crouchHold = !P.crouchHold; }
   if (e.code === 'KeyE' && !e.repeat) tryDash();
-  if (e.code === 'KeyG' && !e.repeat) { if (PLANES.S.steering) PLANES.stopSteer(); else if (P.nades > 0) P.nadeHold = performance.now(); }
+  if ((e.code === 'KeyG' || e.code === 'Digit6') && !e.repeat) PVM.planeKey();   // the plane slot (again: back to your gun; while flying: let go)
+  if (e.code === 'KeyY' && !e.repeat) PVM.inspect();   // look at your paper gun
   if (e.code === 'KeyF' && !e.repeat) PLANES.playerCatch();   // (Sector Nine's overdrive is not in Paper FPS)
   if (e.code === 'Tab') { e.preventDefault(); $('board').innerHTML = boardHTML(); $('board').hidden = false; }
   for (let i = 0; i < 5; i++) if (e.code === 'Digit' + (i + 1) && SLOTS()[i]) switchWeapon(SLOTS()[i]);
@@ -7250,7 +8007,7 @@ addEventListener('keydown', e => {
   if (e.code === 'Escape' && (noLock || !document.pointerLockElement)) { if (state === 'play') setState('paused'); else if (state === 'dead') P.pauseOnRespawn = true; }
 });
 addEventListener('wheel', e => { if (state !== 'play') return; const cyc = SLOTS().slice(), n = cyc.length, i = Math.max(0, cyc.indexOf(P.weapon)); switchWeapon(cyc[(i + (e.deltaY > 0 ? 1 : n - 1)) % n], true); }, { passive: true });
-addEventListener('keyup', e => { keys[e.code] = false; HELD[e.code] = false; if (e.code === 'KeyG' && P.nadeHold) { const c = (performance.now() - P.nadeHold) / 1000; P.nadeHold = 0; throwPlayerNade(c); } if (e.code === 'Tab') $('board').hidden = true; });
+addEventListener('keyup', e => { keys[e.code] = false; HELD[e.code] = false; if (e.code === 'Tab') $('board').hidden = true; });
 addEventListener('blur', () => { for (const k in HELD) HELD[k] = false; if (state === 'play') { for (const k in keys) keys[k] = false; mouseDown = false; adsHeld = false; if (noLock) setState('paused'); } });
 addEventListener('contextmenu', e => { if (state === 'play' || e.target === renderer.domElement) e.preventDefault(); });
 
@@ -7384,7 +8141,7 @@ function frame(now) {
     perf.bots = lerp(perf.bots || 0, botMs, .05);
     SIM.alpha = state === 'play' ? SIM.acc / SIM.dt : 1;
     simPresent(dt, rdt); if (state === 'play') { updateCamera(dt, rdt); simCamDone(); updateViewmodel(rdt); } simUnP(); recFrame();
-    updatePads(dt); updateNades(dt); updateRockets(dt); updateProj(dt); updateDecals(); updateDrops(dt); updateBoom(dt); updateRemoteBooms(dt); PLANES.update(dt);
+    updatePads(dt); updateNades(dt); updateRockets(dt); updateProj(dt); updateDecals(); updateDrops(dt); updateBoom(dt); updateRemoteBooms(dt); PLANES.update(dt); KSLICE.update(dt);
   } else if (state === 'dead') {
     G.time += dt; G.matchT -= dt; P.dieT += rdt;
     fallDead(P.pos, P, dt);   // died in mid air: your body drops to the floor (others see it fall too)

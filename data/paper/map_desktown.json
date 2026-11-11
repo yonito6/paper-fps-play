@@ -160,7 +160,9 @@
    0,
    45,
    "floor",
-   "cutting mat"
+   "cutting mat",
+   "thick",
+   85
   ],
   [
    -52.0,
@@ -170,7 +172,9 @@
    11.0,
    34.0,
    "solid",
-   "building"
+   "building",
+   "thick",
+   6.0
   ],
   [
    -32.0,
@@ -180,7 +184,9 @@
    4.2,
    -4.0,
    "solid",
-   "north block ground floor"
+   "north block ground floor",
+   "thick",
+   17.0
   ],
   [
    -32.0,
@@ -190,7 +196,9 @@
    9.2,
    -8.0,
    "solid",
-   "north block upper"
+   "north block upper",
+   "thick",
+   13.0
   ],
   [
    -32.0,
@@ -200,7 +208,9 @@
    9.2,
    -4.0,
    "solid",
-   "gallery roof"
+   "gallery roof",
+   "thick",
+   4.0
   ],
   [
    -32.0,
@@ -210,7 +220,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    -27.7,
@@ -220,7 +232,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    -22.7,
@@ -230,7 +244,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    -17.7,
@@ -240,7 +256,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    -10.2,
@@ -250,7 +268,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    -29.3,
@@ -260,7 +280,9 @@
    5.35,
    -4.15,
    "tear",
-   "blue_gal_w0"
+   "blue_gal_w0",
+   "thin",
+   0.1
   ],
   [
    -29.3,
@@ -270,7 +292,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    -24.3,
@@ -280,7 +304,9 @@
    5.35,
    -4.15,
    "tear",
-   "blue_gal_w1"
+   "blue_gal_w1",
+   "thin",
+   0.1
   ],
   [
    -24.3,
@@ -290,7 +316,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    -19.3,
@@ -300,7 +328,9 @@
    5.35,
    -4.15,
    "tear",
-   "blue_gal_w2"
+   "blue_gal_w2",
+   "thin",
+   0.1
   ],
   [
    -19.3,
@@ -310,7 +340,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    -12.8,
@@ -320,7 +352,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    -14.2,
@@ -330,7 +364,9 @@
    6.8,
    -4.15,
    "tear",
-   "blue_shop_side"
+   "blue_shop_side",
+   "thin",
+   0.1
   ],
   [
    -14.2,
@@ -340,7 +376,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    -13.6,
@@ -350,7 +388,9 @@
    7.75,
    -2.5,
    "solid",
-   "awning"
+   "awning",
+   "thin",
+   1.5
   ],
   [
    -10.5,
@@ -360,7 +400,9 @@
    5.4,
    -6.6,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.2
   ],
   [
    -32.4,
@@ -370,7 +412,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery end wall"
+   "gallery end wall",
+   "medium",
+   0.4
   ],
   [
    -32.4,
@@ -380,7 +424,9 @@
    7.4,
    -5.0,
    "solid",
-   "gallery door lintel"
+   "gallery door lintel",
+   "medium",
+   0.4
   ],
   [
    -37.4,
@@ -390,7 +436,9 @@
    0.28,
    -19.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -400,7 +448,9 @@
    0.56,
    -18.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -410,7 +460,9 @@
    0.84,
    -17.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -420,7 +472,9 @@
    1.12,
    -16.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -430,7 +484,9 @@
    1.4,
    -16.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -440,7 +496,9 @@
    1.68,
    -15.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -450,7 +508,9 @@
    1.96,
    -14.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -460,7 +520,9 @@
    2.24,
    -13.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -470,7 +532,9 @@
    2.52,
    -12.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -480,7 +544,9 @@
    2.8,
    -12.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -490,7 +556,9 @@
    3.08,
    -11.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -500,7 +568,9 @@
    3.36,
    -10.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -510,7 +580,9 @@
    3.64,
    -9.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -520,7 +592,9 @@
    3.92,
    -8.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -530,7 +604,9 @@
    4.2,
    -8.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -37.4,
@@ -540,7 +616,9 @@
    4.2,
    -4.6,
    "walk",
-   "stair landing"
+   "stair landing",
+   "thick",
+   3.4
   ],
   [
    -37.56,
@@ -550,7 +628,9 @@
    5.28,
    -4.6,
    "rail",
-   "stair rail"
+   "stair rail",
+   "thin",
+   0.16
   ],
   [
    -37.4,
@@ -560,7 +640,9 @@
    5.28,
    -4.6,
    "rail",
-   "landing rail"
+   "landing rail",
+   "thin",
+   0.16
   ],
   [
    -14.6,
@@ -570,7 +652,9 @@
    4.2,
    -0.8,
    "walk",
-   "ruler bridge"
+   "ruler bridge",
+   "thick",
+   3.2
   ],
   [
    -14.6,
@@ -580,7 +664,9 @@
    5.28,
    -0.87,
    "rail",
-   "balcony railing"
+   "balcony railing",
+   "thin",
+   0.16
   ],
   [
    -14.76,
@@ -590,7 +676,9 @@
    5.28,
    -0.8,
    "rail",
-   "balcony end rail"
+   "balcony end rail",
+   "thin",
+   0.16
   ],
   [
    -14.38,
@@ -600,7 +688,9 @@
    3.88,
    -1.02,
    "solid",
-   "truss post"
+   "truss post",
+   "medium",
+   0.36
   ],
   [
    -14.38,
@@ -610,7 +700,9 @@
    3.88,
    -3.42,
    "solid",
-   "truss post"
+   "truss post",
+   "medium",
+   0.36
   ],
   [
    -9.0,
@@ -620,7 +712,9 @@
    0.28,
    -15.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -630,7 +724,9 @@
    0.56,
    -14.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -640,7 +736,9 @@
    0.84,
    -13.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -650,7 +748,9 @@
    1.12,
    -12.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -660,7 +760,9 @@
    1.4,
    -12.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -670,7 +772,9 @@
    1.68,
    -11.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -680,7 +784,9 @@
    1.96,
    -10.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -690,7 +796,9 @@
    2.24,
    -9.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -700,7 +808,9 @@
    2.52,
    -8.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -710,7 +820,9 @@
    2.8,
    -8.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -720,7 +832,9 @@
    3.08,
    -7.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -730,7 +844,9 @@
    3.36,
    -6.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -740,7 +856,9 @@
    3.64,
    -5.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -750,7 +868,9 @@
    3.92,
    -4.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -9.0,
@@ -760,7 +880,9 @@
    4.2,
    -4.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    -34.0,
@@ -770,7 +892,9 @@
    8.4,
    18.0,
    "solid",
-   "building"
+   "building",
+   "thick",
+   10.0
   ],
   [
    -33.0,
@@ -780,7 +904,9 @@
    3.1,
    8.0,
    "solid",
-   "awning"
+   "awning",
+   "thin",
+   1.7
   ],
   [
    -26.6,
@@ -790,7 +916,9 @@
    2.3,
    7.45,
    "tear",
-   "blue_shopfront0"
+   "blue_shopfront0",
+   "thin",
+   0.1
   ],
   [
    -32.4,
@@ -800,7 +928,9 @@
    2.3,
    7.45,
    "tear",
-   "blue_shopfront1"
+   "blue_shopfront1",
+   "thin",
+   0.1
   ],
   [
    -21.8,
@@ -810,7 +940,9 @@
    2.2,
    16.55,
    "tear",
-   "blue_passfence"
+   "blue_passfence",
+   "thin",
+   0.1
   ],
   [
    -17.6,
@@ -820,7 +952,9 @@
    1.2,
    17.2,
    "walk",
-   "window house floor"
+   "window house floor",
+   "thick",
+   8.4
   ],
   [
    -18.0,
@@ -830,7 +964,9 @@
    8.6,
    17.6,
    "solid",
-   "window house upper"
+   "window house upper",
+   "thick",
+   9.2
   ],
   [
    -10.0,
@@ -840,7 +976,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    -11.6,
@@ -850,7 +988,9 @@
    2.35,
    8.66,
    "tear",
-   "blue_house_north_100"
+   "blue_house_north_100",
+   "thin",
+   0.12
   ],
   [
    -11.6,
@@ -860,7 +1000,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    -12.6,
@@ -870,7 +1012,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    -14.2,
@@ -880,7 +1024,9 @@
    2.35,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    -14.2,
@@ -890,7 +1036,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    -15.8,
@@ -900,7 +1048,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    -17.0,
@@ -910,7 +1060,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    -18.0,
@@ -920,7 +1072,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    -17.0,
@@ -930,7 +1084,9 @@
    0.24,
    9.06,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.26
   ],
   [
    -17.0,
@@ -940,7 +1096,9 @@
    0.48,
    9.32,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.26
   ],
   [
    -17.0,
@@ -950,7 +1108,9 @@
    0.72,
    9.58,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.26
   ],
   [
    -17.0,
@@ -960,7 +1120,9 @@
    0.96,
    9.84,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.26
   ],
   [
    -17.0,
@@ -970,7 +1132,9 @@
    1.2,
    10.1,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.26
   ],
   [
    -9.2,
@@ -980,7 +1144,9 @@
    4.4,
    17.6,
    "solid",
-   "south"
+   "south",
+   "medium",
+   0.4
   ],
   [
    -10.4,
@@ -990,7 +1156,9 @@
    4.4,
    17.6,
    "solid",
-   "south"
+   "south",
+   "medium",
+   0.4
   ],
   [
    -12.4,
@@ -1000,7 +1168,9 @@
    4.4,
    17.6,
    "solid",
-   "south"
+   "south",
+   "medium",
+   0.4
   ],
   [
    -14.0,
@@ -1010,7 +1180,9 @@
    2.35,
    17.46,
    "tear",
-   "blue_house_south_124"
+   "blue_house_south_124",
+   "thin",
+   0.12
   ],
   [
    -14.0,
@@ -1020,7 +1192,9 @@
    4.4,
    17.6,
    "solid",
-   "south"
+   "south",
+   "medium",
+   0.4
   ],
   [
    -18.0,
@@ -1030,7 +1204,9 @@
    4.4,
    17.6,
    "solid",
-   "south"
+   "south",
+   "medium",
+   0.4
   ],
   [
    -10.4,
@@ -1040,7 +1216,9 @@
    0.24,
    19.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.28
   ],
   [
    -10.4,
@@ -1050,7 +1228,9 @@
    0.48,
    18.72,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.28
   ],
   [
    -10.4,
@@ -1060,7 +1240,9 @@
    0.72,
    18.44,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.28
   ],
   [
    -10.4,
@@ -1070,7 +1252,9 @@
    0.96,
    18.16,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.28
   ],
   [
    -10.4,
@@ -1080,7 +1264,9 @@
    1.2,
    17.88,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.28
   ],
   [
    -9.0,
@@ -1090,7 +1276,9 @@
    4.4,
    17.6,
    "solid",
-   "house end wall"
+   "house end wall",
+   "medium",
+   0.4
   ],
   [
    -18.0,
@@ -1100,7 +1288,9 @@
    4.4,
    17.6,
    "solid",
-   "house end wall"
+   "house end wall",
+   "medium",
+   0.4
   ],
   [
    -17.86,
@@ -1110,7 +1300,9 @@
    4.4,
    14.2,
    "tear",
-   "blue_house_end"
+   "blue_house_end",
+   "thin",
+   0.12
   ],
   [
    -18.0,
@@ -1120,7 +1312,9 @@
    4.4,
    11.4,
    "solid",
-   "house end wall"
+   "house end wall",
+   "medium",
+   0.4
   ],
   [
    -10.55,
@@ -1130,7 +1324,9 @@
    2.3,
    10.95,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.1
   ],
   [
    -8.6,
@@ -1140,7 +1336,9 @@
    3.6,
    17.6,
    "walk",
-   "terrace block (roof walkable)"
+   "terrace block (roof walkable)",
+   "thick",
+   4.6
   ],
   [
    -6.3,
@@ -1150,7 +1348,9 @@
    4.65,
    8.65,
    "tear",
-   "blue_terrace_n0"
+   "blue_terrace_n0",
+   "thin",
+   0.1
   ],
   [
    -8.5,
@@ -1160,7 +1360,9 @@
    4.65,
    8.65,
    "tear",
-   "blue_terrace_n1"
+   "blue_terrace_n1",
+   "thin",
+   0.1
   ],
   [
    -4.1,
@@ -1170,7 +1372,9 @@
    4.65,
    17.6,
    "solid",
-   "terrace parapet inner"
+   "terrace parapet inner",
+   "medium",
+   0.2
   ],
   [
    -4.0,
@@ -1180,7 +1384,9 @@
    3.2,
    15.0,
    "solid",
-   "crate wall (passage side)"
+   "crate wall (passage side)",
+   "thick",
+   1.6
   ],
   [
    -6.6,
@@ -1190,7 +1396,9 @@
    0.277,
    22.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    -6.6,
@@ -1200,7 +1408,9 @@
    0.554,
    21.662,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    -6.6,
@@ -1210,7 +1420,9 @@
    0.831,
    21.323,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    -6.6,
@@ -1220,7 +1432,9 @@
    1.108,
    20.985,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    -6.6,
@@ -1230,7 +1444,9 @@
    1.385,
    20.646,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    -6.6,
@@ -1240,7 +1456,9 @@
    1.662,
    20.308,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    -6.6,
@@ -1250,7 +1468,9 @@
    1.938,
    19.969,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    -6.6,
@@ -1260,7 +1480,9 @@
    2.215,
    19.631,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    -6.6,
@@ -1270,7 +1492,9 @@
    2.492,
    19.292,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    -6.6,
@@ -1280,7 +1504,9 @@
    2.769,
    18.954,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    -6.6,
@@ -1290,7 +1516,9 @@
    3.046,
    18.615,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    -6.6,
@@ -1300,7 +1528,9 @@
    3.323,
    18.277,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    -6.6,
@@ -1310,7 +1540,9 @@
    3.6,
    17.938,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    -46.0,
@@ -1320,7 +1552,9 @@
    9.0,
    34.0,
    "solid",
-   "building"
+   "building",
+   "thick",
+   8.0
   ],
   [
    -28.0,
@@ -1330,7 +1564,9 @@
    2.0,
    21.65,
    "tear",
-   "blue_alleyfence0"
+   "blue_alleyfence0",
+   "thin",
+   0.1
   ],
   [
    -28.12,
@@ -1340,7 +1576,9 @@
    2.2,
    21.72,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    -24.12,
@@ -1350,7 +1588,9 @@
    2.2,
    21.72,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    -15.6,
@@ -1360,7 +1600,9 @@
    2.0,
    23.05,
    "tear",
-   "blue_alleyfence1"
+   "blue_alleyfence1",
+   "thin",
+   0.1
   ],
   [
    -15.72,
@@ -1370,7 +1612,9 @@
    2.2,
    23.12,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    -12.12,
@@ -1380,7 +1624,9 @@
    2.2,
    23.12,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    -37.0,
@@ -1390,7 +1636,9 @@
    2.0,
    20.55,
    "tear",
-   "blue_alleyfence2"
+   "blue_alleyfence2",
+   "thin",
+   0.1
   ],
   [
    -37.12,
@@ -1400,7 +1648,9 @@
    2.2,
    20.62,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    -34.12,
@@ -1410,7 +1660,9 @@
    2.2,
    20.62,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    -20.3,
@@ -1420,7 +1672,9 @@
    1.6,
    25.2,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -21.9,
@@ -1430,7 +1684,9 @@
    1.6,
    25.2,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -31.75,
@@ -1440,7 +1696,9 @@
    1.5,
    19.55,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.5
   ],
   [
    -8.8,
@@ -1450,7 +1708,9 @@
    1.6,
    25.4,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -41.8,
@@ -1460,7 +1720,9 @@
    1.6,
    20.3,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -41.8,
@@ -1470,7 +1732,9 @@
    1.6,
    22.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -29.3,
@@ -1480,7 +1744,9 @@
    1.6,
    3.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -30.9,
@@ -1490,7 +1756,9 @@
    1.6,
    3.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -29.3,
@@ -1500,7 +1768,9 @@
    3.2,
    3.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -20.8,
@@ -1510,27 +1780,21 @@
    1.6,
    7.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -15.3,
    0.0,
-   0.2,
+   0.6,
    -13.7,
    1.6,
-   1.8,
+   2.2,
    "solid",
-   "crate"
-  ],
-  [
-   -15.3,
-   0.0,
-   -1.4,
-   -13.7,
-   1.6,
-   0.2,
-   "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -24.8,
@@ -1540,7 +1804,9 @@
    1.6,
    0.6,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -36.3,
@@ -1550,7 +1816,9 @@
    1.6,
    6.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -37.8,
@@ -1560,7 +1828,9 @@
    1.6,
    -1.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -37.8,
@@ -1570,7 +1840,9 @@
    3.2,
    -1.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -12.0,
@@ -1580,7 +1852,9 @@
    1.2,
    5.25,
    "solid",
-   "box wall"
+   "box wall",
+   "medium",
+   0.5
   ],
   [
    -41.5,
@@ -1590,7 +1864,9 @@
    7.5,
    9.5,
    "solid",
-   "gate pillar"
+   "gate pillar",
+   "thick",
+   2.0
   ],
   [
    -41.5,
@@ -1600,7 +1876,9 @@
    7.5,
    -3.0,
    "solid",
-   "gate pillar"
+   "gate pillar",
+   "thick",
+   2.0
   ],
   [
    -41.0,
@@ -1610,7 +1888,9 @@
    8.4,
    9.5,
    "solid",
-   "gate arch top"
+   "gate arch top",
+   "thick",
+   1.0
   ],
   [
    -44.3,
@@ -1620,7 +1900,9 @@
    1.6,
    -11.2,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -44.3,
@@ -1630,7 +1912,9 @@
    1.6,
    14.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -42.8,
@@ -1640,7 +1924,9 @@
    1.6,
    -17.7,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -39.5,
@@ -1650,7 +1936,9 @@
    1.3,
    12.25,
    "solid",
-   "box wall"
+   "box wall",
+   "medium",
+   0.5
   ],
   [
    -46.0,
@@ -1660,7 +1948,9 @@
    10.0,
    -21.0,
    "solid",
-   "building"
+   "building",
+   "thick",
+   9.0
   ],
   [
    -22.4,
@@ -1670,7 +1960,9 @@
    1.6,
    7.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -21.6,
@@ -1680,7 +1972,45 @@
    3.2,
    7.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
+  ],
+  [
+   -17.65,
+   0.0,
+   0.6,
+   -17.55,
+   2.2,
+   3.6,
+   "tear",
+   "blue_bang_street",
+   "thin",
+   0.1
+  ],
+  [
+   -31.55,
+   0.0,
+   23.6,
+   -31.45,
+   2.1,
+   25.8,
+   "tear",
+   "blue_bang_alley",
+   "thin",
+   0.1
+  ],
+  [
+   -3.6,
+   0.0,
+   -18.85,
+   -1.2,
+   2.0,
+   -18.75,
+   "tear",
+   "blue_bang_court",
+   "thin",
+   0.1
   ],
   [
    -19.8,
@@ -1690,7 +2020,9 @@
    1.6,
    -2.2,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -5.3,
@@ -1700,7 +2032,9 @@
    1.6,
    -2.2,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -28.8,
@@ -1710,7 +2044,9 @@
    1.6,
    26.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    46.0,
@@ -1720,7 +2056,9 @@
    11.0,
    34.0,
    "solid",
-   "building"
+   "building",
+   "thick",
+   6.0
   ],
   [
    9.0,
@@ -1730,7 +2068,9 @@
    4.2,
    -4.0,
    "solid",
-   "north block ground floor"
+   "north block ground floor",
+   "thick",
+   17.0
   ],
   [
    9.0,
@@ -1740,7 +2080,9 @@
    9.2,
    -8.0,
    "solid",
-   "north block upper"
+   "north block upper",
+   "thick",
+   13.0
   ],
   [
    9.0,
@@ -1750,7 +2092,9 @@
    9.2,
    -4.0,
    "solid",
-   "gallery roof"
+   "gallery roof",
+   "thick",
+   4.0
   ],
   [
    29.3,
@@ -1760,7 +2104,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    24.3,
@@ -1770,7 +2116,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    19.3,
@@ -1780,7 +2128,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    14.2,
@@ -1790,7 +2140,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    9.0,
@@ -1800,7 +2152,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    27.7,
@@ -1810,7 +2164,9 @@
    5.35,
    -4.15,
    "tear",
-   "red_gal_w0"
+   "red_gal_w0",
+   "thin",
+   0.1
   ],
   [
    27.7,
@@ -1820,7 +2176,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    22.7,
@@ -1830,7 +2188,9 @@
    5.35,
    -4.15,
    "tear",
-   "red_gal_w1"
+   "red_gal_w1",
+   "thin",
+   0.1
   ],
   [
    22.7,
@@ -1840,7 +2200,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    17.7,
@@ -1850,7 +2212,9 @@
    5.35,
    -4.15,
    "tear",
-   "red_gal_w2"
+   "red_gal_w2",
+   "thin",
+   0.1
   ],
   [
    17.7,
@@ -1860,7 +2224,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    10.2,
@@ -1870,7 +2236,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    12.8,
@@ -1880,7 +2248,9 @@
    6.8,
    -4.15,
    "tear",
-   "red_shop_side"
+   "red_shop_side",
+   "thin",
+   0.1
   ],
   [
    12.8,
@@ -1890,7 +2260,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery wall"
+   "gallery wall",
+   "medium",
+   0.4
   ],
   [
    9.6,
@@ -1900,7 +2272,9 @@
    7.75,
    -2.5,
    "solid",
-   "awning"
+   "awning",
+   "thin",
+   1.5
   ],
   [
    9.3,
@@ -1910,7 +2284,9 @@
    5.4,
    -6.6,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.2
   ],
   [
    32.0,
@@ -1920,7 +2296,9 @@
    7.4,
    -4.0,
    "solid",
-   "gallery end wall"
+   "gallery end wall",
+   "medium",
+   0.4
   ],
   [
    32.0,
@@ -1930,7 +2308,9 @@
    7.4,
    -5.0,
    "solid",
-   "gallery door lintel"
+   "gallery door lintel",
+   "medium",
+   0.4
   ],
   [
    34.8,
@@ -1940,7 +2320,9 @@
    0.28,
    -19.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -1950,7 +2332,9 @@
    0.56,
    -18.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -1960,7 +2344,9 @@
    0.84,
    -17.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -1970,7 +2356,9 @@
    1.12,
    -16.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -1980,7 +2368,9 @@
    1.4,
    -16.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -1990,7 +2380,9 @@
    1.68,
    -15.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -2000,7 +2392,9 @@
    1.96,
    -14.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -2010,7 +2404,9 @@
    2.24,
    -13.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -2020,7 +2416,9 @@
    2.52,
    -12.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -2030,7 +2428,9 @@
    2.8,
    -12.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -2040,7 +2440,9 @@
    3.08,
    -11.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -2050,7 +2452,9 @@
    3.36,
    -10.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -2060,7 +2464,9 @@
    3.64,
    -9.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -2070,7 +2476,9 @@
    3.92,
    -8.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    34.8,
@@ -2080,7 +2488,9 @@
    4.2,
    -8.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    32.4,
@@ -2090,7 +2500,9 @@
    4.2,
    -4.6,
    "walk",
-   "stair landing"
+   "stair landing",
+   "thick",
+   3.4
   ],
   [
    37.4,
@@ -2100,7 +2512,9 @@
    5.28,
    -4.6,
    "rail",
-   "stair rail"
+   "stair rail",
+   "thin",
+   0.16
   ],
   [
    32.4,
@@ -2110,7 +2524,9 @@
    5.28,
    -4.6,
    "rail",
-   "landing rail"
+   "landing rail",
+   "thin",
+   0.16
   ],
   [
    9.0,
@@ -2120,7 +2536,9 @@
    4.2,
    -0.8,
    "walk",
-   "ruler bridge"
+   "ruler bridge",
+   "thick",
+   3.2
   ],
   [
    9.0,
@@ -2130,7 +2548,9 @@
    5.28,
    -0.87,
    "rail",
-   "balcony railing"
+   "balcony railing",
+   "thin",
+   0.16
   ],
   [
    14.6,
@@ -2140,7 +2560,9 @@
    5.28,
    -0.8,
    "rail",
-   "balcony end rail"
+   "balcony end rail",
+   "thin",
+   0.16
   ],
   [
    14.02,
@@ -2150,7 +2572,9 @@
    3.88,
    -1.02,
    "solid",
-   "truss post"
+   "truss post",
+   "medium",
+   0.36
   ],
   [
    14.02,
@@ -2160,7 +2584,9 @@
    3.88,
    -3.42,
    "solid",
-   "truss post"
+   "truss post",
+   "medium",
+   0.36
   ],
   [
    7.4,
@@ -2170,7 +2596,9 @@
    0.28,
    -15.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2180,7 +2608,9 @@
    0.56,
    -14.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2190,7 +2620,9 @@
    0.84,
    -13.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2200,7 +2632,9 @@
    1.12,
    -12.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2210,7 +2644,9 @@
    1.4,
    -12.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2220,7 +2656,9 @@
    1.68,
    -11.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2230,7 +2668,9 @@
    1.96,
    -10.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2240,7 +2680,9 @@
    2.24,
    -9.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2250,7 +2692,9 @@
    2.52,
    -8.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2260,7 +2704,9 @@
    2.8,
    -8.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2270,7 +2716,9 @@
    3.08,
    -7.2,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2280,7 +2728,9 @@
    3.36,
    -6.4,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2290,7 +2740,9 @@
    3.64,
    -5.6,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2300,7 +2752,9 @@
    3.92,
    -4.8,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    7.4,
@@ -2310,7 +2764,9 @@
    4.2,
    -4.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.8
   ],
   [
    23.0,
@@ -2320,7 +2776,9 @@
    8.4,
    18.0,
    "solid",
-   "building"
+   "building",
+   "thick",
+   10.0
   ],
   [
    24.0,
@@ -2330,7 +2788,9 @@
    3.1,
    8.0,
    "solid",
-   "awning"
+   "awning",
+   "thin",
+   1.7
   ],
   [
    24.6,
@@ -2340,7 +2800,9 @@
    2.3,
    7.45,
    "tear",
-   "red_shopfront0"
+   "red_shopfront0",
+   "thin",
+   0.1
   ],
   [
    30.4,
@@ -2350,7 +2812,9 @@
    2.3,
    7.45,
    "tear",
-   "red_shopfront1"
+   "red_shopfront1",
+   "thin",
+   0.1
   ],
   [
    18.2,
@@ -2360,7 +2824,9 @@
    2.2,
    16.55,
    "tear",
-   "red_passfence"
+   "red_passfence",
+   "thin",
+   0.1
   ],
   [
    9.0,
@@ -2370,7 +2836,9 @@
    1.2,
    17.2,
    "walk",
-   "window house floor"
+   "window house floor",
+   "thick",
+   8.4
   ],
   [
    8.6,
@@ -2380,7 +2848,9 @@
    8.6,
    17.6,
    "solid",
-   "window house upper"
+   "window house upper",
+   "thick",
+   9.2
   ],
   [
    8.6,
@@ -2390,7 +2860,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    10.0,
@@ -2400,7 +2872,9 @@
    2.35,
    8.66,
    "tear",
-   "red_house_north_100"
+   "red_house_north_100",
+   "thin",
+   0.12
   ],
   [
    10.0,
@@ -2410,7 +2884,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    11.6,
@@ -2420,7 +2896,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    12.6,
@@ -2430,7 +2908,9 @@
    2.35,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    12.6,
@@ -2440,7 +2920,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    14.2,
@@ -2450,7 +2932,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    15.8,
@@ -2460,7 +2944,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    17.0,
@@ -2470,7 +2956,9 @@
    4.4,
    8.8,
    "solid",
-   "north"
+   "north",
+   "medium",
+   0.4
   ],
   [
    15.8,
@@ -2480,7 +2968,9 @@
    0.24,
    9.06,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.26
   ],
   [
    15.8,
@@ -2490,7 +2980,9 @@
    0.48,
    9.32,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.26
   ],
   [
    15.8,
@@ -2500,7 +2992,9 @@
    0.72,
    9.58,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.26
   ],
   [
    15.8,
@@ -2510,7 +3004,9 @@
    0.96,
    9.84,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.26
   ],
   [
    15.8,
@@ -2520,7 +3016,9 @@
    1.2,
    10.1,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.26
   ],
   [
    8.6,
@@ -2530,7 +3028,9 @@
    4.4,
    17.6,
    "solid",
-   "south"
+   "south",
+   "medium",
+   0.4
   ],
   [
    9.2,
@@ -2540,7 +3040,9 @@
    4.4,
    17.6,
    "solid",
-   "south"
+   "south",
+   "medium",
+   0.4
   ],
   [
    10.4,
@@ -2550,7 +3052,9 @@
    4.4,
    17.6,
    "solid",
-   "south"
+   "south",
+   "medium",
+   0.4
   ],
   [
    12.4,
@@ -2560,7 +3064,9 @@
    2.35,
    17.46,
    "tear",
-   "red_house_south_124"
+   "red_house_south_124",
+   "thin",
+   0.12
   ],
   [
    12.4,
@@ -2570,7 +3076,9 @@
    4.4,
    17.6,
    "solid",
-   "south"
+   "south",
+   "medium",
+   0.4
   ],
   [
    14.0,
@@ -2580,7 +3088,9 @@
    4.4,
    17.6,
    "solid",
-   "south"
+   "south",
+   "medium",
+   0.4
   ],
   [
    9.2,
@@ -2590,7 +3100,9 @@
    0.24,
    19.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.28
   ],
   [
    9.2,
@@ -2600,7 +3112,9 @@
    0.48,
    18.72,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.28
   ],
   [
    9.2,
@@ -2610,7 +3124,9 @@
    0.72,
    18.44,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.28
   ],
   [
    9.2,
@@ -2620,7 +3136,9 @@
    0.96,
    18.16,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.28
   ],
   [
    9.2,
@@ -2630,7 +3148,9 @@
    1.2,
    17.88,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.28
   ],
   [
    8.6,
@@ -2640,7 +3160,9 @@
    4.4,
    17.6,
    "solid",
-   "house end wall"
+   "house end wall",
+   "medium",
+   0.4
   ],
   [
    17.6,
@@ -2650,7 +3172,9 @@
    4.4,
    17.6,
    "solid",
-   "house end wall"
+   "house end wall",
+   "medium",
+   0.4
   ],
   [
    17.74,
@@ -2660,7 +3184,9 @@
    4.4,
    14.2,
    "tear",
-   "red_house_end"
+   "red_house_end",
+   "thin",
+   0.12
   ],
   [
    17.6,
@@ -2670,7 +3196,9 @@
    4.4,
    11.4,
    "solid",
-   "house end wall"
+   "house end wall",
+   "medium",
+   0.4
   ],
   [
    9.45,
@@ -2680,7 +3208,9 @@
    2.3,
    10.95,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.1
   ],
   [
    4.0,
@@ -2690,7 +3220,9 @@
    3.6,
    17.6,
    "walk",
-   "terrace block (roof walkable)"
+   "terrace block (roof walkable)",
+   "thick",
+   4.6
   ],
   [
    4.2,
@@ -2700,7 +3232,9 @@
    4.65,
    8.65,
    "tear",
-   "red_terrace_n0"
+   "red_terrace_n0",
+   "thin",
+   0.1
   ],
   [
    6.5,
@@ -2710,7 +3244,9 @@
    4.65,
    8.65,
    "tear",
-   "red_terrace_n1"
+   "red_terrace_n1",
+   "thin",
+   0.1
   ],
   [
    3.9,
@@ -2720,7 +3256,9 @@
    4.65,
    17.6,
    "solid",
-   "terrace parapet inner"
+   "terrace parapet inner",
+   "medium",
+   0.2
   ],
   [
    2.4,
@@ -2730,7 +3268,9 @@
    3.2,
    15.0,
    "solid",
-   "crate wall (passage side)"
+   "crate wall (passage side)",
+   "thick",
+   1.6
   ],
   [
    5.0,
@@ -2740,7 +3280,9 @@
    0.277,
    22.0,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    5.0,
@@ -2750,7 +3292,9 @@
    0.554,
    21.662,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    5.0,
@@ -2760,7 +3304,9 @@
    0.831,
    21.323,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    5.0,
@@ -2770,7 +3316,9 @@
    1.108,
    20.985,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    5.0,
@@ -2780,7 +3328,9 @@
    1.385,
    20.646,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    5.0,
@@ -2790,7 +3340,9 @@
    1.662,
    20.308,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    5.0,
@@ -2800,7 +3352,9 @@
    1.938,
    19.969,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    5.0,
@@ -2810,7 +3364,9 @@
    2.215,
    19.631,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    5.0,
@@ -2820,7 +3376,9 @@
    2.492,
    19.292,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    5.0,
@@ -2830,7 +3388,9 @@
    2.769,
    18.954,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    5.0,
@@ -2840,7 +3400,9 @@
    3.046,
    18.615,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    5.0,
@@ -2850,7 +3412,9 @@
    3.323,
    18.277,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.339
   ],
   [
    5.0,
@@ -2860,7 +3424,9 @@
    3.6,
    17.938,
    "walk",
-   "stair step"
+   "stair step",
+   "thick",
+   0.338
   ],
   [
    6.0,
@@ -2870,7 +3436,9 @@
    9.0,
    34.0,
    "solid",
-   "building"
+   "building",
+   "thick",
+   8.0
   ],
   [
    24.0,
@@ -2880,7 +3448,9 @@
    2.0,
    21.65,
    "tear",
-   "red_alleyfence0"
+   "red_alleyfence0",
+   "thin",
+   0.1
   ],
   [
    23.88,
@@ -2890,7 +3460,9 @@
    2.2,
    21.72,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    27.88,
@@ -2900,7 +3472,9 @@
    2.2,
    21.72,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    12.0,
@@ -2910,7 +3484,9 @@
    2.0,
    23.05,
    "tear",
-   "red_alleyfence1"
+   "red_alleyfence1",
+   "thin",
+   0.1
   ],
   [
    11.88,
@@ -2920,7 +3496,9 @@
    2.2,
    23.12,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    15.48,
@@ -2930,7 +3508,9 @@
    2.2,
    23.12,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    34.0,
@@ -2940,7 +3520,9 @@
    2.0,
    20.55,
    "tear",
-   "red_alleyfence2"
+   "red_alleyfence2",
+   "thin",
+   0.1
   ],
   [
    33.88,
@@ -2950,7 +3532,9 @@
    2.2,
    20.62,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    36.88,
@@ -2960,7 +3544,9 @@
    2.2,
    20.62,
    "solid",
-   "fence post"
+   "fence post",
+   "thin",
+   0.24
   ],
   [
    18.7,
@@ -2970,7 +3556,9 @@
    1.6,
    25.2,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    20.3,
@@ -2980,7 +3568,9 @@
    1.6,
    25.2,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    30.25,
@@ -2990,7 +3580,9 @@
    1.5,
    19.55,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.5
   ],
   [
    7.2,
@@ -3000,7 +3592,9 @@
    1.6,
    25.4,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    40.2,
@@ -3010,7 +3604,9 @@
    1.6,
    20.3,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    40.2,
@@ -3020,7 +3616,9 @@
    1.6,
    22.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    27.7,
@@ -3030,7 +3628,9 @@
    1.6,
    3.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    29.3,
@@ -3040,7 +3640,9 @@
    1.6,
    3.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    27.7,
@@ -3050,7 +3652,9 @@
    3.2,
    3.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    19.2,
@@ -3060,27 +3664,21 @@
    1.6,
    7.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    13.7,
    0.0,
-   0.2,
+   0.6,
    15.3,
    1.6,
-   1.8,
+   2.2,
    "solid",
-   "crate"
-  ],
-  [
-   13.7,
-   0.0,
-   -1.4,
-   15.3,
-   1.6,
-   0.2,
-   "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    23.2,
@@ -3090,7 +3688,9 @@
    1.6,
    0.6,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    34.7,
@@ -3100,7 +3700,9 @@
    1.6,
    6.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    36.2,
@@ -3110,7 +3712,9 @@
    1.6,
    -1.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    36.2,
@@ -3120,7 +3724,9 @@
    3.2,
    -1.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    9.0,
@@ -3130,7 +3736,9 @@
    1.2,
    5.25,
    "solid",
-   "box wall"
+   "box wall",
+   "medium",
+   0.5
   ],
   [
    39.5,
@@ -3140,7 +3748,9 @@
    7.5,
    9.5,
    "solid",
-   "gate pillar"
+   "gate pillar",
+   "thick",
+   2.0
   ],
   [
    39.5,
@@ -3150,7 +3760,9 @@
    7.5,
    -3.0,
    "solid",
-   "gate pillar"
+   "gate pillar",
+   "thick",
+   2.0
   ],
   [
    40.0,
@@ -3160,7 +3772,9 @@
    8.4,
    9.5,
    "solid",
-   "gate arch top"
+   "gate arch top",
+   "thick",
+   1.0
   ],
   [
    42.7,
@@ -3170,7 +3784,9 @@
    1.6,
    -11.2,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    42.7,
@@ -3180,7 +3796,9 @@
    1.6,
    14.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    41.2,
@@ -3190,7 +3808,9 @@
    1.6,
    -17.7,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    36.5,
@@ -3200,7 +3820,9 @@
    1.3,
    12.25,
    "solid",
-   "box wall"
+   "box wall",
+   "medium",
+   0.5
   ],
   [
    32.0,
@@ -3210,7 +3832,9 @@
    10.0,
    -21.0,
    "solid",
-   "building"
+   "building",
+   "thick",
+   9.0
   ],
   [
    20.8,
@@ -3220,7 +3844,9 @@
    1.6,
    7.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    20.0,
@@ -3230,7 +3856,45 @@
    3.2,
    7.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
+  ],
+  [
+   17.55,
+   0.0,
+   0.6,
+   17.65,
+   2.2,
+   3.6,
+   "tear",
+   "red_bang_street",
+   "thin",
+   0.1
+  ],
+  [
+   31.45,
+   0.0,
+   23.6,
+   31.55,
+   2.1,
+   25.8,
+   "tear",
+   "red_bang_alley",
+   "thin",
+   0.1
+  ],
+  [
+   1.2,
+   0.0,
+   -18.85,
+   3.6,
+   2.0,
+   -18.75,
+   "tear",
+   "red_bang_court",
+   "thin",
+   0.1
   ],
   [
    18.2,
@@ -3240,7 +3904,9 @@
    1.6,
    -2.2,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    3.7,
@@ -3250,7 +3916,9 @@
    1.6,
    -2.2,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    27.2,
@@ -3260,7 +3928,9 @@
    1.6,
    26.0,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -9.0,
@@ -3270,7 +3940,9 @@
    4.2,
    -0.8,
    "walk",
-   "ruler bridge"
+   "ruler bridge",
+   "thick",
+   3.2
   ],
   [
    -9.0,
@@ -3280,7 +3952,9 @@
    5.28,
    -0.82,
    "rail",
-   "bridge railing"
+   "bridge railing",
+   "thin",
+   0.16
   ],
   [
    -7.3,
@@ -3290,7 +3964,9 @@
    5.28,
    -3.82,
    "rail",
-   "bridge railing"
+   "bridge railing",
+   "thin",
+   0.16
   ],
   [
    -5.5,
@@ -3300,7 +3976,9 @@
    5.2,
    -1.05,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.0
   ],
   [
    4.5,
@@ -3310,7 +3988,9 @@
    5.2,
    -2.75,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.0
   ],
   [
    -3.18,
@@ -3320,7 +4000,9 @@
    3.88,
    -0.92,
    "solid",
-   "truss post"
+   "truss post",
+   "medium",
+   0.36
   ],
   [
    -3.18,
@@ -3330,7 +4012,9 @@
    3.88,
    -3.52,
    "solid",
-   "truss post"
+   "truss post",
+   "medium",
+   0.36
   ],
   [
    2.82,
@@ -3340,7 +4024,9 @@
    3.88,
    -0.92,
    "solid",
-   "truss post"
+   "truss post",
+   "medium",
+   0.36
   ],
   [
    2.82,
@@ -3350,7 +4036,9 @@
    3.88,
    -3.52,
    "solid",
-   "truss post"
+   "truss post",
+   "medium",
+   0.36
   ],
   [
    -9.0,
@@ -3360,17 +4048,21 @@
    7.0,
    -21.0,
    "solid",
-   "courtyard back building"
+   "courtyard back building",
+   "thick",
+   9.0
   ],
   [
    0.6,
    0.0,
    -12.0,
    7.4,
-   10.0,
+   11.5,
    -5.2,
    "solid",
-   "pencil cup"
+   "pencil cup",
+   "thick",
+   6.8
   ],
   [
    -6.448,
@@ -3380,7 +4072,9 @@
    3.0,
    -6.152,
    "solid",
-   "tape roll"
+   "tape roll",
+   "thick",
+   4.896
   ],
   [
    -7.4,
@@ -3390,7 +4084,9 @@
    3.0,
    -7.24,
    "solid",
-   "tape roll"
+   "tape roll",
+   "thick",
+   2.72
   ],
   [
    -5.36,
@@ -3400,7 +4096,45 @@
    3.0,
    -5.2,
    "solid",
-   "tape roll"
+   "tape roll",
+   "thick",
+   2.72
+  ],
+  [
+   -6.054,
+   3.0,
+   -10.704,
+   -1.446,
+   6.0,
+   -6.096,
+   "solid",
+   "tape roll",
+   "thick",
+   4.608
+  ],
+  [
+   -6.95,
+   3.0,
+   -9.68,
+   -0.55,
+   6.0,
+   -7.12,
+   "solid",
+   "tape roll",
+   "thick",
+   2.56
+  ],
+  [
+   -5.03,
+   3.0,
+   -11.6,
+   -2.47,
+   6.0,
+   -5.2,
+   "solid",
+   "tape roll",
+   "thick",
+   2.56
   ],
   [
    -2.8,
@@ -3410,7 +4144,9 @@
    1.6,
    -15.7,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    1.7,
@@ -3420,7 +4156,9 @@
    1.4,
    -16.9,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.4
   ],
   [
    -10.8,
@@ -3430,7 +4168,9 @@
    1.15,
    3.6,
    "solid",
-   "kiosk counter"
+   "kiosk counter",
+   "thin",
+   2.6
   ],
   [
    -10.8,
@@ -3440,7 +4180,9 @@
    2.9,
    3.6,
    "solid",
-   "kiosk post"
+   "kiosk post",
+   "thin",
+   0.2
   ],
   [
    -8.4,
@@ -3450,7 +4192,9 @@
    2.9,
    3.6,
    "solid",
-   "kiosk post"
+   "kiosk post",
+   "thin",
+   0.2
   ],
   [
    -10.8,
@@ -3460,7 +4204,9 @@
    2.9,
    1.2,
    "solid",
-   "kiosk post"
+   "kiosk post",
+   "thin",
+   0.2
   ],
   [
    -8.4,
@@ -3470,7 +4216,9 @@
    2.9,
    1.2,
    "solid",
-   "kiosk post"
+   "kiosk post",
+   "thin",
+   0.2
   ],
   [
    -11.2,
@@ -3480,7 +4228,9 @@
    3.5,
    4.1,
    "solid",
-   "kiosk roof"
+   "kiosk roof",
+   "thin",
+   3.4
   ],
   [
    8.2,
@@ -3490,7 +4240,9 @@
    1.15,
    3.6,
    "solid",
-   "kiosk counter"
+   "kiosk counter",
+   "thin",
+   2.6
   ],
   [
    8.2,
@@ -3500,7 +4252,9 @@
    2.9,
    3.6,
    "solid",
-   "kiosk post"
+   "kiosk post",
+   "thin",
+   0.2
   ],
   [
    10.6,
@@ -3510,7 +4264,9 @@
    2.9,
    3.6,
    "solid",
-   "kiosk post"
+   "kiosk post",
+   "thin",
+   0.2
   ],
   [
    8.2,
@@ -3520,7 +4276,9 @@
    2.9,
    1.2,
    "solid",
-   "kiosk post"
+   "kiosk post",
+   "thin",
+   0.2
   ],
   [
    10.6,
@@ -3530,7 +4288,9 @@
    2.9,
    1.2,
    "solid",
-   "kiosk post"
+   "kiosk post",
+   "thin",
+   0.2
   ],
   [
    7.8,
@@ -3540,7 +4300,9 @@
    3.5,
    4.1,
    "solid",
-   "kiosk roof"
+   "kiosk roof",
+   "thin",
+   3.4
   ],
   [
    -6.8,
@@ -3550,7 +4312,9 @@
    1.6,
    7.4,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    5.2,
@@ -3560,7 +4324,9 @@
    1.6,
    7.4,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -7.4,
@@ -3570,7 +4336,9 @@
    1.6,
    0.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    5.8,
@@ -3580,7 +4348,9 @@
    1.6,
    0.8,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.6
   ],
   [
    -3.05,
@@ -3590,7 +4360,9 @@
    2.75,
    7.25,
    "solid",
-   "tree trunk"
+   "tree trunk",
+   "thin",
+   0.5
   ],
   [
    2.1,
@@ -3600,7 +4372,9 @@
    1.4,
    16.7,
    "solid",
-   "crate"
+   "crate",
+   "thin",
+   1.4
   ],
   [
    -6.0,
@@ -3610,7 +4384,9 @@
    9.0,
    34.0,
    "solid",
-   "building"
+   "building",
+   "thick",
+   8.0
   ],
   [
    -1.6,
@@ -3620,9 +4396,329 @@
    1.3,
    22.05,
    "solid",
-   "box wall"
+   "box wall",
+   "medium",
+   0.5
+  ],
+  [
+   -23.05,
+   0.0,
+   6.95,
+   -22.15,
+   0.62,
+   7.85,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   -8.05,
+   0.0,
+   7.25,
+   -7.15,
+   0.62,
+   8.15,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   -8.65,
+   0.0,
+   18.15,
+   -7.75,
+   0.62,
+   19.05,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   -34.45,
+   0.0,
+   24.85,
+   -33.55,
+   0.62,
+   25.75,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   -18.05,
+   0.0,
+   24.85,
+   -17.15,
+   0.62,
+   25.75,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   -12.45,
+   0.0,
+   -3.85,
+   -11.55,
+   0.62,
+   -2.95,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   -33.45,
+   0.0,
+   -3.85,
+   -32.55,
+   0.62,
+   -2.95,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   -45.05,
+   0.0,
+   -19.95,
+   -44.15,
+   0.62,
+   -19.05,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   -45.05,
+   0.0,
+   24.05,
+   -44.15,
+   0.62,
+   24.95,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   -34.05,
+   0.0,
+   6.85,
+   -33.15,
+   0.9,
+   7.75,
+   "solid",
+   "crate",
+   "thin",
+   0.9
+  ],
+  [
+   -34.15,
+   0.9,
+   6.95,
+   -33.45,
+   1.6,
+   7.65,
+   "solid",
+   "crate",
+   "thin",
+   0.7
+  ],
+  [
+   -45.25,
+   0.0,
+   -3.85,
+   -44.35,
+   0.9,
+   -2.95,
+   "solid",
+   "crate",
+   "thin",
+   0.9
+  ],
+  [
+   -45.35,
+   0.9,
+   -3.75,
+   -44.65,
+   1.6,
+   -3.05,
+   "solid",
+   "crate",
+   "thin",
+   0.7
+  ],
+  [
+   22.15,
+   0.0,
+   6.95,
+   23.05,
+   0.62,
+   7.85,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   7.15,
+   0.0,
+   7.25,
+   8.05,
+   0.62,
+   8.15,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   7.75,
+   0.0,
+   18.15,
+   8.65,
+   0.62,
+   19.05,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   33.55,
+   0.0,
+   24.85,
+   34.45,
+   0.62,
+   25.75,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   17.15,
+   0.0,
+   24.85,
+   18.05,
+   0.62,
+   25.75,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   11.55,
+   0.0,
+   -3.85,
+   12.45,
+   0.62,
+   -2.95,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   32.55,
+   0.0,
+   -3.85,
+   33.45,
+   0.62,
+   -2.95,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   44.15,
+   0.0,
+   -19.95,
+   45.05,
+   0.62,
+   -19.05,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   44.15,
+   0.0,
+   24.05,
+   45.05,
+   0.62,
+   24.95,
+   "solid",
+   "plant pot",
+   "thick",
+   0.9
+  ],
+  [
+   33.15,
+   0.0,
+   6.85,
+   34.05,
+   0.9,
+   7.75,
+   "solid",
+   "crate",
+   "thin",
+   0.9
+  ],
+  [
+   33.45,
+   0.9,
+   6.95,
+   34.15,
+   1.6,
+   7.65,
+   "solid",
+   "crate",
+   "thin",
+   0.7
+  ],
+  [
+   44.35,
+   0.0,
+   -3.85,
+   45.25,
+   0.9,
+   -2.95,
+   "solid",
+   "crate",
+   "thin",
+   0.9
+  ],
+  [
+   44.65,
+   0.9,
+   -3.75,
+   45.35,
+   1.6,
+   -3.05,
+   "solid",
+   "crate",
+   "thin",
+   0.7
   ]
  ],
+ "collider_format": "[minX, minY, minZ, maxX, maxY, maxZ, kind, note, pen, thickness_m]; pen = thin | medium | thick (wallbang class)",
+ "pen_classes": {
+  "thin": "every gun + the knife go through; shots leave see-through holes (tearable panels, crates, rails, kiosks, awnings, screens)",
+  "medium": "strong guns only (sniper, rifle; damage falloff); house/gallery walls, box walls, parapets, cup, tape roll, ruler deck, truss posts",
+  "thick": "blocks everything (building blocks, floors, stairs, landings)"
+ },
  "collider_kinds": {
   "solid": "blocks players + bullets",
   "walk": "solid, top is walkable (decks, stairs, raised floors)",
@@ -4097,6 +5193,99 @@
    "uv": "u along the panel width (left->right seen from the FRONT side = +normal side), v up; creases [u0, v0, u1, v1]"
   },
   {
+   "id": "blue_bang_street",
+   "centre": [
+    -17.6,
+    1.1,
+    2.1
+   ],
+   "normal": [
+    1.0,
+    0,
+    -0.0
+   ],
+   "w": 3.0,
+   "h": 2.2,
+   "t": 0.1,
+   "creases": [
+    [
+     0.5,
+     0,
+     0.5,
+     1
+    ]
+   ],
+   "front": "main street (spawn side)",
+   "back": "main street (mid side)",
+   "mat": "pm_kraft",
+   "note": "WALLBANG: street sign board, players crouch behind it",
+   "yaw": 1.5708,
+   "node": "T_blue_bang_street",
+   "uv": "u along the panel width (left->right seen from the FRONT side = +normal side), v up; creases [u0, v0, u1, v1]"
+  },
+  {
+   "id": "blue_bang_alley",
+   "centre": [
+    -31.5,
+    1.05,
+    24.7
+   ],
+   "normal": [
+    1.0,
+    0,
+    -0.0
+   ],
+   "w": 2.2,
+   "h": 2.1,
+   "t": 0.1,
+   "creases": [
+    [
+     0,
+     0.5,
+     1,
+     0.5
+    ]
+   ],
+   "front": "alley (mid side)",
+   "back": "alley (spawn side)",
+   "mat": "pm_kraft",
+   "note": "WALLBANG: alley corner screen next to the fence",
+   "yaw": 1.5708,
+   "node": "T_blue_bang_alley",
+   "uv": "u along the panel width (left->right seen from the FRONT side = +normal side), v up; creases [u0, v0, u1, v1]"
+  },
+  {
+   "id": "blue_bang_court",
+   "centre": [
+    -2.4,
+    1.0,
+    -18.8
+   ],
+   "normal": [
+    0.0,
+    0,
+    -1.0
+   ],
+   "w": 2.4,
+   "h": 2.0,
+   "t": 0.1,
+   "creases": [
+    [
+     0.5,
+     0,
+     0.5,
+     1
+    ]
+   ],
+   "front": "courtyard",
+   "back": "courtyard back pocket",
+   "mat": "pm_kraft",
+   "note": "WALLBANG: courtyard screen in front of the back crates",
+   "yaw": 3.1416,
+   "node": "T_blue_bang_court",
+   "uv": "u along the panel width (left->right seen from the FRONT side = +normal side), v up; creases [u0, v0, u1, v1]"
+  },
+  {
    "id": "red_gal_w0",
    "centre": [
     28.5,
@@ -4559,6 +5748,99 @@
    "note": "alley fence",
    "yaw": 3.1416,
    "node": "T_red_alleyfence2",
+   "uv": "u along the panel width (left->right seen from the FRONT side = +normal side), v up; creases [u0, v0, u1, v1]"
+  },
+  {
+   "id": "red_bang_street",
+   "centre": [
+    17.6,
+    1.1,
+    2.1
+   ],
+   "normal": [
+    1.0,
+    0,
+    -0.0
+   ],
+   "w": 3.0,
+   "h": 2.2,
+   "t": 0.1,
+   "creases": [
+    [
+     0.5,
+     0,
+     0.5,
+     1
+    ]
+   ],
+   "front": "main street (spawn side)",
+   "back": "main street (mid side)",
+   "mat": "pm_kraft",
+   "note": "WALLBANG: street sign board, players crouch behind it",
+   "yaw": 1.5708,
+   "node": "T_red_bang_street",
+   "uv": "u along the panel width (left->right seen from the FRONT side = +normal side), v up; creases [u0, v0, u1, v1]"
+  },
+  {
+   "id": "red_bang_alley",
+   "centre": [
+    31.5,
+    1.05,
+    24.7
+   ],
+   "normal": [
+    1.0,
+    0,
+    -0.0
+   ],
+   "w": 2.2,
+   "h": 2.1,
+   "t": 0.1,
+   "creases": [
+    [
+     0,
+     0.5,
+     1,
+     0.5
+    ]
+   ],
+   "front": "alley (mid side)",
+   "back": "alley (spawn side)",
+   "mat": "pm_kraft",
+   "note": "WALLBANG: alley corner screen next to the fence",
+   "yaw": 1.5708,
+   "node": "T_red_bang_alley",
+   "uv": "u along the panel width (left->right seen from the FRONT side = +normal side), v up; creases [u0, v0, u1, v1]"
+  },
+  {
+   "id": "red_bang_court",
+   "centre": [
+    2.4,
+    1.0,
+    -18.8
+   ],
+   "normal": [
+    0.0,
+    0,
+    -1.0
+   ],
+   "w": 2.4,
+   "h": 2.0,
+   "t": 0.1,
+   "creases": [
+    [
+     0.5,
+     0,
+     0.5,
+     1
+    ]
+   ],
+   "front": "courtyard",
+   "back": "courtyard back pocket",
+   "mat": "pm_kraft",
+   "note": "WALLBANG: courtyard screen in front of the back crates",
+   "yaw": 3.1416,
+   "node": "T_red_bang_court",
    "uv": "u along the panel width (left->right seen from the FRONT side = +normal side), v up; creases [u0, v0, u1, v1]"
   }
  ],
@@ -5266,5 +6548,73 @@
    ],
    "note": "hanging lamp"
   }
- ]
+ ],
+ "look": {
+  "sun": {
+   "dir": [
+    0.3766,
+    -0.454,
+    -0.8075
+   ],
+   "note": "direction the light TRAVELS (game space); a three DirectionalLight sits at -dir",
+   "color": [
+    1.0,
+    0.8,
+    0.58
+   ],
+   "intensity_blender_W": 7.5,
+   "elev_deg": 27,
+   "azimuth": "from the south, 25 deg toward the west"
+  },
+  "sky": {
+   "zenith": [
+    0.08,
+    0.3,
+    0.9
+   ],
+   "horizon": [
+    0.62,
+    0.76,
+    0.95
+   ],
+   "ground": [
+    0.22,
+    0.36,
+    0.3
+   ]
+  },
+  "hemi": {
+   "sky": [
+    0.08,
+    0.3,
+    0.9
+   ],
+   "ground": [
+    0.22,
+    0.36,
+    0.3
+   ]
+  },
+  "fog": {
+   "color": [
+    0.78,
+    0.84,
+    0.93
+   ],
+   "near": 70,
+   "far": 260
+  },
+  "exposure": 0.25,
+  "tonemap": "AgX in Blender previews; ACES Filmic in three is close",
+  "lightmap": {
+   "with_live_sun": "assets/paper/map/lm.png",
+   "fully_baked": "assets/paper/map/lm_full.png",
+   "scales": "render/paper/map/bake_meta.json"
+  },
+  "dof": {
+   "focus_m": 12,
+   "fstop_preview": 1.8,
+   "note": "mild far-field blur (miniature feel); optional post pass"
+  }
+ }
 }

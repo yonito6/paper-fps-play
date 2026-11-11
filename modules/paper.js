@@ -17,10 +17,10 @@
 
   // default characters (CHARS agent's data/paper/chars.json replaces them when it exists)
   const CHARS0 = [
-    { id: 'crane', name: 'Crane', line: 'Light on her feet, first through every window.', color: '#2f4fb0', svg: '<path d="M8 44 L30 30 L52 6 L40 32 L56 40 L30 40 L20 56 L24 40Z"/>' },
-    { id: 'boxer', name: 'Boxer', line: 'A cardboard box with a cardboard grudge.', color: '#2f4fb0', svg: '<path d="M14 18 L32 10 L50 18 L50 42 L32 52 L14 42Z M14 18 L32 26 L50 18 M32 26 L32 52" stroke="#fff" stroke-width="2"/>' },
-    { id: 'frog', name: 'Frog', line: 'Jumps first, folds the questions later.', color: '#2f4fb0', svg: '<path d="M8 40 Q14 18 32 20 Q50 18 56 40 L44 36 L32 44 L20 36Z"/><circle cx="22" cy="20" r="6" fill="#fff"/><circle cx="42" cy="20" r="6" fill="#fff"/>' },
-    { id: 'fox', name: 'Fox', line: 'Patient. Pointy. Never misses twice.', color: '#2f4fb0', svg: '<path d="M10 10 L26 26 L38 26 L54 10 L50 34 L32 54 L14 34Z"/><path d="M24 34 L30 36 M40 34 L34 36" stroke="#fff" stroke-width="3"/>' },
+    { id: 'trooper', name: 'Trooper', line: 'Folded for every fight. Steady, square, reliable.', svg: '<path d="M14 18 L32 8 L50 18 L48 30 L32 36 L16 30Z"/><path d="M20 36 L44 36 L40 56 L24 56Z"/>' },
+    { id: 'scout', name: 'Scout', line: 'Light card, quick feet, first through every window.', svg: '<path d="M8 44 L30 30 L52 6 L40 32 L56 40 L30 40 L20 56 L24 40Z"/>' },
+    { id: 'heavy', name: 'Heavy', line: 'Double-wall corrugated. Takes a crease, gives a crease.', svg: '<path d="M10 16 L32 8 L54 16 L54 46 L32 56 L10 46Z M10 16 L32 24 L54 16 M32 24 L32 56" stroke="#fff" stroke-width="2"/>' },
+    { id: 'marksman', name: 'Marksman', line: 'Patient. Pointy. Never misses twice.', svg: '<path d="M10 10 L26 26 L38 26 L54 10 L50 34 L32 54 L14 34Z"/><path d="M24 34 L30 36 M40 34 L34 36" stroke="#fff" stroke-width="3"/>' },
   ];
   U.chars = CHARS0;
 
@@ -73,6 +73,16 @@
 #pPlane{position:absolute;right:26px;bottom:76px;display:flex;align-items:center;gap:8px;font:900 15px var(--pt);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.5)}#pPlane kbd{font:inherit;background:#fff;color:var(--pink);padding:1px 7px;border-radius:3px}#pPlane svg{width:34px;height:20px}#pPlane.empty{opacity:.4}
 #pTip{position:absolute;left:50%;top:calc(50% + 70px);transform:translateX(-50%);font:900 20px var(--pt);color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.5);white-space:nowrap;display:none}#pTip kbd{font:inherit;background:#fff;color:var(--pink);padding:1px 9px;border-radius:4px;margin:0 6px}
 #pPip{position:absolute;right:24px;top:84px;width:300px;height:170px;border:4px solid #fff;box-shadow:0 4px 0 rgba(0,0,0,.25);display:none;pointer-events:none}#pPip b{position:absolute;left:8px;top:6px;font:900 13px var(--pt);color:#fff;text-shadow:0 1px 2px #000}
+/* ---- kill badge + medals: torn paper labels / ink stamps (no Sector Nine neon emblems) ---- */
+#killbadge .kb-emblem,#killbadge .kb-ring,#killbadge .kb-shine{display:none!important}
+#killbadge .kb-text{background:${BG.cream},var(--pcream);background-blend-mode:multiply;padding:8px 22px 6px;clip-path:${tornBox(5)};filter:drop-shadow(0 3px 0 rgba(0,0,0,.25));text-align:center}
+#killbadge .kb-text b{font-family:var(--pf)!important;color:var(--pblue)!important;text-shadow:none!important;letter-spacing:.04em!important}#killbadge.kb-gold .kb-text b{color:var(--pred)!important}
+#killbadge .kb-text span{color:var(--pink)!important;font-family:var(--pt)!important;font-weight:900}#killbadge .kb-text em{color:var(--pink)!important;font-family:var(--pf)!important}
+#medals .medal svg{display:none!important}#medals .medal span{font:400 15px var(--pf)!important;color:var(--pred)!important;border:3px solid var(--pred);padding:3px 10px;border-radius:4px;transform:rotate(-6deg);background:rgba(239,229,207,.92);text-shadow:none!important;letter-spacing:.05em!important}
+#tags *{font-family:var(--pt)!important;font-weight:900!important}#killcam .kc-top b{font-family:var(--pf)!important;color:#fff!important}#killcam .kc-top{font-family:var(--pt)!important}
+#fps{font-family:var(--pt)!important}#board{font-family:var(--pt)!important}#board *{font-family:inherit}
+#pSlice{position:absolute;left:50%;top:calc(50% + 26px);transform:translateX(-50%);display:none;padding:3px 10px 3px 30px;font:900 13px var(--pt);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.6);background:no-repeat 6px 50%/18px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='6' cy='18' r='3' fill='none' stroke='white' stroke-width='2'/%3E%3Ccircle cx='18' cy='18' r='3' fill='none' stroke='white' stroke-width='2'/%3E%3Cpath d='M8 16 L19 3 M16 16 L5 3' stroke='white' stroke-width='2'/%3E%3C/svg%3E");pointer-events:none}#pSlice.no{opacity:.6;background-image:none;padding-left:10px}
+#pHint{position:absolute;left:50%;top:22%;transform:translateX(-50%);max-width:min(560px,90vw);padding:12px 20px 10px;background:${BG.cream},var(--pcream);background-blend-mode:multiply;clip-path:${tornBox(7)};font:800 17px/1.35 var(--pt);color:var(--pink);text-align:center;filter:drop-shadow(0 4px 0 rgba(0,0,0,.25));opacity:0;transition:opacity .4s;pointer-events:none}#pHint.on{opacity:1}#pHint b{color:var(--pblue)}
 /* ---- loading + overlays ---- */
 #mapload{background:${BG.kraft},#b88a55!important;background-blend-mode:multiply!important}#mapload b{font-family:var(--pf)!important;color:#fff!important;text-shadow:0 4px 0 rgba(0,0,0,.25)}#mapload span{font-family:var(--pt)!important;font-weight:800;color:var(--pink)!important}
 #loading{background:${BG.kraft},#b88a55!important;background-blend-mode:multiply;font-family:var(--pf)!important;color:#fff!important;text-shadow:0 3px 0 rgba(0,0,0,.25)}
@@ -124,6 +134,8 @@
     const br = hud.querySelector('.corner.br'); const g = document.createElement('div'); g.id = 'pGun'; br.insertBefore(g, $('hAmmo'));
     const pl = document.createElement('div'); pl.id = 'pPlane'; pl.innerHTML = '<kbd>G</kbd><svg viewBox="0 0 40 22"><path d="M1 11 L39 1 L22 21 L18 13Z" fill="#fff"/><path d="M18 13 L39 1" stroke="#c0392b" stroke-width="1.5"/></svg><span id="pPlaneN">×2</span>'; hud.appendChild(pl);
     const tip = document.createElement('div'); tip.id = 'pTip'; hud.appendChild(tip);
+    const hint = document.createElement('div'); hint.id = 'pHint'; hud.appendChild(hint);
+    const sl = document.createElement('div'); sl.id = 'pSlice'; hud.appendChild(sl);
     const pip = document.createElement('div'); pip.id = 'pPip'; pip.innerHTML = '<b>YOUR PLANE · mouse steers · click: pop · G: let go</b>'; hud.appendChild(pip); }
   const gunIcon = id => { const gi = U.gunIcons && U.gunIcons[id]; if (gi) return `<img src="${esc(gi)}" alt="">`; return (typeof ICON !== 'undefined' && ICON[id]) || ''; };
   let lastW = null, lastHp = -1;
@@ -172,7 +184,7 @@
       <div class="chips" role="radiogroup" aria-label="Bot difficulty">${['easy', 'normal', 'hard'].map(d => `<button type="button" class="chip" role="radio" data-df="${d}" aria-checked="${d === U.diff}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div>
       <div class="mode">Team Deathmatch · Blue (you + 3 bots) vs Red (4 bots) · first to 30 kills or 8 minutes · Desk Town</div>
       <div class="play"><button type="button" class="go" id="pPlay">Play vs Bots</button><button type="button" class="sm" id="pKeysB">Controls</button><button type="button" class="sm" id="pSetB">Settings</button></div>
-      <div id="pkeys">${[['WASD', 'Move'], ['Mouse', 'Look'], ['Left click', 'Fire'], ['Right click', 'Aim'], ['1-5', 'Rifle · Shotgun · Sniper · SMG · Boomerang'], ['R', 'Reload'], ['Shift', 'Sprint'], ['Space', 'Jump (twice: double jump)'], ['C', 'Crouch / slide'], ['E', 'Dash'], ['V', 'Paper cutter (melee)'], ['G', 'Paper plane: hold to aim, let go to throw, then steer with the mouse'], ['F', 'Catch a plane flying at you'], ['Tab', 'Scores']].map(([k, v]) => `<div><kbd>${k}</kbd>${v}</div>`).join('')}<div style="margin-top:6px">Shoot thin cardboard to tear holes you can see and shoot through. Shoot along a dashed crease to tear a flap open.</div></div>
+      <div id="pkeys">${[['WASD', 'Move'], ['Mouse', 'Look'], ['Left click', 'Fire'], ['Right click', 'Aim'], ['1-5', 'Rifle · Shotgun · Sniper · SMG · Boomerang'], ['R', 'Reload'], ['Shift', 'Sprint'], ['Space', 'Jump (twice: double jump)'], ['C', 'Crouch / slide'], ['E', 'Dash'], ['V', 'Paper cutter (melee)'], ['G or 6', 'Paper plane: take it out, click to throw, steer it with the mouse, click to pop, right click to let go'], ['F', 'CATCH a plane flying at you, then steer it back'], ['Y', 'Look at your gun'], ['Tab', 'Scores']].map(([k, v]) => `<div><kbd>${k}</kbd>${v}</div>`).join('')}<div style="margin-top:6px">Shoot thin cardboard to tear holes you can see and shoot through. Shoot along a dashed crease to tear a flap open.</div></div>
       <div id="psetwrap"></div>
     </div>`;
   }
@@ -192,6 +204,7 @@
   U.playBots = async () => {
     if (U.starting) return; U.starting = true;
     try {
+      if (U.assetsP) await U.assetsP;   // paper soldiers + guns first (never a match with Sector Nine robots)
       const BM = window.S9BotModes; if (BM) { if (BM.loading) await BM.loading; Object.assign(BM.cfg, { mode: 'tdm', size: 4, diff: U.diff }); BM.startOpts = { team: 'atk' }; }
       await U.wipe(async () => { try { initAudio(); } catch (e) {} try { lock(); } catch (e) {} await startMatch('desktown'); setState('play'); }, 'DESK TOWN');
     } finally { U.starting = false; }
@@ -200,13 +213,91 @@
   const _play = typeof play === 'function' ? play : null;
   if (_play) play = async function () { if (state === 'menu') return U.playBots(); return _play.apply(this, arguments); };
 
+  /* ---------------- first-match hints (each shown to a player a few times, then never again) ---------------- */
+  const HINTS = [['holes', '<b>Shoot thin cardboard</b> to tear holes you can <b>see and shoot through</b>. Shoot along a dashed crease to rip a flap open.'],
+    ['slice', 'Paper cutter (<b>V</b>): <b>hold left click on thin cardboard</b> to cut a peek hole. Drag to cut, come back to the start to drop the piece out.'],
+    ['plane', 'Press <b>G</b> to take out a <b>paper plane</b>, <b>click</b> to throw it, then steer it with the mouse. An enemy plane coming at you? Press <b>F</b> to <b>catch</b> it and send it back!']];
+  U.showHints = () => {
+    let seen = {}; try { seen = JSON.parse(localStorage.getItem('foldiers-hints') || '{}'); } catch (e) {}
+    const due = HINTS.filter(([k]) => (seen[k] || 0) < 3); if (!due.length) return; const el = $('pHint'); let t = 2500;
+    for (const [k, html] of due) { setTimeout(() => { el.innerHTML = html; el.classList.add('on'); }, t); setTimeout(() => el.classList.remove('on'), t + 6500); t += 7500; seen[k] = (seen[k] || 0) + 1; }
+    try { localStorage.setItem('foldiers-hints', JSON.stringify(seen)); } catch (e) {}
+  };
+
   /* ---------------- match start: holes reset, always blue, planes refilled ---------------- */
   const _startMatch = startMatch;
   startMatch = async function () {
     const r = await _startMatch.apply(this, arguments);
-    try { TEAR.reset(); PFX.clear(); PLANES.reset(); PAPER_MARKS.clear(); PAPER_DEATHS.warm(); } catch (e) {}
+    try { TEAR.reset(); PFX.clear(); PLANES.reset(); PAPER_MARKS.clear(); PAPER_DEATHS.warm(); U.showHints(); } catch (e) {}
     return r;
   };
 
-  dataP.then(() => { buildMenu(); U.ready = true; window.dispatchEvent(new Event('paper:ready')); });
+  /* ---------------- the GUNS agent's paper guns in first person (data/paper/guns.json + assets/paper/guns/*.glb) ---------------- */
+  // Each engine viewmodel (WM[id]) keeps its motion (sway, kick, reload dip, ADS) and its muzzle flash; its Sector Nine meshes are
+  // hidden and the paper gun is placed so that at the hip its grip sits at guns.json art.hip and at ADS its sight sits on the
+  // camera axis at art.eye. The hands stay the engine's (tinted blue paper) until the CHARS agent's origami hands land.
+  const GUNMAP = { carbine: 'rifle', breacher: 'shotgun', sniper: 'sniper', wasp: 'smg' };
+  U.gunsLoaded = 0;
+  async function loadGuns() {
+    // WEAPONS agent: the core's PVM (src/game/40-viewmodel.js) builds the paper guns + origami hands + the plane slot (exact ADS)
+    if (typeof PVM !== 'undefined') { await PVM.load(); U.gunIcons = Object.assign({}, PVM.icons); lastW = null; try { updateHud(true); } catch (e) {} return; }
+    const G = await getJSON('data/paper/guns.json'); if (!G || !G.guns) return;
+    U.gunIcons = {}; const L = new THREE.GLTFLoader();
+    for (const [eid, gid] of Object.entries(GUNMAP)) {
+      const a = G.guns[gid] && G.guns[gid].art, m = WM[eid]; if (!a || !m) continue;
+      if (a.hudIcon) U.gunIcons[eid] = a.hudIcon;
+      try {
+        const gl = await L.loadAsync(a.glb); const root = gl.scene; root.traverse(o => { if (o.isMesh) { o.castShadow = false; o.frustumCulled = false; if (o.material) o.material.envMapIntensity = .5; } });
+        const grp = m.group, keep = new Set(); for (const k of [m.rear, m.leftArm, m.flash]) if (k) k.traverse(o => keep.add(o));
+        grp.traverse(o => { if (o.isMesh && !keep.has(o)) o.visible = false; if (o.isSprite && !keep.has(o)) o.visible = false; });
+        const sc = grp.scale.x || 1, off = new THREE.Vector3(...a.hip).sub(m.hip).divideScalar(sc);
+        root.position.copy(off); grp.add(root);
+        const sight = new THREE.Vector3(...((a.attach && a.attach.sight) || [0, .15, 0])), mz = new THREE.Vector3(...((a.attach && a.attach.muzzle) || [0, .1, -.6]));
+        if (a.eye) m.adsPos = new THREE.Vector3(0, 0, -a.eye).sub(off.clone().multiplyScalar(sc)).sub(sight);
+        if (m.flash) m.flash.position.copy(off).add(mz.divideScalar(sc));
+        m.paper = root; U.gunsLoaded++;
+      } catch (e) { console.warn('paper gun', gid, e); }
+    }
+    for (const id in WM) for (const k of [WM[id].rear, WM[id].leftArm]) if (k) k.traverse(o => { if (o.isMesh && o.material && !o.material.userData.paperHand) { o.material = o.material.clone(); o.material.color.set(0x2f4fb0); o.material.userData = { paperHand: 1 }; o.material.roughness = .9; o.material.metalness = 0; } });
+    if (typeof P !== 'undefined' && P.weapon && WM[P.weapon]) { HIP_POS = WM[P.weapon].hip; ADS_POS = WM[P.weapon].adsPos; }
+    try { renderer.compile(gunScene, gunCam); } catch (e) {}
+    lastW = null; try { updateHud(true); } catch (e) {}
+  }
+
+  /* ---------------- the CHARS agent's paper soldiers replace the Sector Nine robots (assets/paper/chars/<id>.glb) ---------------- */
+  // Same mixamo skeleton as the engine's animations, so the bots keep every clip. Team colour = the agent's blue / red textures.
+  U.charModels = {}; U.charTex = {};
+  // texture budget (DESIGN.md perf rule): cap a texture's size (characters 1024; everything 1024 on the Performance tier)
+  function shrink(t, max) { const im = t && t.image; if (!im || !im.width || Math.max(im.width, im.height) <= max) return t; const k = max / Math.max(im.width, im.height), c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); t.image = c; t.needsUpdate = true; return t; }
+  U.shrink = shrink;
+  async function loadChars() {
+    const ids = (U.chars || CHARS0).map(c => c.id), L = new THREE.GLTFLoader(), TL = new THREE.TextureLoader();
+    const tx = u => new Promise(res => TL.load(u, t => { t.flipY = false; t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; shrink(t, 1024); res(t); }, undefined, () => res(null)));
+    for (const id of ids) {
+      try { const g = await L.loadAsync(`assets/paper/chars/${id}.glb`); if (!g || !g.scene) continue; g.scene.traverse(o => { if (o.isMesh && o.material) for (const k of ['map', 'normalMap', 'roughnessMap']) if (o.material[k]) shrink(o.material[k], 1024); }); U.charModels[id] = g; U.charTex[id] = { atk: await tx(`assets/paper/chars/${id}_blue.png`), def: await tx(`assets/paper/chars/${id}_red.png`) }; } catch (e) { console.warn('paper char', id, e); }
+    }
+    const list = Object.keys(U.charModels); if (!list.length) return;
+    const S9soldier = ASSET.soldier;
+    const _bb = buildBot;
+    buildBot = function (profile) {
+      const k = list[Math.abs([...String(profile && profile.name || 'x')].reduce((h, c) => h * 31 + c.charCodeAt(0) | 0, 7)) % list.length];
+      ASSET.soldier = U.charModels[k]; let r;
+      try { r = _bb.apply(this, arguments); } finally { ASSET.soldier = S9soldier; }
+      r.paperChar = k; if (!r.visor) r.visor = new THREE.MeshStandardMaterial();
+      r.model.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      paperTeam(r, true); return r;
+    };
+    // rebuild the bots already in the scene (menu) with the paper soldiers
+    try { if (state === 'menu') { while (robots.length) removeRobot(robots[0]); newRoster(); } } catch (e) { console.warn('roster', e); }
+    try { renderer.compile(scene, camera); } catch (e) {}
+    U.charsLoaded = list.length;
+  }
+  function paperTeam(r, force) {
+    const t = r.mxTeam === 'def' ? 'def' : r.mxTeam === 'atk' ? 'atk' : 'def', T = U.charTex[r.paperChar];
+    if (!force && r._pt === t) return; r._pt = t; if (!r.body) return;
+    if (T && T[t]) r.body.map = T[t]; r.body.color.setRGB(1, 1, 1); r.body.roughness = .9; r.body.metalness = 0; r.body.needsUpdate = false;
+  }
+  setInterval(() => { try { for (const r of robots) if (r.paperChar) { paperTeam(r); if (r.body && (r.body.color.r !== 1 || r.body.color.b !== 1)) r.body.color.setRGB(1, 1, 1); } } catch (e) {} }, 250);
+
+  U.assetsP = dataP.then(() => loadChars()).catch(e => console.warn('chars', e)).then(() => loadGuns()).catch(e => console.warn('guns', e)).then(() => { buildMenu(); U.ready = true; window.dispatchEvent(new Event('paper:ready')); });
 })();

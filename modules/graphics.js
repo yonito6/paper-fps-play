@@ -68,7 +68,7 @@
     grid: { rim: 1.8, glow: .6, hemiK: 1.6, lift: .035, fogK: .6, sat: 1.2, con: .2, bloom: .8, fogH: .5 },
     yard: { rim: 1.5, sat: 1.12, con: .1 },
     // Paper FPS Desk Town: warm, saturated, clean (miniature on a sunny desk); little haze, soft vignette
-    desktown: { rim: 1.2, sat: 1.2, con: .2, sh: [.97, .98, 1.05], hi: [1.07, 1.0, .9], vig: .2, bloom: .45, bloomT: 1.4, fogH: .2, fogK: .5, scat: .3, boost: 1.15, hemiK: 1.0, lift: .012, glow: .8 },
+    desktown: { rim: 1.1, sat: 1.04, con: .34, sh: [.95, .98, 1.06], hi: [1.06, 1.0, .9], vig: .22, bloom: .35, bloomT: 1.5, fogH: .08, fogK: 1, scat: .25, boost: 1.0, hemiK: 1.0, lift: .0, glow: .8 },
   };
   const lookOf = id => Object.assign({}, LOOK_BASE, LOOK[id] || {});
 
