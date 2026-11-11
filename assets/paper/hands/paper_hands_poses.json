@@ -1168,379 +1168,41 @@
   }
  },
  "grip_sockets": {
-  "_about": "three.js palm space of the POSED hand (wrist at origin, fingers toward -Z, back of hand +Y, palm facing -Y, thumb toward -X for the right hand). pos = where the gun's grip_r / grip_l empty goes; axes = the gun empty's X/Y/Z axes expressed in palm space (guns contract: -Z forward along the gun, +Y up the grip). Place hand: handWorld = gripWorld * inverse(socket). Tune in game if a finger clips.",
-  "rifle_trigger": {
-   "pos": [
-    0.0,
-    -0.035,
-    -0.075
-   ],
-   "axes": {
-    "x": [
-     0.0,
-     1,
-     0.0
-    ],
-    "y": [
-     -0.968,
-     0,
-     -0.25
-    ],
-    "z": [
-     -0.25,
-     0,
-     0.968
-    ]
-   },
-   "side": "R"
-  },
-  "pistol_trigger": {
-   "pos": [
-    0.0,
-    -0.035,
-    -0.075
-   ],
-   "axes": {
-    "x": [
-     0.0,
-     1,
-     0.0
-    ],
-    "y": [
-     -0.968,
-     0,
-     -0.25
-    ],
-    "z": [
-     -0.25,
-     0,
-     0.968
-    ]
-   },
-   "side": "R"
-  },
-  "vgrip": {
-   "pos": [
-    0.0,
-    -0.03,
-    -0.07
-   ],
-   "axes": {
-    "x": [
-     0.0,
-     1,
-     0.0
-    ],
-    "y": [
-     -0.968,
-     0,
-     -0.25
-    ],
-    "z": [
-     -0.25,
-     0,
-     0.968
-    ]
-   },
-   "side": "R"
-  },
-  "rifle_support": {
-   "pos": [
-    0.0,
-    -0.03,
-    -0.06
-   ],
-   "axes": {
-    "x": [
-     0.707,
-     0.252,
-     -0.661
-    ],
-    "y": [
-     0.0,
-     -0.935,
-     -0.356
-    ],
-    "z": [
-     0.707,
-     -0.252,
-     0.661
-    ]
-   },
-   "side": "L (left-hand palm space = X-mirror of the right)"
-  },
-  "pump": {
-   "pos": [
-    0.0,
-    -0.03,
-    -0.07
-   ],
-   "axes": {
-    "x": [
-     0.707,
-     0.252,
-     -0.661
-    ],
-    "y": [
-     0.0,
-     -0.935,
-     -0.356
-    ],
-    "z": [
-     0.707,
-     -0.252,
-     0.661
-    ]
-   },
-   "side": "L (left-hand palm space = X-mirror of the right)"
-  },
-  "boomerang_hold": {
-   "pos": [
-    0.0,
-    -0.03,
-    -0.07
-   ],
-   "axes": {
-    "x": [
-     0.0,
-     1,
-     0.0
-    ],
-    "y": [
-     -0.968,
-     0,
-     -0.25
-    ],
-    "z": [
-     -0.25,
-     0,
-     0.968
-    ]
-   },
-   "side": "R"
-  },
-  "plane_pinch": {
-   "pos": [
-    -0.04,
-    -0.005,
-    -0.125
-   ],
-   "axes": {
-    "x": [
-     0.0,
-     1,
-     0.0
-    ],
-    "y": [
-     -0.968,
-     0,
-     -0.25
-    ],
-    "z": [
-     -0.25,
-     0,
-     0.968
-    ]
-   },
-   "side": "R",
-   "note": "pinch point between thumb and index tip (plane tail)"
-  }
- },
- "hand_clips": {
-  "rifle": {
-   "*": [
-    [
-     0,
-     "rifle_trigger",
-     "rifle_support"
-    ]
-   ],
-   "reload": [
-    [
-     0,
-     "rifle_trigger",
-     "rifle_support"
-    ],
-    [
-     0.25,
-     "rifle_trigger",
-     "fist"
-    ],
-    [
-     1.55,
-     "rifle_trigger",
-     "rifle_support"
-    ]
-   ]
-  },
-  "smg": {
-   "*": [
-    [
-     0,
-     "rifle_trigger",
-     "rifle_support"
-    ]
-   ],
-   "reload": [
-    [
-     0,
-     "rifle_trigger",
-     "rifle_support"
-    ],
-    [
-     0.2,
-     "rifle_trigger",
-     "fist"
-    ],
-    [
-     1.25,
-     "rifle_trigger",
-     "rifle_support"
-    ]
-   ]
-  },
-  "sniper": {
-   "*": [
-    [
-     0,
-     "rifle_trigger",
-     "rifle_support"
-    ]
-   ],
-   "bolt": [
-    [
-     0,
-     "rifle_trigger",
-     "rifle_support"
-    ],
-    [
-     0.08,
-     "sniper_bolt",
-     "rifle_support"
-    ],
-    [
-     0.62,
-     "rifle_trigger",
-     "rifle_support"
-    ]
-   ],
-   "reload": [
-    [
-     0,
-     "rifle_trigger",
-     "rifle_support"
-    ],
-    [
-     0.25,
-     "rifle_trigger",
-     "fist"
-    ],
-    [
-     1.7,
-     "rifle_trigger",
-     "rifle_support"
-    ]
-   ]
-  },
-  "shotgun": {
-   "*": [
-    [
-     0,
-     "rifle_trigger",
-     "pump"
-    ]
-   ],
-   "reload_shell": [
-    [
-     0,
-     "rifle_trigger",
-     "fist"
-    ],
-    [
-     0.38,
-     "rifle_trigger",
-     "pump"
-    ]
-   ]
-  },
-  "boomerang": {
-   "*": [
-    [
-     0,
-     "boomerang_hold",
-     "open"
-    ]
-   ],
-   "throw": [
-    [
-     0,
-     "boomerang_hold",
-     "open"
-    ],
-    [
-     0.1,
-     "boomerang_release",
-     "open"
-    ]
-   ],
-   "catch": [
-    [
-     0,
-     "catch_open",
-     "open"
-    ],
-    [
-     0.12,
-     "boomerang_hold",
-     "open"
-    ]
-   ]
-  },
-  "plane": {
-   "*": [
-    [
-     0,
-     "plane_pinch",
-     "open"
-    ]
-   ],
-   "throw": [
-    [
-     0,
-     "plane_pinch",
-     "open"
-    ],
-    [
-     0.13,
-     "plane_release",
-     "open"
-    ]
-   ],
-   "steer": [
-    [
-     0,
-     "plane_steer",
-     null
-    ]
-   ],
-   "catch": [
-    [
-     0,
-     "catch_open",
-     "catch_open"
-    ],
-    [
-     0.18,
-     "catch_closed",
-     "catch_closed"
-    ],
-    [
-     0.4,
-     "plane_pinch",
-     null
-    ]
-   ]
-  },
-  "equip_unequip": "use the gun clip `equip` (played backwards for unequip); hands keep the gun * poses"
+  "_about": "three.js palm space of the posed hand (wrist at the origin, fingers toward -Z, palm facing -Y, thumb toward -X for the right hand; the left hand is the X-mirror): the centre of the gripped handle. Put this point on the gun's grip_r (right hand) / grip_l (left hand).",
+  "rifle_trigger": [
+   0.0,
+   -0.035,
+   -0.075
+  ],
+  "pistol_trigger": [
+   0.0,
+   -0.035,
+   -0.075
+  ],
+  "vgrip": [
+   0.0,
+   -0.03,
+   -0.07
+  ],
+  "pump": [
+   0.0,
+   -0.03,
+   -0.07
+  ],
+  "rifle_support": [
+   0.0,
+   -0.03,
+   -0.06
+  ],
+  "boomerang_hold": [
+   0.0,
+   -0.03,
+   -0.07
+  ],
+  "plane_pinch": [
+   -0.04,
+   -0.005,
+   -0.125
+  ]
  }
 }
