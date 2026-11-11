@@ -1,6 +1,7 @@
 {
- "note": "The game's name lives ONLY here (menu, page title, end screen read it). Working name until Yonit picks the final one.",
- "title": "Paper FPS (working name)",
- "short": "Paper FPS",
- "tagline": "Tear the map. Catch the plane. Fold the other team."
+ "note": "The game's name lives ONLY here (menu logo, page title, loading + end screens read it). Owner decision 2026-11-11: Foldiers. Domain: foldiers.com.",
+ "title": "Foldiers",
+ "short": "Foldiers",
+ "tagline": "Tear the map. Catch the plane. Fold the other team.",
+ "domain": "foldiers.com"
 }

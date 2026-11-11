@@ -1,0 +1,645 @@
+{
+ "_readme": "Paper FPS guns. Stats = SUGGESTED starting points copied from Sector Nine data/weapons.json for the same role (source named in \"from\"); the LEAD owns balance. Units: metres, seconds, rpm. art.hip = where the gun root sits in camera space at the hip (glTF axes: x right, y up, z back); art.eye = camera-to-sight distance the ads clip ends at. See assets/paper/guns/README.md.",
+ "order": [
+  "rifle",
+  "shotgun",
+  "sniper",
+  "smg",
+  "boomerang"
+ ],
+ "throwable": "plane",
+ "guns": {
+  "rifle": {
+   "name": "Fold-47",
+   "cls": "Assault rifle",
+   "from": "carbine",
+   "stats": {
+    "name": "K-7 Carbine",
+    "cls": "Pulse rifle",
+    "mag": 30,
+    "reserve": 240,
+    "maxReserve": 360,
+    "rpm": 680,
+    "auto": true,
+    "dmg": 24,
+    "head": 2.4,
+    "hip": 0.016,
+    "ads": 0.0015,
+    "adsFov": 44,
+    "adsSpeed": 14,
+    "reload": 1.85,
+    "reloadEmpty": 2.25,
+    "falloff": [
+     24,
+     70,
+     0.6
+    ],
+    "kick": 1,
+    "move": 1,
+    "heat": 0.14,
+    "stats": [
+     62,
+     72,
+     70,
+     70
+    ],
+    "desc": "Reliable automatic pulse rifle. Good at every range."
+   },
+   "desc": "Reliable folded-paper rifle. Good at every range.",
+   "art": {
+    "glb": "assets/paper/guns/rifle.glb",
+    "glbRed": "assets/paper/guns/rifle_red.glb",
+    "hudIcon": "assets/paper/guns/icons/rifle_hud.png",
+    "killIcon": "assets/paper/guns/icons/rifle_kill.png",
+    "hip": [
+     0.16,
+     -0.15,
+     -0.29
+    ],
+    "eye": 0.15,
+    "tris": 2634,
+    "clips": {
+     "equip": 0.5,
+     "idle": 2,
+     "fire": 0.1,
+     "ads": 0.2,
+     "ads_idle": 2,
+     "inspect": 2.6,
+     "reload": 1.867
+    },
+    "attach": {
+     "mag": [
+      0,
+      0.0401,
+      -0.159
+     ],
+     "grip_r": [
+      0,
+      0,
+      0
+     ],
+     "grip_l": [
+      0,
+      0.0501,
+      -0.384
+     ],
+     "muzzle": [
+      0,
+      0.0941,
+      -0.724
+     ],
+     "sight": [
+      0,
+      0.1746,
+      -0.085
+     ],
+     "eject": [
+      0.04,
+      0.1001,
+      -0.144
+     ],
+     "mag_well": [
+      0,
+      0.0401,
+      -0.159
+     ]
+    }
+   }
+  },
+  "shotgun": {
+   "name": "Crease",
+   "cls": "Pump shotgun",
+   "from": "breacher",
+   "stats": {
+    "name": "Breacher",
+    "cls": "Plasma shotgun",
+    "mag": 6,
+    "reserve": 36,
+    "maxReserve": 54,
+    "rpm": 80,
+    "auto": false,
+    "dmg": 36,
+    "pellets": 8,
+    "spreadP": 0.07,
+    "head": 1.5,
+    "hip": 0,
+    "ads": 0,
+    "adsFov": 62,
+    "adsSpeed": 16,
+    "reload": 2.4,
+    "reloadEmpty": 2.4,
+    "falloff": [
+     10,
+     16,
+     0.07
+    ],
+    "kick": 2.8,
+    "move": 1.02,
+    "heat": 0,
+    "stats": [
+     96,
+     20,
+     18,
+     80
+    ],
+    "desc": "Ten plasma pellets. One-shots anyone within 7 m.",
+    "reloadMode": "shell",
+    "reloadStart": 0.35,
+    "reloadShell": 0.5,
+    "reloadEnd": 0.45,
+    "pumpTime": 0.75
+   },
+   "desc": "Pump-action paper shells. Shreds anyone up close.",
+   "art": {
+    "glb": "assets/paper/guns/shotgun.glb",
+    "glbRed": "assets/paper/guns/shotgun_red.glb",
+    "hudIcon": "assets/paper/guns/icons/shotgun_hud.png",
+    "killIcon": "assets/paper/guns/icons/shotgun_kill.png",
+    "hip": [
+     0.17,
+     -0.155,
+     -0.3
+    ],
+    "eye": 0.13,
+    "tris": 3040,
+    "clips": {
+     "equip": 0.5,
+     "idle": 2,
+     "fire": 0.733,
+     "ads": 0.2,
+     "ads_idle": 2,
+     "inspect": 2.6,
+     "reload_start": 0.333,
+     "reload_shell": 0.5,
+     "reload_end": 0.467
+    },
+    "attach": {
+     "pump": [
+      0,
+      0.0847,
+      -0.4713
+     ],
+     "shell": [
+      0,
+      -0.0013,
+      -0.1713
+     ],
+     "grip_r": [
+      0,
+      0,
+      0
+     ],
+     "grip_l": [
+      0,
+      0.0567,
+      -0.4713
+     ],
+     "muzzle": [
+      0,
+      0.1227,
+      -0.8233
+     ],
+     "sight": [
+      0,
+      0.1577,
+      0.0037
+     ],
+     "eject": [
+      0.047,
+      0.1007,
+      -0.1563
+     ],
+     "mag": [
+      0,
+      0.0307,
+      -0.1713
+     ]
+    }
+   }
+  },
+  "sniper": {
+   "name": "Longroll",
+   "cls": "Sniper rifle",
+   "from": "sniper",
+   "stats": {
+    "name": "R-90 Longbow",
+    "cls": "Sniper rifle",
+    "mag": 5,
+    "reserve": 25,
+    "maxReserve": 35,
+    "rpm": 70,
+    "auto": false,
+    "dmg": 5000,
+    "head": 1,
+    "oneShot": true,
+    "pierce": true,
+    "scope": true,
+    "hip": 0.06,
+    "ads": 0,
+    "adsFov": 13,
+    "adsSpeed": 26,
+    "reload": 2,
+    "reloadEmpty": 2,
+    "falloff": null,
+    "kick": 4,
+    "move": 0.94,
+    "heat": 0,
+    "stats": [
+     100,
+     30,
+     100,
+     45
+    ],
+    "desc": "Scoped. Kills in one shot and passes through every body in line.",
+    "bolt": 0.75,
+    "_note": "bolt action: rpm 70 and mag 5 suggested so the 0.75 s bolt clip fits between shots (Sector Nine had rpm 200, mag 10)"
+   },
+   "desc": "Rolled-paper sniper with a film-lens scope. One shot, then work the bolt.",
+   "art": {
+    "glb": "assets/paper/guns/sniper.glb",
+    "glbRed": "assets/paper/guns/sniper_red.glb",
+    "hudIcon": "assets/paper/guns/icons/sniper_hud.png",
+    "killIcon": "assets/paper/guns/icons/sniper_kill.png",
+    "hip": [
+     0.16,
+     -0.145,
+     -0.3
+    ],
+    "eye": 0.075,
+    "tris": 2858,
+    "clips": {
+     "equip": 0.5,
+     "idle": 2,
+     "fire": 0.4,
+     "ads": 0.2,
+     "ads_idle": 2,
+     "inspect": 2.6,
+     "reload": 2,
+     "bolt": 0.733
+    },
+    "attach": {
+     "mag": [
+      0,
+      0.0456,
+      -0.126
+     ],
+     "bolt": [
+      0,
+      0.0956,
+      -0.036
+     ],
+     "grip_r": [
+      0,
+      0,
+      0
+     ],
+     "grip_l": [
+      0,
+      0.0446,
+      -0.446
+     ],
+     "muzzle": [
+      0,
+      0.0886,
+      -1.101
+     ],
+     "sight": [
+      0,
+      0.1556,
+      0.062
+     ],
+     "eject": [
+      0.032,
+      0.1086,
+      -0.066
+     ],
+     "bolt_knob": [
+      0.064,
+      0.0836,
+      -0.027
+     ]
+    }
+   }
+  },
+  "smg": {
+   "name": "Stack",
+   "cls": "SMG",
+   "from": "wasp",
+   "stats": {
+    "name": "V-9 Wasp",
+    "cls": "Ion SMG",
+    "mag": 42,
+    "reserve": 336,
+    "maxReserve": 420,
+    "rpm": 1080,
+    "auto": true,
+    "dmg": 15,
+    "head": 2,
+    "hip": 0.02,
+    "ads": 0.006,
+    "adsFov": 58,
+    "adsSpeed": 22,
+    "reload": 1.5,
+    "reloadEmpty": 1.8,
+    "falloff": [
+     12,
+     32,
+     0.5
+    ],
+    "kick": 0.55,
+    "move": 1.08,
+    "heat": 0.07,
+    "stats": [
+     42,
+     98,
+     35,
+     92
+    ],
+    "desc": "Shreds up close. Fast to aim, fast to move. Weak past 15 m."
+   },
+   "desc": "Compact and fast. A stick magazine of stacked paper.",
+   "art": {
+    "glb": "assets/paper/guns/smg.glb",
+    "glbRed": "assets/paper/guns/smg_red.glb",
+    "hudIcon": "assets/paper/guns/icons/smg_hud.png",
+    "killIcon": "assets/paper/guns/icons/smg_kill.png",
+    "hip": [
+     0.15,
+     -0.13,
+     -0.27
+    ],
+    "eye": 0.13,
+    "tris": 2738,
+    "clips": {
+     "equip": 0.5,
+     "idle": 2,
+     "fire": 0.067,
+     "ads": 0.2,
+     "ads_idle": 2,
+     "inspect": 2.6,
+     "reload": 1.5
+    },
+    "attach": {
+     "mag": [
+      0,
+      0.035,
+      -0.1598
+     ],
+     "grip_r": [
+      0,
+      0,
+      0
+     ],
+     "grip_l": [
+      0,
+      0.055,
+      -0.2848
+     ],
+     "muzzle": [
+      0,
+      0.087,
+      -0.4048
+     ],
+     "sight": [
+      0,
+      0.1465,
+      -0.0498
+     ],
+     "eject": [
+      0.035,
+      0.095,
+      -0.1298
+     ]
+    }
+   }
+  },
+  "boomerang": {
+   "name": "Corrugang",
+   "cls": "Boomerang",
+   "from": "boomerang (src/game/55-weapons.js)",
+   "stats": {
+    "name": "Vortex",
+    "cls": "Boomerang",
+    "mode": "boomerang",
+    "infinite": true,
+    "mag": 1,
+    "reserve": 0,
+    "maxReserve": 0,
+    "rpm": 300,
+    "auto": false,
+    "dmg": 500,
+    "head": 1,
+    "hip": 0,
+    "ads": 0,
+    "adsFov": 78,
+    "adsSpeed": 10,
+    "reload": 1,
+    "reloadEmpty": 1,
+    "kick": 0,
+    "move": 1.1,
+    "stats": [
+     100,
+     34,
+     58,
+     94
+    ],
+    "desc": "Never runs out. Hold to wind up, release to throw: kills in one hit, then flies back to your hand. Right click punches.",
+    "flight": {
+     "chargeFull": 0.3,
+     "speedMin": 30,
+     "speedMax": 44,
+     "rangeMin": 13,
+     "rangeMax": 34,
+     "lockAngle": 0.14,
+     "lockRange": 40,
+     "returnSpeed": 26,
+     "returnSpeedFast": 34,
+     "spinRate": 26,
+     "punchTapMax": 0.16
+    }
+   },
+   "desc": "Folded corrugated cardboard. Hold to wind up, release to throw: kills in one hit, then flies back to your hand. Right click punches.",
+   "art": {
+    "glb": "assets/paper/guns/boomerang.glb",
+    "glbRed": "assets/paper/guns/boomerang_red.glb",
+    "hudIcon": "assets/paper/guns/icons/boomerang_hud.png",
+    "killIcon": "assets/paper/guns/icons/boomerang_kill.png",
+    "hip": [
+     0,
+     -0.2,
+     -0.52
+    ],
+    "eye": null,
+    "tris": 404,
+    "clips": {
+     "equip": 0.467,
+     "idle": 2,
+     "windup": 0.3,
+     "throw": 0.333,
+     "catch": 0.333,
+     "inspect": 2.2,
+     "punch": 0.333
+    },
+    "attach": {
+     "blade": [
+      0.1425,
+      0.0938,
+      -0.0054
+     ],
+     "grip_r": [
+      0,
+      0,
+      0
+     ],
+     "grip_l": [
+      0.22,
+      -0.08,
+      0.055
+     ],
+     "muzzle": [
+      0.1425,
+      0.0938,
+      -0.0054
+     ],
+     "sight": [
+      0.17,
+      0.2,
+      -0.015
+     ]
+    },
+    "spinAxis": "blade node local +Y (glTF) = the board normal",
+    "bladeNode": "blade"
+   }
+  }
+ },
+ "plane": {
+  "name": "Paper Plane",
+  "cls": "Throwable",
+  "from": "new (DESIGN.md signature mechanic 2)",
+  "stats": {
+   "_note": "SUGGESTED, untested: the LEAD tunes these in docs/MECHANICS.md",
+   "count": 2,
+   "hp": 20,
+   "speed": 14,
+   "steerRate": 2.2,
+   "maxFlight": 6,
+   "blastRadius": 3.5,
+   "blastDamage": 110,
+   "blastMin": 25,
+   "catchRange": 2.2,
+   "catchAngle": 0.6,
+   "releaseTime": 0.12
+  },
+  "art": {
+   "glb": "assets/paper/guns/plane.glb",
+   "glbRed": "assets/paper/guns/plane_red.glb",
+   "hudIcon": "assets/paper/guns/icons/plane_hud.png",
+   "killIcon": "assets/paper/guns/icons/plane_kill.png",
+   "hip": [
+    0.13,
+    -0.11,
+    -0.42
+   ],
+   "eye": null,
+   "tris": 416,
+   "clips": {
+    "equip": 0.667,
+    "idle": 2,
+    "aim": 0.333,
+    "aim_idle": 1.5,
+    "throw": 0.467
+   },
+   "attach": {
+    "plane": [
+     0,
+     0.008,
+     -0.015
+    ],
+    "wing_l": [
+     0,
+     0.03,
+     -0.035
+    ],
+    "wing_r": [
+     0,
+     0.03,
+     -0.035
+    ],
+    "grip_r": [
+     0,
+     0,
+     0
+    ],
+    "muzzle": [
+     0,
+     0.03,
+     -0.175
+    ],
+    "sight": [
+     0,
+     0.05,
+     -0.015
+    ],
+    "grip_l": [
+     -0.06,
+     -0.03,
+     0.085
+    ]
+   },
+   "flightGlb": "assets/paper/guns/plane_flight.glb",
+   "damagedGlb": "assets/paper/guns/plane_damaged.glb",
+   "flightTris": 416,
+   "damagedTris": 428
+  }
+ },
+ "fx": {
+  "muzzlePuff": {
+   "file": "assets/paper/guns/fx/muzzle_puff_4x4.png",
+   "frames": 16,
+   "grid": [
+    4,
+    4
+   ],
+   "fps": 40
+  },
+  "impactChips": {
+   "file": "assets/paper/guns/fx/impact_chips_4x2.png",
+   "variants": 8,
+   "grid": [
+    4,
+    2
+   ]
+  },
+  "impactPuff": {
+   "file": "assets/paper/guns/fx/impact_puff_8f.png",
+   "frames": 8,
+   "grid": [
+    8,
+    1
+   ],
+   "fps": 24
+  },
+  "confetti": {
+   "file": "assets/paper/guns/fx/confetti_4x4.png",
+   "variants": 16,
+   "grid": [
+    4,
+    4
+   ],
+   "rows": [
+    "squares",
+    "triangles",
+    "curled strips",
+    "dots"
+   ]
+  },
+  "tracer": {
+   "file": "assets/paper/guns/fx/tracer_paper_streak.png",
+   "head": "right (+u)",
+   "size": [
+    256,
+    32
+   ]
+  }
+ }
+}

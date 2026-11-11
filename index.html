@@ -1,4 +1,4 @@
-<title>Paper FPS (working name)</title>
+<title>Foldiers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&display=swap">
@@ -2464,6 +2464,89 @@ const PFX = (() => {
   function clear() { for (let i = 0; i < N; i++) if (p[i].on) { p[i].on = false; _m.makeScale(0, 0, 0); mesh.setMatrixAt(i, _m); } if (mesh) mesh.instanceMatrix.needsUpdate = true; }
   return { init, spawn, burst, chips, puff, update, clear, TEAMC, get live() { return live; }, get mesh() { return mesh; } };
 })();
+/* ================= persistent shot marks on EVERY surface (owner request 2026-11-11) ================= */
+// Every surface keeps its shot marks for the round. Tearable panels get REAL see-through holes (62-tearing.js); everything else
+// gets a paper-world mark from one atlas: cardboard = puncture with torn lips + corrugation inside + dent ring, paper props =
+// frayed puncture, wood (ruler) = splinter chip, plastic/metal (scissors, binder clip) = scuff, cutting mat = nick. Shotgun =
+// a cluster (one mark per pellet), sniper = clean through-hole, boomerang = slash cut, plane blast = scorched-ink crumple.
+// ONE InstancedMesh (one draw call, compiled at load), ring buffer of R.max marks: the oldest is reused, the R.fade oldest
+// shrink away first (bounded, no hitches). Deterministic: rotation and size come from a hash of the hit point, never random.
+const PAPER_MARKS = (() => {
+  const R = { max: 900, fade: 40 };
+  const CELLS = { card: 0, paper: 1, wood: 2, scuff: 3, through: 4, slash: 5, blast: 6, mat: 7 };
+  const SIZE = { card: .16, paper: .13, wood: .17, scuff: .2, through: .1, slash: .5, blast: 2.2, mat: .12 };
+  let im = null, cellAttr = null, idx = 0, count = 0;
+  const born = new Float32Array(R.max).fill(-1), base = [];
+  const o = new THREE.Object3D(), _n = new THREE.Vector3();
+  const hash = (x, y, z, k) => { let h = Math.imul((x * 1000) | 0, 73856093) ^ Math.imul((y * 1000) | 0, 19349663) ^ Math.imul((z * 1000) | 0, 83492791) ^ Math.imul(k | 0, 2654435761); h = Math.imul(h ^ (h >>> 15), 2246822507); h ^= h >>> 13; return (h >>> 0) / 4294967296; };
+  function atlas() {
+    const c = document.createElement('canvas'); c.width = 1024; c.height = 512; const g = c.getContext('2d');
+    let s = 12345; const r = (a, b) => { s = (s * 16807) % 2147483647; return a + (s / 2147483647) * (b - a); };
+    const cell = (i, fn) => { g.save(); g.translate((i % 4) * 256 + 128, Math.floor(i / 4) * 256 + 128); g.beginPath(); g.rect(-128, -128, 256, 256); g.clip(); fn(); g.restore(); };
+    const jag = (n, r0, r1) => { g.beginPath(); for (let i = 0; i <= n; i++) { const a = i / n * 6.283, rr = i % 2 ? r0 : r1 * r(.85, 1.15); const x = Math.cos(a) * rr, y = Math.sin(a) * rr; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath(); };
+    // 0 cardboard puncture: dent ring, torn light lips, dark hole with corrugation stripes inside
+    cell(0, () => { let gr = g.createRadialGradient(0, 0, 30, 0, 0, 110); gr.addColorStop(0, 'rgba(60,35,15,.35)'); gr.addColorStop(1, 'rgba(60,35,15,0)'); g.fillStyle = gr; g.fillRect(-128, -128, 256, 256);
+      g.fillStyle = 'rgba(236,214,176,.95)'; jag(18, 34, 62); g.fill(); g.fillStyle = 'rgba(40,24,12,1)'; jag(14, 22, 38); g.fill();
+      g.save(); g.clip(); g.strokeStyle = 'rgba(150,105,60,.85)'; g.lineWidth = 5; for (let x = -40; x < 40; x += 11) { g.beginPath(); g.moveTo(x, -40); g.quadraticCurveTo(x + 5, 0, x, 40); g.stroke(); } g.restore(); });
+    // 1 paper puncture: small dark centre, frayed white fibres
+    cell(1, () => { g.strokeStyle = 'rgba(255,252,240,.95)'; for (let i = 0; i < 40; i++) { const a = r(0, 6.283), L = r(24, 58); g.lineWidth = r(1, 3); g.beginPath(); g.moveTo(Math.cos(a) * 18, Math.sin(a) * 18); g.lineTo(Math.cos(a) * L, Math.sin(a) * L); g.stroke(); }
+      g.fillStyle = 'rgba(30,22,16,1)'; jag(12, 14, 26); g.fill(); });
+    // 2 wood splinter chip
+    cell(2, () => { g.rotate(.4); g.fillStyle = 'rgba(244,214,160,.98)'; g.beginPath(); g.moveTo(-70, 0); g.lineTo(-20, -26); g.lineTo(60, -8); g.lineTo(90, 4); g.lineTo(40, 22); g.lineTo(-30, 18); g.closePath(); g.fill();
+      g.strokeStyle = 'rgba(120,80,40,.7)'; g.lineWidth = 2; for (let i = 0; i < 7; i++) { g.beginPath(); g.moveTo(-60, r(-12, 12)); g.lineTo(80, r(-10, 10)); g.stroke(); } g.fillStyle = 'rgba(60,35,15,.9)'; g.beginPath(); g.ellipse(-10, 0, 16, 8, 0, 0, 6.283); g.fill(); });
+    // 3 scuff (plastic / metal)
+    cell(3, () => { for (let i = 0; i < 26; i++) { g.strokeStyle = `rgba(235,235,235,${r(.2, .6)})`; g.lineWidth = r(1, 4); const y = r(-30, 30); g.beginPath(); g.moveTo(r(-90, -40), y); g.lineTo(r(40, 90), y + r(-12, 12)); g.stroke(); } g.fillStyle = 'rgba(30,30,30,.6)'; g.beginPath(); g.arc(0, 0, 9, 0, 6.283); g.fill(); });
+    // 4 sniper: clean through-hole with a thin pressed ring
+    cell(4, () => { g.strokeStyle = 'rgba(80,55,30,.55)'; g.lineWidth = 8; g.beginPath(); g.arc(0, 0, 48, 0, 6.283); g.stroke(); g.fillStyle = 'rgba(15,10,6,1)'; g.beginPath(); g.arc(0, 0, 38, 0, 6.283); g.fill(); });
+    // 5 boomerang slash: a long cut, torn lips both sides
+    cell(5, () => { g.rotate(-.12); g.fillStyle = 'rgba(240,222,190,.9)'; g.beginPath(); g.moveTo(-122, 0); for (let x = -120; x <= 120; x += 12) g.lineTo(x, -10 - r(0, 8) * Math.cos(x / 80)); for (let x = 120; x >= -120; x -= 12) g.lineTo(x, 10 + r(0, 8) * Math.cos(x / 80)); g.fill();
+      g.fillStyle = 'rgba(25,15,8,1)'; g.beginPath(); g.ellipse(0, 0, 118, 5, 0, 0, 6.283); g.fill(); });
+    // 6 plane blast: scorched ink, crumple lines
+    cell(6, () => { for (let i = 0; i < 30; i++) { const a = r(0, 6.283), d = r(0, 60), rr = r(20, 60); const gr = g.createRadialGradient(Math.cos(a) * d, Math.sin(a) * d, 0, Math.cos(a) * d, Math.sin(a) * d, rr); gr.addColorStop(0, `rgba(20,16,30,${r(.25, .5)})`); gr.addColorStop(1, 'rgba(20,16,30,0)'); g.fillStyle = gr; g.fillRect(-128, -128, 256, 256); }
+      g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 2; for (let i = 0; i < 16; i++) { const a = r(0, 6.283); g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.cos(a) * r(50, 110), Math.sin(a) * r(50, 110)); g.lineTo(Math.cos(a + .3) * 120, Math.sin(a + .3) * 120); g.stroke(); } });
+    // 7 cutting-mat nick
+    cell(7, () => { g.strokeStyle = 'rgba(210,240,230,.5)'; g.lineWidth = 6; g.beginPath(); g.arc(0, 0, 40, 0, 6.283); g.stroke(); g.fillStyle = 'rgba(8,30,25,.95)'; jag(10, 16, 28); g.fill(); });
+    return c;
+  }
+  function init() {
+    if (im) return im;
+    const t = new THREE.CanvasTexture(atlas()); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8;
+    const m = new THREE.MeshStandardMaterial({ map: t, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, roughness: .92, metalness: 0, envMapIntensity: .3 });
+    m.onBeforeCompile = sh => { sh.vertexShader = 'attribute vec2 aCell;\n' + sh.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n  vUv = vUv * vec2(.25, .5) + aCell;'); };
+    m.customProgramCacheKey = () => 'paperMarks1';
+    im = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), m, R.max); im.frustumCulled = false; im.renderOrder = 1; im.receiveShadow = true; im.userData.noProbe = true;
+    cellAttr = new THREE.InstancedBufferAttribute(new Float32Array(R.max * 2), 2); im.geometry.setAttribute('aCell', cellAttr);
+    o.position.set(0, -50, 0); o.scale.setScalar(0); o.updateMatrix(); for (let i = 0; i < R.max; i++) im.setMatrixAt(i, o.matrix);
+    scene.add(im); return im;
+  }
+  // which mark a surface takes
+  function kindFor(obj, weapon) {
+    if (weapon === 'plane' || weapon === 'nade') return 'blast';
+    if (weapon === 'boomerang' || weapon === 'knife') return 'slash';
+    const m = obj && obj.material && !Array.isArray(obj.material) ? obj.material : null, pk = m && m.userData.paper, su = obj && obj.userData.surface;
+    if (pk === 'mat') return 'mat';
+    if (pk === 'wood' || pk === 'ruler' || su === 'wood' && !pk) return 'wood';
+    if (pk === 'black' || pk === 'grey' || su === 'metal' || m && m.metalness > .5) return 'scuff';
+    if (weapon === 'sniper' || weapon === 'obelisk') return 'through';
+    if (pk === 'cream' || pk === 'white' || pk === 'note' || pk === 'yellow' || pk === 'blue' || pk === 'red' || pk === 'window' || pk === 'stripes' || pk === 'bannerBlue' || pk === 'bannerRed') return 'paper';
+    return 'card';
+  }
+  function add(p, n, kind, scale = 1) {
+    if (!im) init(); const k = CELLS[kind] ?? 0, h = hash(p.x, p.y, p.z, k);
+    o.position.copy(p).addScaledVector(n, kind === 'blast' ? .02 : .006); o.lookAt(p.x + n.x, p.y + n.y, p.z + n.z); o.rotateZ(h * 6.283);
+    o.scale.setScalar(SIZE[kind] * scale * (.85 + h * .3)); if (kind === 'slash') o.scale.y *= .35; o.updateMatrix();
+    im.setMatrixAt(idx, o.matrix); cellAttr.setXY(idx, (k % 4) * .25, k < 4 ? .5 : 0); base[idx] = o.matrix.clone(); born[idx] = 1;
+    idx = (idx + 1) % R.max; count = Math.min(R.max, count + 1);
+    // the R.fade oldest shrink (they are next to be reused)
+    if (count >= R.max) for (let j = 0; j < R.fade; j++) { const q = (idx + j) % R.max; if (!base[q]) continue; const s = .25 + .75 * j / R.fade; base[q].decompose(o.position, o.quaternion, o.scale); o.scale.multiplyScalar(s); o.updateMatrix(); im.setMatrixAt(q, o.matrix); }
+    im.instanceMatrix.needsUpdate = true; cellAttr.needsUpdate = true;
+    PAPER_MARKS.stats.added++;
+  }
+  // a bullet / pellet / blade hit on a world object (not a tearable panel)
+  function hit(obj, p, n, weapon) { add(p, n, kindFor(obj, weapon), weapon === 'breacher' ? .8 : 1); }
+  function clear() { if (!im) return; o.position.set(0, -50, 0); o.scale.setScalar(0); o.updateMatrix(); for (let i = 0; i < R.max; i++) { im.setMatrixAt(i, o.matrix); base[i] = null; } idx = 0; count = 0; im.instanceMatrix.needsUpdate = true; }
+  return { R, init, add, hit, kindFor, clear, stats: { added: 0 }, get count() { return count; } };
+})();
 /* ================= audio ================= */
 const AU = { ctx: null };
 function initAudio() {
@@ -4354,7 +4437,7 @@ function updateBoom(dt) {
       if (h) { wall = true; wn = h.face ? h.face.normal.clone().transformDirection(h.object.matrixWorld) : seg.clone().negate(); o.p.copy(h.point).addScaledVector(wn, .25); } }
     if (!wall) for (const c of world.colliders) if (c.containsPoint(o.p)) { wall = true; o.p.copy(prev); break; }
     if (!wall && (Math.abs(o.p.x) > HALF || Math.abs(o.p.z) > HALF)) wall = true;
-    if (wall) { decal(o.p.clone().addScaledVector(wn || UPV, -.24), wn || o.v.clone().normalize().negate(), 1.3, 'slash'); boomReturn(o, 'wall'); }
+    if (wall) { PAPER_MARKS.add(o.p.clone().addScaledVector(wn || UPV, -.24), wn || o.v.clone().normalize().negate(), 'slash'); boomReturn(o, 'wall'); }
   }
   // anyone along the path: one hit kills; it carries on through
   const seg = prev.distanceTo(o.p), nst = Math.max(1, Math.ceil(seg / .2));
@@ -4549,6 +4632,7 @@ function fireShot() {
       shotDir.copy(base).addScaledVector(camRight, Math.cos(a) * m).addScaledVector(camUp, Math.sin(a) * m).normalize();
       ray.set(camera.position, shotDir); ray.far = 250;
       const hits = shotHits(targets, false);
+      PLANES.shot(camera.position, shotDir, hits.length ? hits[0].distance : 150, w.oneShot ? 100 : w.dmg, PLAYER_ENT);
       end = _v3.copy(camera.position).addScaledVector(shotDir, 150);
       let wallHit = null;
       if (w.pierce) {
@@ -4580,11 +4664,12 @@ function fireShot() {
         }
       }
       if (wallHit && wallHit.object.userData.tear !== undefined) { TEAR.hit(wallHit.object, wallHit.point, shotDir, id); wallHit = null; }
+      if (wallHit) { const hn = wallHit.face ? _v2.copy(wallHit.face.normal).transformDirection(wallHit.object.matrixWorld) : _v2.set(0, 1, 0); PAPER_MARKS.hit(wallHit.object, wallHit.point, hn, id); }   // persistent paper shot mark (every pellet)
       if (wallHit && (pellets === 1 || pi % 3 === 0)) {
         const h = wallHit, n = h.face ? _v2.copy(h.face.normal).transformDirection(h.object.matrixWorld) : _v2.set(0, 1, 0);
         const metal = h.object.userData.surface === 'metal', k = w.oneShot || w.beam ? 2.5 : pellets > 1 ? .5 : 1;
-        if (w.status === 'chill') decal(h.point, n, 1, 'frost'); decal(h.point, n, w.oneShot || w.beam ? 1.6 : pellets > 1 ? .8 : 1, 'hole', (w.tracer || w.glow || [5, 2.4, .8]).map(c => c * .5));
-        for (let i = 0; i < (metal ? 9 : 4) * k; i++) FX.spawn(h.point, n.x * 3 + rand(-3, 3), n.y * 3 + rand(0, 4), n.z * 3 + rand(-3, 3), ...(w.tracer || [6, 3.2, 1.2]).map(c => c * .9), rand(.02, .045), rand(.15, .35), 14, 1);
+        PFX.chips(h.point, n, h.object.material && h.object.material.color, h.object.material && h.object.material.userData && h.object.material.userData.paper, Math.round((metal ? 3 : 6) * k));
+        if (metal) for (let i = 0; i < 4 * k; i++) FX.spawn(h.point, n.x * 3 + rand(-3, 3), n.y * 3 + rand(0, 4), n.z * 3 + rand(-3, 3), ...(w.tracer || [6, 3.2, 1.2]).map(c => c * .9), rand(.02, .045), rand(.15, .35), 14, 1);
         for (let i = 0; i < (metal ? 2 : 5) * k; i++) SMOKE.spawn(h.point, n.x * rand(.5, 1.5) + rand(-.3, .3), n.y * rand(.5, 1.5) + rand(0, .5), n.z * rand(.5, 1.5) + rand(-.3, .3), .42, .38, .34, rand(.12, .25) * k, rand(.5, 1.1), -.2, 2.5, .8, .5);
         if (Math.random() < .5 || w.oneShot) sfx.impact(h.point, metal);
       }
@@ -4672,7 +4757,7 @@ function killEntity(v, k, weapon, crit, dir) {
   else v.score = Math.max(0, v.score - 50);
   const wb = !!(v.wbT && G.time - v.wbT < .05 && v.wbBy === k); v.wbT = 0;
   kfeed(k, v, weapon, crit, wb, { ns: k === PLAYER_ENT && kfNoScope(weapon), smoke: k && k !== v && kfSmoke(k, v) });
-  v.deathW = weapon;
+  v.deathW = weapon; if (k && k !== v && v.root) v.killDist = entPos(k).distanceTo(v.root.position);
   if (v.isPlayer) playerDie(k, weapon, crit); else botDie(v, dir || _v1.set(0, 0, 1), crit, k === PLAYER_ENT);
   if (k === PLAYER_ENT && k !== v) playerKillFx(v, crit, weapon, dir, { streak: vStreak, first, wb });
   if (v === PLAYER_ENT) NET.killWB = wb;
@@ -4700,7 +4785,7 @@ const TEAR = (() => {
     if (this.isMeshStandardMaterial) PAPER_EDGE_HOOK(sh);
   }
   function tearMaterials(base, holeTex) {
-    const m = base.clone(); m.userData = Object.assign({}, base.userData, { uHole: { value: holeTex } });
+    const m = base.clone(); m.onBeforeCompile = null; m.userData = Object.assign({}, base.userData, { uHole: { value: holeTex } });
     m.onBeforeCompile = holeHook; m.customProgramCacheKey = () => 'tearHole1';
     const d = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking }); d.userData.uHole = m.userData.uHole;
     d.onBeforeCompile = holeHook; d.customProgramCacheKey = () => 'tearHoleDepth1';
@@ -4820,11 +4905,16 @@ const TEAR = (() => {
     for (const P_ of panels) { P_.holes.length = 0; P_.slits.length = 0; P_.hits.length = 0; const f = P_.flap; if (f) { f.open = false; f.k = 0; f.segs.fill(0); if (f.mesh) { P_.mesh.remove(f.mesh); f.mesh.traverse(o => o.geometry && o.geometry.dispose()); f.mesh = null; } } redraw(P_); }
     TEAR.stats.holes = 0; TEAR.stats.flaps = 0;
   }
+  // an explosion next to cardboard: a big ragged hole where the panel is closest (within `reach` m)
+  function blast(pt, reach) {
+    for (const P_ of panels) { if (!P_.mesh.parent) continue; const [u, v, z] = toLocal(P_, pt); if (Math.abs(z) > reach || u < -.3 || v < -.3 || u > P_.w + .3 || v > P_.h + .3) continue;
+      const r = .22 + .3 * (1 - Math.abs(z) / reach); const res = apply(P_, clamp(u, 0, P_.w), clamp(v, 0, P_.h), z > 0 ? 1 : -1, r); redraw(P_); if (res === 'flap') openFlap(P_); TEAR.stats.holes++; }
+  }
   function clear() { panels.length = 0; }   // map unloaded (clearMap disposes the meshes)
   // replay a hit list on a fresh copy of a panel's state (determinism check; also how an online client rebuilds a panel)
   function replay(id, hits) { const P_ = panels[id]; const S = { id, w: P_.w, h: P_.h, cuts: P_.cuts, holes: [], slits: [], hits: [], flap: P_.flap ? Object.assign({}, P_.flap, { open: false, segs: new Uint8Array(P_.flap.segs.length) }) : null };
     for (const h of hits) apply(S, h[0], h[1], h[2], h[3]); return { holes: S.holes.map(q => [q.u, q.v, q.r]), slits: S.slits.length, flap: S.flap ? S.flap.open : null }; }
-  return { R, panels, add, hit, apply, openAt, openAtWorld, update, reset, clear, replay, stats: { holes: 0, flaps: 0 } };
+  return { R, panels, add, hit, blast, apply, openAt, openAtWorld, update, reset, clear, replay, stats: { holes: 0, flaps: 0 } };
 })();
 /* ================= deaths that match what killed you ================= */
 const DEATH_OF = { nova: 'blast', seeker: 'blast', nade: 'blast', breacher: 'blast', judge: 'blast', cryo: 'freeze', inferno: 'burn', arc: 'shock', helix: 'vapor', void: 'vapor',
@@ -4836,6 +4926,7 @@ function pickDeath(r, weapon, crit) {
   return k;
 }
 function startDeathFx(r, dir, crit, weapon) {
+  { const pk = r.deathKind = PAPER_DEATHS.kindOf(r, weapon, crit); PAPER_DEATHS.start(r, pk, dir); return; }   // Paper FPS: paper deaths by cause (66-paper-deaths.js)
   const k = r.deathKind = pickDeath(r, weapon, crit), A = r.act.death, col = r.color;
   if (!r.bodyCol) r.bodyCol = r.body.color.clone();
   r.root.rotation.order = 'YXZ'; r.deathSpin = 0; r.deathVy = 0; r.dfx = 0; r.shattered = false;
@@ -4852,6 +4943,7 @@ function startDeathFx(r, dir, crit, weapon) {
 }
 // per-frame extras on top of the death clip; returns true when this death handles its own fade-out
 function updateDeathFx(r, dt) {
+  if (r.pd) return PAPER_DEATHS.update(r, dt);
   const k = r.deathKind, t = r.deadT, A = r.act.death, p = r.root.position, col = r.color, B = r.B;
   if (!k) return false;
   r.dq = [B.spine, B.spine1, B.spine2, B.neck, B.head].filter(Boolean).map(b => [b, b.quaternion.clone()]);
@@ -4892,6 +4984,7 @@ function updateDeathFx(r, dt) {
   return false;
 }
 function resetDeathFx(r) {
+  PAPER_DEATHS.reset(r);
   r.deathKind = null; r.landed = false; r.root.rotation.x = 0; r.root.rotation.z = 0; r.act.death.timeScale = 1;
   if (r.bodyCol) r.body.color.copy(r.bodyCol); r.body.emissive.setRGB(0, 0, 0);
 }
@@ -4905,7 +4998,7 @@ function botDie(r, dir, crit, byMe) {
   startDeathFx(r, dir, crit, r.deathW); r.deathW = null;
   r.visor.emissive.setRGB(.05, .05, .05);
   const cp = r.root.position.clone(); cp.y += 1.1;
-  for (let i = 0; i < 30; i++) { const a = rand(0, 6.28), s = rand(2, 7); FX.spawn(cp, Math.cos(a) * s, rand(-.2, 1) * s, Math.sin(a) * s, 7, 3.6, 1.2, rand(.03, .07), rand(.3, .8), 10, 1.5); }
+  // (Paper FPS: the paper death itself is the burst; no glowing sparks)
   for (let i = 0; i < 10; i++) SMOKE.spawn(cp, rand(-1, 1), rand(.5, 2), rand(-1, 1), .16, .14, .14, rand(.4, .7), rand(1.2, 2.4), -.4, 1.5, 1, .6);
   if (byMe) { lightFlash(cp, 0xff8a3a, 7, 14); sfx.kill(cp, crit); } else sfx.botDeath(cp);
   if (Math.random() < .5) dropPickup(cp.clone(), Math.random() < .7 ? 'ammo' : 'med');
@@ -5009,7 +5102,7 @@ function botShoot(r, aimPoint) {
   r.muzzle.getWorldPosition(_v3); const mz = _v3.clone();
   for (let pi = 0; pi < pellets; pi++) {
     if (pellets > 1) { const a2 = rand(0, 6.283), m2 = Math.sqrt(Math.random()) * w.spreadP; d.copy(base).addScaledVector(sx, Math.cos(a2) * m2).addScaledVector(sy, Math.sin(a2) * m2).normalize(); }
-    res = traceShot(eye, d, r, 150);
+    res = traceShot(eye, d, r, 150); PLANES.shot(eye, d, res.dist, w.dmg, r);
     if (!res.ent && res.obj && res.obj.userData.tear !== undefined) { TEAR.hit(res.obj, res.point, d, r.weapon); res.tore = true; }
     if (res.ent === PLAYER_ENT) hitMe = true;
     if (pi < 3) tracer(mz, res.point, sniper ? new THREE.Color(5, 6, 9) : new THREE.Color(r.color.r * 4 + 1, r.color.g * 4 + 1, r.color.b * 4 + 1), sniper ? .035 : .022, sniper ? .14 : .06);
@@ -5031,7 +5124,8 @@ function botShoot(r, aimPoint) {
     damageEntity(res.ent, dmg, z === 'head', res.point, d, z, r, r.weapon);
   } else if (!res.ent) {
     const n = res.face ? _v2.copy(res.face.normal).transformDirection(res.obj.matrixWorld) : _v2.set(0, 1, 0);
-    if (res.dist < 149 && !res.tore) { for (let i = 0; i < 3; i++) FX.spawn(res.point, n.x * 3 + rand(-2, 2), n.y * 3 + rand(0, 3), n.z * 3 + rand(-2, 2), 6, 3.2, 1.2, rand(.02, .04), rand(.12, .28), 14, 1); decal(res.point, n, .9, 'hole', [r.color.r * 2, r.color.g * 2, r.color.b * 2]); }
+    if (res.dist < 149 && !res.tore && res.obj) { PAPER_MARKS.hit(res.obj, res.point, n, r.weapon); PFX.chips(res.point, n, res.obj.material && res.obj.material.color, res.obj.material && res.obj.material.userData && res.obj.material.userData.paper, 3); }
+    if (false) { for (let i = 0; i < 3; i++) FX.spawn(res.point, n.x * 3 + rand(-2, 2), n.y * 3 + rand(0, 3), n.z * 3 + rand(-2, 2), 6, 3.2, 1.2, rand(.02, .04), rand(.12, .28), 14, 1); decal(res.point, n, .9, 'hole', [r.color.r * 2, r.color.g * 2, r.color.b * 2]); }
   }
   // near misses crack past your head
   if (audible && res.ent !== PLAYER_ENT && !P.dead) {
@@ -5065,7 +5159,7 @@ function updateNades(dt) {
 // ---- explosive balance (CS2/Valorant style). SAME numbers + maths as sector-nine-server/anticheat/blast.js and data/blast.json (a test compares them).
 // Lethal within 2 m, steep falloff to a chip at 5 m, nothing past 5.5 m. Walls give 0: three body points (head/chest/feet) are traced from the blast,
 // damage scales with how many are exposed. Nothing penetrates (wallbang boxes included) so game and server agree.
-const BLAST = { full: 2, edge: 5, max: 5.5, chip: 10, pow: 3, kill: { nade: 150, nova: 130 }, pts: [[1.6, .3], [1.0, .4], [.15, .3]], chest: 1.0, selfMul: .45 };
+const BLAST = { full: 2, edge: 5, max: 5.5, chip: 10, pow: 3, kill: { nade: 150, nova: 130, plane: 120 }, pts: [[1.6, .3], [1.0, .4], [.15, .3]], chest: 1.0, selfMul: .45 };
 function blastBase(d, kill) { return d <= BLAST.full ? kill : d <= BLAST.edge ? BLAST.chip + (kill - BLAST.chip) * Math.pow(1 - (d - BLAST.full) / (BLAST.edge - BLAST.full), BLAST.pow) : d < BLAST.max ? BLAST.chip * (BLAST.max - d) / (BLAST.max - BLAST.edge) : 0; }
 const _bv0 = new THREE.Vector3(), _bv1 = new THREE.Vector3(), _bv2 = new THREE.Vector3();
 function blastClear(from, to) {   // like lineOfSight but the ray reaches the target (lineOfSight stops .3 m short)
@@ -5081,11 +5175,11 @@ function blastVis(p, e) {
   return v;
 }
 function explode(p, owner, weapon = 'nade') {
-  const kill = weapon === 'nova' ? BLAST.kill.nova : BLAST.kill.nade;
-  for (let i = 0; i < 70; i++) { const a = rand(0, 6.28), e = rand(-.2, 1), s = rand(3, 14); FX.spawn(p, Math.cos(a) * s * (1 - e * .5), e * s, Math.sin(a) * s * (1 - e * .5), .5, 2.4, 4, rand(.05, .12), rand(.3, .8), 8, 1.6); }
-  for (let i = 0; i < 16; i++) FX.spawn(p, rand(-3, 3), rand(0, 4), rand(-3, 3), 3, 2.2, 4, rand(.6, 1.1), rand(.15, .3), 0, 3, 4);
-  for (let i = 0; i < 18; i++) SMOKE.spawn(p, rand(-2, 2), rand(.5, 3), rand(-2, 2), .14, .16, .2, rand(.6, 1.1), rand(1.5, 3), -.4, 1.5, 1.4, .7);
-  lightFlash(p, 0x66ccff, 12, 18); decal(new THREE.Vector3(p.x, groundAt(p.x, p.z, p.y + .5, .1) + .01, p.z), new THREE.Vector3(0, 1, 0), 4.5, 'scorch', [3, 1.2, .3]); sfx.explode(p.clone());
+  const kill = BLAST.kill[weapon] || BLAST.kill.nade, paper = weapon === 'plane';
+  if (!paper) for (let i = 0; i < 70; i++) { const a = rand(0, 6.28), e = rand(-.2, 1), s = rand(3, 14); FX.spawn(p, Math.cos(a) * s * (1 - e * .5), e * s, Math.sin(a) * s * (1 - e * .5), .5, 2.4, 4, rand(.05, .12), rand(.3, .8), 8, 1.6); }
+  if (!paper) for (let i = 0; i < 16; i++) FX.spawn(p, rand(-3, 3), rand(0, 4), rand(-3, 3), 3, 2.2, 4, rand(.6, 1.1), rand(.15, .3), 0, 3, 4);
+  for (let i = 0; i < (paper ? 6 : 18); i++) SMOKE.spawn(p, rand(-2, 2), rand(.5, 3), rand(-2, 2), .14, .16, .2, rand(.6, 1.1), rand(1.5, 3), -.4, 1.5, 1.4, .7);
+  if (!paper) lightFlash(p, 0x66ccff, 12, 18); if (!paper) decal(new THREE.Vector3(p.x, groundAt(p.x, p.z, p.y + .5, .1) + .01, p.z), new THREE.Vector3(0, 1, 0), 4.5, 'scorch', [3, 1.2, .3]); sfx.explode(p.clone());
   const near = camera.position.distanceTo(p); P.trauma = Math.min(1, P.trauma + clamp(1 - near / 22, 0, 1) * .8);
   let hitAny = false;
   for (const e of entities()) {
@@ -5102,6 +5196,350 @@ function explode(p, owner, weapon = 'nade') {
   noise(p, 50, owner);
 }
 
+/* ================= paper deaths: the body comes apart as paper, differently by cause (DESIGN.md) ================= */
+// kinds (PAPER_DEATHS.kindOf):           cause
+//   confetti  bursts into confetti        rifle / SMG / anything else (ref2)
+//   shred     shredded into strips        pump shotgun within 7 m
+//   crumple   head crumples + pops off    headshot (not the sniper)
+//   halve     cut in half along a fold    boomerang / paper cutter (knife)
+//   flatten   folds flat, blows away      paper-plane blast (any explosion)
+//   unfold    punched through, unfolds    sniper
+//             into a flat sheet that drifts down
+// Driven only by the character's root transform, its material and one posed clone (halve), so any character model works
+// (Sector Nine soldier now, the CHARS agent's origami characters later). The clipping variant used by "halve" is compiled
+// behind the loading wipe at match start (warm), never mid-match.
+const PAPER_DEATHS = (() => {
+  // Material.clone() deep-copies userData through JSON (engine add-ons keep live objects there): copy around it, keep the shader hooks
+  const cloneMat = m => { const ud = m.userData; m.userData = {}; let c; try { c = m.clone(); } finally { m.userData = ud; } c.userData = ud; c.onBeforeCompile = m.onBeforeCompile; c.customProgramCacheKey = m.customProgramCacheKey; return c; };
+  const _p = new THREE.Vector3(), _q = new THREE.Vector3(), _m = new THREE.Matrix4();
+  const kindOf = (r, weapon, crit) => {
+    if (weapon === 'plane' || weapon === 'nade' || weapon === 'nova') return 'flatten';
+    if (weapon === 'sniper' || weapon === 'obelisk' || weapon === 'helix') return 'unfold';
+    if (weapon === 'boomerang' || weapon === 'knife') return 'halve';
+    if (crit) return 'crumple';
+    if (weapon === 'breacher' && (r.killDist ?? 99) < 7) return 'shred';
+    return 'confetti';
+  };
+  const teamCols = r => { const t = r.mxTeam === 'def' ? PFX.TEAMC.red : r.mxTeam === 'atk' ? PFX.TEAMC.blue : (r.color ? r.color.clone() : PFX.TEAMC.red); return [t, t, t.clone().multiplyScalar(.82), PFX.TEAMC.white]; };
+  const chest = r => _p.set(r.root.position.x, r.root.position.y + 1.1, r.root.position.z);
+  const bodyMats = r => { const out = []; r.root.traverse(o => { if ((o.isSkinnedMesh || o.isMesh) && o.visible && o.material && !o.material.isSpriteMaterial && o.material !== (typeof HB !== 'undefined' && HB && HB.mat)) out.push(o); }); return out; };
+  function start(r, k, dir) {
+    const D = r.pd = { k, t: 0, dir: (dir || new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize(), done: false, clone: null, vy: 0, spin: 0 };
+    const cols = teamCols(r), c = chest(r).clone();
+    r.act.death.timeScale = 1;
+    if (k === 'confetti') { PFX.burst(c, { n: 150, cols, speed: 5.5, up: 2.5, dir: D.dir, size: [.035, .1], life: 3 }); PFX.burst(c, { n: 14, cols, speed: 4, up: 2, strips: true, size: [.03, .05], dir: D.dir }); r.root.visible = false; D.done = true; }
+    else if (k === 'shred') { PFX.burst(c, { n: 110, cols, speed: 7.5, up: 1.5, dir: D.dir, strips: true, size: [.025, .045], life: 3.2, spread: 2 }); PFX.burst(c, { n: 60, cols, speed: 5, up: 2, dir: D.dir, life: 2.6 }); r.root.visible = false; D.done = true; }
+    else if (k === 'crumple') { PFX.burst(_q.copy(c).setY(c.y + .55), { n: 26, cols, speed: 2.5, up: 2, life: 1.6 }); const B = r.B; if (B && B.head) { B.head.getWorldPosition(_q); D.ball = ball(r, _q); } D.vy = 0; r.act.death.timeScale = .8; }
+    else if (k === 'flatten') { D.vy = 3.5; D.spin = (Math.random() < .5 ? -1 : 1) * 2.4; r.act.death.timeScale = .0001; PFX.burst(c, { n: 40, cols, speed: 4, up: 2, life: 2 }); }
+    else if (k === 'unfold') { PFX.burst(c, { n: 50, cols, speed: 9, up: .5, dir: D.dir, life: 2, size: [.03, .07] }); D.punch = c.clone(); r.act.death.timeScale = .0001; }
+    else if (k === 'halve') halve(r, D);
+  }
+  // the crumpled head: a small faceted paper ball in the team colour that pops up and off
+  let BALL_GEO = null;
+  function ball(r, at) {
+    if (!BALL_GEO) { BALL_GEO = new THREE.IcosahedronGeometry(.17, 0); const p = BALL_GEO.attributes.position; for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) * (.8 + Math.sin(i * 7.1) * .2), p.getY(i) * (.8 + Math.cos(i * 3.3) * .2), p.getZ(i)); BALL_GEO.computeVertexNormals(); }
+    const m = new THREE.Mesh(BALL_GEO, PAPER.mat(r.mxTeam === 'def' ? 'red' : 'blue', { tile: 0 })); m.position.copy(at); m.castShadow = true; m.userData.noProbe = true; scene.add(m);
+    return { m, v: new THREE.Vector3((Math.random() - .5) * 2, 4.5, (Math.random() - .5) * 2), s: 1 };
+  }
+  // cut in half along a fold: the original keeps the legs (clipped above the waist), a posed clone keeps the torso and slides off
+  function halve(r, D) {
+    const h = r.root.position.y + .95, model = r.root.children.find(o => o.isObject3D && o.type !== 'Sprite' && o.children.length);
+    D.h = h; D.low = new THREE.Plane(new THREE.Vector3(0, -1, 0), h);
+    for (const o of bodyMats(r)) { o.material.clippingPlanes = [D.low]; }
+    if (model && THREE.SkeletonUtils) {
+      // Object3D.copy also deep-copies userData through JSON: park every userData of the subtree while cloning
+      const parked = []; model.traverse(o => { parked.push([o, o.userData]); o.userData = {}; }); let cl; try { cl = THREE.SkeletonUtils.clone(model); } finally { for (const [o, u] of parked) o.userData = u; }
+      const g = new THREE.Group(); g.position.copy(r.root.position); g.quaternion.copy(r.root.quaternion); g.add(cl);
+      cl.position.copy(model.position); cl.quaternion.copy(model.quaternion); cl.scale.copy(model.scale);
+      D.up = new THREE.Plane(new THREE.Vector3(0, 1, 0), -h); D.upLocal = new THREE.Plane(new THREE.Vector3(0, 1, 0), -.95);
+      cl.traverse(o => { if (o.isMesh) { if (o.material && !o.material.isSpriteMaterial && o.visible && (o.isSkinnedMesh || o.material.map || o.material.color)) { o.material = cloneMat(o.material); o.material.clippingPlanes = [D.up]; } else o.visible = false; o.userData.noProbe = true; } });
+      scene.add(g); D.clone = g; D.cv = D.dir.clone().multiplyScalar(1.4).setY(.6); D.rot = new THREE.Vector3(D.dir.z, 0, -D.dir.x).normalize();
+    }
+    r.act.death.timeScale = .0001;
+    PFX.burst(_p.set(r.root.position.x, h, r.root.position.z), { n: 50, cols: teamCols(r), speed: 4, up: 1, strips: true, size: [.02, .035] });
+    try { sfx.knifeHit(); } catch (e) {}
+  }
+  function finish(r, D, n) { if (r.root.visible) PFX.burst(chest(r).clone(), { n: n || 60, cols: teamCols(r), speed: 3, up: 1.5, life: 2.2 }); r.root.visible = false; D.done = true; cleanup(r, D); }
+  function cleanup(r, D) {
+    if (D.clone) { scene.remove(D.clone); D.clone.traverse(o => { if (o.isMesh && o.material && o.material.clippingPlanes) o.material.dispose(); }); D.clone = null; }
+    if (D.ball) { scene.remove(D.ball.m); D.ball = null; }
+    for (const o of bodyMats(r)) if (o.material.clippingPlanes) o.material.clippingPlanes = null;
+    r.root.scale.set(1, 1, 1);
+  }
+  // per frame; true = this death handles its own fade
+  function update(r, dt) {
+    const D = r.pd; if (!D) return false; D.t += dt; const t = D.t, p = r.root.position;
+    if (D.done) return true;
+    if (D.k === 'crumple') {
+      const b = D.ball, B = r.B;
+      if (B && B.head) B.head.scale.setScalar(Math.max(.01, 1 - t * 6));
+      if (b) { b.v.y -= 12 * dt; b.m.position.addScaledVector(b.v, dt); b.m.rotation.x += dt * 9; b.m.rotation.z += dt * 6; const g = groundAt(b.m.position.x, b.m.position.z, b.m.position.y + .3, .1) + .12; if (b.m.position.y < g) { b.m.position.y = g; b.v.multiplyScalar(-.35); b.v.y = Math.abs(b.v.y); } }
+      if (t > 2.2) { if (B && B.head) B.head.scale.setScalar(1); finish(r, D, 70); }
+      return true;
+    }
+    if (D.k === 'flatten') {   // squash flat along the blast, then a sheet blown away, tumbling
+      const k = clamp(t / .22, 0, 1); r.root.scale.set(1 + k * .25, 1 - k * .1, Math.max(.06, 1 - k)); D.vy -= 7 * dt;
+      if (t > .15) { p.addScaledVector(D.dir, (5 - t * 1.5) * dt); p.y = Math.max(groundAt(p.x, p.z, p.y + .5, .3), p.y + D.vy * dt); r.root.rotation.x += D.spin * dt; r.root.rotation.z += D.spin * .4 * dt; }
+      if (t > 2) finish(r, D, 70);
+      return true;
+    }
+    if (D.k === 'unfold') {    // flattens into a sheet, tips back to lie flat, drifts down like paper
+      const k = clamp(t / .45, 0, 1); r.root.scale.set(1 + k * .5, 1 + k * .08, Math.max(.04, 1 - k));
+      if (t > .3) { const k2 = clamp((t - .3) / 1.6, 0, 1); r.root.rotation.x = -Math.PI / 2 * k2 + Math.sin(t * 5) * .15 * (1 - k2); p.y = Math.max(groundAt(p.x, p.z, p.y + .5, .3) + .03, p.y + (k2 < 1 ? .5 - t * .6 : 0) * dt); p.addScaledVector(D.dir, Math.sin(t * 3) * .5 * dt); }
+      if (t > 3) finish(r, D, 50);
+      return true;
+    }
+    if (D.k === 'halve') {
+      if (D.clone) { const g = D.clone; D.cv.y -= 9 * dt; g.position.addScaledVector(D.cv, dt); const gy = groundAt(g.position.x, g.position.z, g.position.y + 1, .3) - .8; if (g.position.y < gy) { g.position.y = gy; D.cv.multiplyScalar(.5); D.cv.y = 0; }
+        if (t < 1.1) g.rotateOnWorldAxis(D.rot, 1.6 * dt); g.updateMatrixWorld(true); D.up.copy(D.upLocal).applyMatrix4(g.matrixWorld); }
+      if (t > .25) r.root.scale.y = Math.max(.35, 1 - (t - .25) * .6);
+      if (t > 1.8) { if (D.clone) { D.clone.children[0].getWorldPosition(_q); _q.y += .3; PFX.burst(_q, { n: 50, cols: teamCols(r), speed: 3, up: 1.5 }); } finish(r, D, 50); }
+      return true;
+    }
+    return false;
+  }
+  function reset(r) { if (r.pd) { cleanup(r, r.pd); r.pd = null; } r.root.scale.set(1, 1, 1); if (r.B && r.B.head) r.B.head.scale.setScalar(1); }
+  // compile the clipping variant of the character material before the match (behind the loading wipe)
+  function warm() {
+    try {
+      renderer.localClippingEnabled = true; const r = robots.find(x => x.root); if (!r) return;
+      const pl = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e4), list = bodyMats(r); for (const o of list) o.material.clippingPlanes = [pl];
+      const wv = r.root.visible; r.root.visible = true; try { renderer.compile(scene, camera); } finally { r.root.visible = wv; for (const o of list) o.material.clippingPlanes = null; }
+      if (BALL_GEO === null) ball(r, new THREE.Vector3(0, -40, 0)).m.visible = true;
+    } catch (e) { console.warn('paper deaths warm', e); }
+  }
+  /* self test (qa/paper/core.js): each death kind plays on a red bot and ends with the body gone */
+  async function selfTest() {
+    const out = {}, wait = ms => new Promise(r => setTimeout(r, ms));
+    const cases = [['confetti', 'carbine', false, 12], ['shred', 'breacher', false, 3], ['crumple', 'carbine', true, 12], ['halve', 'boomerang', false, 4], ['flatten', 'plane', false, 6], ['unfold', 'sniper', false, 20]];
+    window.__god = true;
+    for (const [want, w, crit, dist] of cases) {
+      const enemy = x => x.mxBot ? x.mxTeam === 'def' : true; let r = null;
+      for (let i = 0; i < 80 && !r; i++) { r = robots.find(x => enemy(x) && !x.dead) || null; if (!r) { for (const x of robots) if (enemy(x) && x.dead && x.deadT > .5) x.respawnT = Math.min(x.respawnT, x.deadT); await wait(100); } }
+      if (!r) { out[want] = { ok: false, info: 'no living enemy bot' }; continue; }
+      r.root.position.set(0, 0, -30 + dist); r.percT = 1e9; r.thinkT = 1e9; r.shield = 0; P.pos.set(0, 0, -30);
+      const live0 = PFX.live; damageEntity(r, 9999, crit, chest(r).clone(), new THREE.Vector3(0, 0, 1), crit ? 'head' : 'body', PLAYER_ENT, w);
+      const k = r.pd && r.pd.k; await wait(120); const burst = PFX.live > live0;
+      let gone = false; for (let i = 0; i < 40 && !gone; i++) { await wait(100); gone = !r.root.visible || !r.dead; }
+      out[want] = { ok: k === want && burst && gone, info: `kind=${k} paper pieces=${PFX.live} body gone=${gone}` };
+      await wait(200);
+    }
+    window.__god = false; return out;
+  }
+  return { kindOf, start, update, reset, warm, selfTest };
+})();
+/* ================= PAPER PLANES: throw, steer, explode, shoot down, CATCH + RETURN (signature mechanic 2) ================= */
+// Rules (docs/MECHANICS.md "Paper planes"; numbers PLANES.R, mirrored in data/paper_weapons.json "plane"):
+// - G: hold to aim, let go to throw. The plane flies at R.speed and the thrower STEERS it with the mouse (turn rate capped);
+//   your own view freezes and a picture-in-picture shows the plane's view: you are vulnerable meanwhile. Left click = pop it now,
+//   G or right click = let go (it flies straight; your view comes back). It drops slowly and lives R.life seconds.
+// - It explodes on impact with anything solid or a body (paper burst, blast damage BLAST with kill R.blastKill, tears cardboard).
+// - It has R.hp hit points: bullets that pass within R.hitR of it damage it; at 0 it pops harmlessly (a little paper burst).
+// - CATCH: an enemy of the plane's current owner presses F while the plane is within R.catchDist and inside R.catchCone of
+//   their view: it becomes theirs, turns round toward the thrower's launch point, gets R.catchBoost speed and fresh life,
+//   and they steer it. A caught plane that kills its original thrower = "RETURN TO SENDER!" (callout + short slow motion).
+// - Bots throw planes at enemies they last saw behind cover, home them in, dodge incoming planes, sometimes shoot them down
+//   and sometimes catch them (chance by difficulty) and send them back.
+// Deterministic flight: position/direction integrate only from inputs (steer deltas), so an online version can replay them.
+const PLANES = (() => {
+  const R = { speed: 15, life: 7, hp: 25, hitR: .55, turn: 2.4, botTurn: 1.5, sink: .06, catchDist: 4.2, catchCone: Math.cos(1.0), catchBoost: 1.2, blastKill: 120, arm: .2, carry: 2, regen: 10, slowmo: .9, slowK: .3 };
+  const list = []; let seq = 0, geo = null, mats = {}, pipCam = null;
+  const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _rc = new THREE.Raycaster(), _hits = [];
+  const S = { steering: null, stats: { thrown: 0, caught: 0, shotDown: 0, exploded: 0, returns: 0, botThrows: 0, botCatches: 0, botShotDown: 0 } };
+  const teamOf = e => { if (!e) return null; if (e === PLAYER_ENT || e.isPlayer) return window.S9BotModes && S9BotModes.on ? S9BotModes.myTeam : 'me'; return e.mxTeam || (e.netId || e.name); };
+  const enemies = (a, b) => a && b && a !== b && teamOf(a) !== teamOf(b);
+  // a folded paper plane: two wings + a keel, flat-shaded, nose toward -Z
+  function planeGeo() {
+    if (geo) return geo;
+    const v = [0, 0, -.62, -.42, .02, .34, 0, .02, .3, 0, 0, -.62, 0, .02, .3, .42, .02, .34, 0, 0, -.62, 0, -.13, .3, 0, .02, .3];
+    geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); geo.computeVertexNormals(); return geo;
+  }
+  const matFor = team => { const k = team === 'def' ? 'red' : team === 'atk' ? 'blue' : 'white'; return mats[k] || (mats[k] = PAPER.mat(k, { side: THREE.DoubleSide, tile: 0 })); };
+  function makeMesh(team) { const m = new THREE.Mesh(planeGeo(), matFor(team)); m.castShadow = true; m.userData.noProbe = true; m.rotation.order = 'YXZ'; return m; }
+  // compiled at load (warmShaders runs after the map is built): one hidden plane of each colour stays in the scene
+  function warm() { for (const t of ['atk', 'def', null]) { const m = makeMesh(t); m.position.set(0, -50, 0); m.frustumCulled = false; scene.add(m); } if (!pipCam) pipCam = new THREE.PerspectiveCamera(70, 16 / 9, .05, 400); }
+
+  function spawn(owner, from, dir, steer) {
+    const p = { id: ++seq, owner, orig: owner, steer: steer || owner, pos: from.clone(), dir: dir.clone().normalize(), speed: R.speed, life: R.life, hp: R.hp, age: 0, caught: 0, launch: from.clone(), m: makeMesh(teamOf(owner)), roll: 0, dead: false, catchTried: new Set(), botTarget: null };
+    p.m.position.copy(p.pos); scene.add(p.m); list.push(p); S.stats.thrown++; orient(p, 0);
+    try { sfx.nadeThrow(from.clone()); } catch (e) {}
+    return p;
+  }
+  function orient(p, turnRate) { p.roll = damp(p.roll, clamp(-turnRate * .35, -.9, .9), 6, 1 / 60); p.m.rotation.set(Math.asin(clamp(p.dir.y, -1, 1)), Math.atan2(-p.dir.x, -p.dir.z), p.roll); }
+  // turn the direction by (yaw, pitch) radians (steering input), capped by the turn rate
+  function turn(p, dyaw, dpitch, dt, cap) {
+    const m = cap * dt; dyaw = clamp(dyaw, -m, m); dpitch = clamp(dpitch, -m, m);
+    let yaw = Math.atan2(-p.dir.x, -p.dir.z) + dyaw, pitch = clamp(Math.asin(clamp(p.dir.y, -1, 1)) + dpitch, -1.2, 1.2);
+    p.dir.set(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)); return dyaw / Math.max(dt, 1e-4);
+  }
+  /* ---- the player ---- */
+  function playerThrow() {
+    if (state !== 'play' || P.dead || S.steering) return false;
+    if ((P.nades | 0) <= 0) return false;
+    P.shield = 0; camera.getWorldDirection(_a); const from = _b.copy(camera.position).addScaledVector(_a, .7); from.y -= .1;
+    const d = _a.clone(); d.y += .06; const p = spawn(PLAYER_ENT, from, d, PLAYER_ENT);
+    if (P.nades === R.carry) P.nadeT = R.regen; P.nades--; springs.kickRot.v += 2;
+    S.steering = p; adsHeld = false; mouseDown = false; return true;
+  }
+  function stopSteer() { S.steering = null; }
+  // mouse movement while steering turns the plane instead of your view (wrapped look())
+  function steerLook(dx, dy) { const p = S.steering; if (!p || p.dead) { S.steering = null; return false; } p.inYaw = (p.inYaw || 0) - dx * .0021 * CFG.sens * 1.6; p.inPitch = (p.inPitch || 0) - dy * .0021 * CFG.sens * 1.6; return true; }
+  function canCatch(e, p) {
+    if (p.dead || p.age < .25 || !enemies(e, p.owner)) return false;
+    const eye = entEye(e, _c), d = eye.distanceTo(p.pos); if (d > R.catchDist) return false;
+    if (e === PLAYER_ENT) { camera.getWorldDirection(_a); } else { const y = e.aimYaw ?? e.root.rotation.y; _a.set(-Math.sin(y), 0, -Math.cos(y)); }
+    return _a.dot(_b.subVectors(p.pos, eye).normalize()) > R.catchCone;
+  }
+  function catchable(e) { let best = null, bd = 1e9; for (const p of list) if (canCatch(e, p)) { const d = p.pos.distanceTo(entEye(e, _c)); if (d < bd) { bd = d; best = p; } } return best; }
+  function doCatch(e, p) {
+    p.owner = e; p.steer = e; p.caught++; p.life = R.life; p.speed = R.speed * R.catchBoost; p.age = .1; p.catchTried.clear();
+    // turn round toward the thrower's launch point (the "send it back" line)
+    p.dir.subVectors(p.launch, p.pos).normalize(); p.m.material = matFor(teamOf(e)); p.botTarget = p.orig;
+    S.stats.caught++; try { sfx.equip(); sfx.knifeHit(); } catch (x) {}
+    PFX.burst(p.pos, { n: 12, cols: [PFX.TEAMC.white], speed: 2, up: 1, life: .8 });
+    if (e === PLAYER_ENT) { S.steering = p; callout('CAUGHT IT!', 'multi'); }
+    else if (p.orig === PLAYER_ENT) callout('YOUR PLANE WAS CAUGHT!', 'multi');
+    return true;
+  }
+  function playerCatch() { if (state !== 'play' || P.dead) return false; const p = catchable(PLAYER_ENT); return p ? doCatch(PLAYER_ENT, p) : false; }
+  /* ---- explosions + damage ---- */
+  function pop(p, harmless) {
+    if (p.dead) return; p.dead = true; scene.remove(p.m); if (S.steering === p) S.steering = null;
+    const team = teamOf(p.owner), col = team === 'def' ? PFX.TEAMC.red : team === 'atk' ? PFX.TEAMC.blue : PFX.TEAMC.white;
+    if (harmless) { PFX.burst(p.pos, { n: 30, cols: [col, PFX.TEAMC.white], speed: 3, up: 1.5, life: 1.8 }); try { sfx.impact(p.pos.clone(), false); } catch (e) {} return; }
+    S.stats.exploded++;
+    PFX.burst(p.pos, { n: 140, cols: [col, PFX.TEAMC.white, PFX.TEAMC.cream, col], speed: 9, up: 3, life: 2.8, size: [.04, .12] });
+    PFX.burst(p.pos, { n: 26, cols: [col, PFX.TEAMC.white], speed: 6, up: 2, strips: true, size: [.025, .04], life: 2.6 });
+    TEAR.blast(p.pos, 1.8);
+    { _rc.set(p.pos, _a.set(0, -1, 0)); _rc.far = 3; _hits.length = 0; for (const m of world.meshes) m.raycast(_rc, _hits); _hits.sort((x, y) => x.distance - y.distance); const g = _hits[0]; PAPER_MARKS.add(g ? g.point : _b.set(p.pos.x, .01, p.pos.z), _c.set(0, 1, 0), 'blast'); }
+    const orig = p.orig, wasCaught = p.caught > 0, victims = [];
+    const _de = damageEntity; damageEntity = function (e, dmg, crit, pt, dir, zone, by, w) { const r = _de.apply(this, arguments); if (!entAlive(e)) victims.push(e); return r; };
+    try { explode(p.pos.clone(), p.owner, 'plane'); } finally { damageEntity = _de; }
+    if (wasCaught && victims.includes(orig) && orig !== p.owner) { S.stats.returns++; returnToSender(p); }
+  }
+  function returnToSender(p) {
+    window.SLOWMO = R.slowmo; callout('RETURN TO SENDER!', 'multi');
+    try { banner('RETURN TO SENDER!', p.owner === PLAYER_ENT ? 'You caught their plane and sent it home' : 'Your own plane came back for you'); } catch (e) {}
+  }
+  function damage(p, dmg, by) { if (p.dead) return; p.hp -= dmg; if (p.hp <= 0) { S.stats.shotDown++; if (by === PLAYER_ENT) callout('PLANE DOWN', 'multi'); pop(p, true); } }
+  // a bullet from o along unit d (up to far m): damages the first plane it passes within R.hitR of. Returns that plane or null.
+  function shot(o, d, far, dmg, by) {
+    let best = null, bt = far;
+    for (const p of list) { if (p.dead || p.owner === by && p.age < .4) continue; const t = _a.subVectors(p.pos, o).dot(d); if (t < 0 || t > bt) continue; const q = _b.copy(o).addScaledVector(d, t); if (q.distanceTo(p.pos) < R.hitR) { bt = t; best = p; } }
+    if (best) damage(best, dmg, by); return best;
+  }
+  /* ---- bots ---- */
+  function botThrow(r, at) {
+    if (r.dead) return false; const eye = entEye(r, _c).clone(), d = _a.subVectors(at, eye); d.y += 1.2; d.normalize();
+    const p = spawn(r, eye.addScaledVector(d, .6), d, r); p.botAt = at.clone(); S.stats.botThrows++; r.planeCd = rand(14, 24); return true;
+  }
+  function botAI(r, dt) {
+    if (r.dead) return; r.planeCd = (r.planeCd ?? rand(4, 10)) - dt;
+    // catch or shoot an incoming enemy plane
+    for (const p of list) {
+      if (p.dead || !enemies(r, p.owner)) continue; const d = p.pos.distanceTo(r.root.position); if (d > 16) continue;
+      if (d < R.catchDist && !p.catchTried.has(r)) { p.catchTried.add(r); const sk = r.skill || .6, ch = (window.S9BotModes && S9BotModes.cfg && S9BotModes.cfg.diff === 'hard' ? .45 : S9BotModes && S9BotModes.cfg && S9BotModes.cfg.diff === 'easy' ? .1 : .25) * clamp(sk, .4, 1.4);
+        if (canCatch(r, p) && Math.random() < ch) { doCatch(r, p); S.stats.botCatches++; continue; } }
+      if (d < 14 && (r.planeShotT = (r.planeShotT || 0) - dt) <= 0 && lineOfSight(entEye(r, _c), p.pos)) { r.planeShotT = .3; if (Math.random() < .3 * (r.skill || .6)) { r.muzzle && r.muzzle.getWorldPosition(_b); try { tracer(_b.clone(), p.pos.clone(), new THREE.Color(4, 3, 2), .02, .05); } catch (e) {} const was = p.dead; damage(p, 13, r); if (!was && p.dead) S.stats.botShotDown++; } }
+    }
+  }
+  /* ---- per frame (game time) ---- */
+  function update(dt) {
+    for (let i = list.length - 1; i >= 0; i--) {
+      const p = list[i]; if (p.dead) { list.splice(i, 1); continue; }
+      p.age += dt; p.life -= dt; let tr = 0;
+      if (p.steer === PLAYER_ENT && S.steering === p) { tr = turn(p, p.inYaw || 0, p.inPitch || 0, dt, R.turn); p.inYaw = p.inPitch = 0; }
+      else if (p.steer && !p.steer.isPlayer && p.steer !== PLAYER_ENT) {   // bot homing: toward its target's chest (the original thrower for a caught plane)
+        const tgt = p.botTarget && entAlive(p.botTarget) ? entChest(p.botTarget, _c) : p.botAt || null;
+        if (tgt) { const want = _a.subVectors(tgt, p.pos).normalize(); const cy = Math.atan2(-p.dir.x, -p.dir.z), wy = Math.atan2(-want.x, -want.z); let dy = wy - cy; while (dy > Math.PI) dy -= 2 * Math.PI; while (dy < -Math.PI) dy += 2 * Math.PI;
+          tr = turn(p, dy, Math.asin(clamp(want.y, -1, 1)) - Math.asin(clamp(p.dir.y, -1, 1)), dt, R.botTurn); }
+      } else p.dir.y -= R.sink * dt;
+      p.dir.normalize();
+      const step = p.speed * dt; _rc.set(p.pos, p.dir); _rc.far = step + .25; _hits.length = 0;
+      for (const m of world.meshes) { if (!m.layers.test(_rc.layers)) continue; m.raycast(_rc, _hits); if (_hits.length) break; }
+      let boom = _hits.length > 0;
+      p.pos.addScaledVector(p.dir, step);
+      if (p.age > R.arm && !boom) for (const e of entities()) { if (!entAlive(e) || e === p.owner && p.age < 1) continue; const c = entChest(e, _c); if (Math.hypot(c.x - p.pos.x, c.z - p.pos.z) < .55 && p.pos.y > c.y - 1.2 && p.pos.y < c.y + .75) { boom = true; break; } }
+      if (p.pos.y < .05) boom = true;
+      p.m.position.copy(p.pos); orient(p, tr);
+      if (Math.random() < .35) PFX.spawn(p.pos.x, p.pos.y, p.pos.z, 0, 0, 0, .015, .015, PFX.TEAMC.white, .5, { drag: 6, g: .5, flutter: .2 });
+      if (boom || p.life <= 0) pop(p, !boom && p.life <= 0 && false);
+    }
+    if (S.steering && (S.steering.dead || P.dead || state !== 'play')) S.steering = null;
+    for (const r of robots) if (!r.remote && r.mxBot !== false) botAI(r, dt);
+    hud();
+  }
+  // HUD: plane count, catch prompt, steering picture-in-picture frame
+  let lastHud = '';
+  function hud() {
+    const pip = document.getElementById('pPip'), tip = document.getElementById('pTip'), n = document.getElementById('pPlaneN'), pl = document.getElementById('pPlane');
+    if (n) { const s = '×' + (P.nades | 0); if (n.textContent !== s) n.textContent = s; pl.classList.toggle('empty', (P.nades | 0) <= 0); }
+    const c = state === 'play' && !P.dead && !S.steering ? catchable(PLAYER_ENT) : null, t = c ? '<kbd>F</kbd> CATCH THE PLANE!' : S.steering ? 'Steering your plane · <kbd>click</kbd> pop · <kbd>G</kbd> let go' : '';
+    if (tip && t !== lastHud) { lastHud = t; tip.innerHTML = t; tip.style.display = t ? 'block' : 'none'; }
+    if (pip) pip.style.display = S.steering ? 'block' : 'none';
+  }
+  // picture-in-picture: the plane's view, drawn into the top-right corner after the main picture
+  function renderPip() {
+    const p = S.steering; if (!p || p.dead || !pipCam) return;
+    const el = document.getElementById('pPip'); if (!el) return; const r = el.getBoundingClientRect(), H = renderer.domElement.clientHeight;
+    pipCam.position.copy(p.pos).addScaledVector(p.dir, -1.1); pipCam.position.y += .35; pipCam.lookAt(_a.copy(p.pos).addScaledVector(p.dir, 6)); pipCam.aspect = r.width / r.height; pipCam.updateProjectionMatrix();
+    const at = renderer.getRenderTarget(); renderer.setRenderTarget(null); renderer.setScissorTest(true);
+    renderer.setScissor(r.left, H - r.bottom, r.width, r.height); renderer.setViewport(r.left, H - r.bottom, r.width, r.height);
+    const ac = renderer.autoClear; renderer.autoClear = true; renderer.render(scene, pipCam); renderer.autoClear = ac;
+    renderer.setScissorTest(false); renderer.setViewport(0, 0, renderer.domElement.clientWidth, H); renderer.setRenderTarget(at);
+  }
+  function reset() { for (const p of list) { p.dead = true; scene.remove(p.m); } list.length = 0; S.steering = null; P.nades = R.carry; }
+  /* self test (qa/paper/core.js): throw, steer, hit, shoot down, catch + return to sender, all in this page */
+  async function selfTest() {
+    const C = {}, ok = (k, v, info) => { C[k] = { ok: !!v, info: info || '' }; }, wait = ms => new Promise(r => setTimeout(r, ms));
+    for (const x of robots) if (x.dead && x.deadT > .5) x.respawnT = Math.min(x.respawnT, x.deadT);   // bring everyone back first (a respawn mid-test teleports the target)
+    for (let i = 0; i < 80 && robots.some(x => x.dead); i++) await wait(100);
+    const s = window.__s9, reds = robots.filter(r => r.mxBot && r.mxTeam === 'def').sort((a, b) => a.dead - b.dead), T = reds[0], bot2 = reds[1];
+    const freeze = b => { b.percT = 1e9; b.thinkT = 1e9; b.hasGoal = false; b.vel && b.vel.set(0, 0, 0); b.shield = 0; b.mode = 'x'; };
+    reds.forEach(freeze); robots.forEach(b => { if (b !== T && b !== bot2) b.root.position.set(-26, 0, 38); });
+    P.nades = R.carry; P.pos.set(0, 0, -30); P.yaw = Math.PI; P.pitch = .02; window.__god = true;
+    T.root.position.set(0, 0, -18); T.hp = 100; T.dead = false; T.root.visible = true; bot2.root.position.set(-26, 0, 30);
+    const n0 = P.nades; const thrown = playerThrow(); const p1 = list[list.length - 1];
+    ok('throw (G)', thrown && p1 && P.nades === n0 - 1, `planes left ${P.nades}`); await wait(120);
+    ok('steering takes the mouse (picture-in-picture on)', S.steering === p1 && document.getElementById('pPip').style.display === 'block');
+    const y0 = Math.atan2(-p1.dir.x, -p1.dir.z); const yawP = P.yaw; steerLook(-120, 0); await wait(250);
+    ok('steer with the mouse turns the plane, not the view', Math.abs(Math.atan2(-p1.dir.x, -p1.dir.z) - y0) > .05 && Math.abs(P.yaw - yawP) < 1e-6, `plane yaw ${(Math.atan2(-p1.dir.x, -p1.dir.z) - y0).toFixed(2)} rad`);
+    // aim it back at the target and let it hit
+    p1.dir.subVectors(entChest(T, _c), p1.pos).normalize(); const hp0 = T.hp;
+    for (let i = 0; i < 40 && !p1.dead; i++) { p1.dir.subVectors(entChest(T, _c), p1.pos).normalize(); await wait(50); }
+    ok('hits and explodes (blast damage)', p1.dead && (T.dead || T.hp < hp0), `target hp ${Math.round(T.hp)} dead=${T.dead}`);
+    ok('view comes back after the plane is gone', !S.steering);
+    await wait(300);
+    // shoot down: a red plane flying at the player; real bullets from the player's gun
+    if (T.dead) { T.dead = false; T.hp = 100; resetDeathFx(T); T.root.visible = true; } T.root.position.set(0, 0, -18); freeze(T);
+    const p2 = spawn(T, new THREE.Vector3(0, 1.6, -22), new THREE.Vector3(0, 0, -1), null); p2.speed = 2; p2.botTarget = null;
+    let shots = 0; for (let i = 0; i < 12 && !p2.dead; i++) { shot(camera.position.clone(), _a.subVectors(p2.pos, camera.position).normalize().clone(), 60, 13, PLAYER_ENT); shots++; await wait(30); }
+    ok('shoot down (small HP)', p2.dead, `${shots} hits of 13 dmg (hp ${R.hp})`);
+    // catch: a red bot's plane flies at the player; F catches it; steered back it kills the thrower = RETURN TO SENDER
+    T.hp = 100; T.root.position.set(0, 0, -16); freeze(T); P.pos.set(0, 0, -30); P.yaw = Math.PI; P.pitch = 0;
+    const p3 = spawn(T, new THREE.Vector3(0, 1.55, -27.5), new THREE.Vector3(0, 0, -1), T); p3.speed = .5; p3.botTarget = null; p3.steer = null; p3.age = 1;
+    await wait(100); const prompt = (document.getElementById('pTip').textContent || '').includes('CATCH');
+    ok('catch prompt shows when a plane is close and in front', prompt, document.getElementById('pTip').textContent);
+    dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyF' })); dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyF' }));
+    ok('F catches it (now yours, turned round)', p3.owner === PLAYER_ENT && S.steering === p3 && p3.dir.z > .5, `owner=${p3.owner === PLAYER_ENT ? 'you' : 'them'} dirZ=${p3.dir.z.toFixed(2)}`);
+    const ret0 = S.stats.returns; T.hp = 30;
+    for (let i = 0; i < 60 && !p3.dead; i++) { p3.dir.subVectors(entChest(T, _c), p3.pos).normalize(); await wait(40); }
+    ok('steer it back: RETURN TO SENDER (callout + slow motion)', S.stats.returns > ret0 && T.dead, `returns=${S.stats.returns} slowmo=${(window.SLOWMO || 0).toFixed(2)} target dead=${T.dead}`);
+    // bots: a bot throws one, and a bot can catch the player's plane
+    await wait(600); window.__god = true; const b = reds.find(x => !x.dead) || T; if (b.dead) { b.dead = false; b.hp = 100; b.root.visible = true; }
+    b.root.position.set(4, 0, -16); const t0 = S.stats.botThrows; botThrow(b, new THREE.Vector3(0, 1, -30));
+    ok('bots throw planes (homing)', S.stats.botThrows > t0 && list.some(q => q.owner === b && !q.dead));
+    for (const q of list) if (q.owner === b) pop(q, true);
+    P.nades = R.carry; b.root.position.set(0, 0, -26); b.aimYaw = Math.PI; b.root.rotation.y = Math.PI; freeze(b);
+    const sd = S.steering = null; const p4 = spawn(PLAYER_ENT, new THREE.Vector3(0, 1.5, -24.5), new THREE.Vector3(0, 0, -1), PLAYER_ENT); p4.speed = .3; p4.age = 1;
+    const diff = S9BotModes.cfg.diff; S9BotModes.cfg.diff = 'hard'; const rnd = Math.random; Math.random = () => 0;
+    try { botAI(b, .016); } finally { Math.random = rnd; S9BotModes.cfg.diff = diff; }
+    ok('bots catch planes and send them back', p4.owner === b && p4.botTarget === PLAYER_ENT, `owner=${p4.owner === b ? 'bot' : 'you'}`);
+    pop(p4, true); window.__god = false;
+    return { checks: C, stats: Object.assign({}, S.stats) };
+  }
+  return { R, list, S, spawn, warm, update, playerThrow, playerCatch, stopSteer, steerLook, damage, shot, pop, botThrow, botAI, renderPip, reset, catchable, selfTest };
+})();
 /* ================= online 1v1 (claude.ai room: presence stream, shooter-side hits) ================= */
 const NET = { on: false, room: null, lobby: null, opp: null, oppPeer: null, nick: '', code: '', snaps: [], seq: { shot: 0, hit: 0, nade: 0 }, hits: [], last: { shot: 0, hit: 0, nade: 0, dead: false, D: 0 }, rtt: 0, pingT: 0, losT: 0, sendT: 0 };
 const ONLINE_KILLS = 15;
@@ -6016,7 +6454,7 @@ const MOVE = { run: 5.6, sprint: 8.8, adsSpeed: 3.0, crouchSpeed: 2.8, accelGrou
   walk: .53, gravity: 20, dashGravity: 6, height: 1.8, crouchHeight: 1.2, radius: .4, stepUp: STEP, regenDelay: 5, regenRate: 8, overdriveSpeed: 1.25, knifeSpeed: 1.12, chillSpeed: .55, chargeSpeed: .75 };
 function updatePlayer(dt, rdt) {
   P.slideT = Math.max(0, P.slideT - dt); P.dashT = Math.max(0, P.dashT - dt); P.dashCd = Math.max(0, P.dashCd - dt); P.shield = Math.max(0, P.shield - dt); P.jumpQ = Math.max(0, P.jumpQ - dt);
-  if (P.nades < 2) { P.nadeT -= dt; if (P.nadeT <= 0) { P.nades++; P.nadeT = 9; } }
+  if (P.nades < PLANES.R.carry) { P.nadeT -= dt; if (P.nadeT <= 0) { P.nades++; P.nadeT = PLANES.R.regen; } }
   if (P.odT > 0) { P.odT -= dt; P.hp = Math.min(100, P.hp + 6 * dt); if (P.odT <= 0) feed('Overdrive ended'); }
   const crouching = P.crouchHold || !!keys.ControlLeft || !!keys.ControlRight || P.slideT > 0;
   P.crouch = damp(P.crouch, crouching ? 1 : 0, 12, dt);
@@ -6133,6 +6571,7 @@ function tryDash() {
   sfx.dash(); for (let i = 0; i < 18; i++) FX.spawn(_v1.set(P.pos.x, P.pos.y + rand(.2, 1.4), P.pos.z), -wish.x * rand(2, 6) + rand(-1, 1), rand(-.5, .5), -wish.z * rand(2, 6) + rand(-1, 1), .5, 1.8, 3, rand(.03, .06), rand(.15, .3), 0, 4, 1);
 }
 function throwPlayerNade(charge = 0) {
+  return PLANES.playerThrow();   // Paper FPS: G throws a paper plane (67-planes.js); the plasma grenade code below stays for online compatibility
   if (P.nades <= 0 || state !== 'play') return;
   P.shield = 0; G.fired++;   // a grenade throw is a shot for the accuracy stat
   camera.getWorldDirection(_v2); const from = _v1.copy(camera.position).addScaledVector(_v2, .6); from.y -= .15;
@@ -6320,6 +6759,7 @@ function think(r, ents) {
   }
 }
 function botNade(r, at) {
+  if (PLANES.botThrow(r, at)) { r.nadeCd = rand(14, 24); return; }   // Paper FPS: bots throw paper planes
   const p = r.root.position, from = _a2.set(p.x, p.y + 1.6, p.z), dx = at.x - p.x, dz = at.z - p.z, d = Math.hypot(dx, dz), t = clamp(d / 14, .6, 1.4);
   const v = new THREE.Vector3(dx / t, ((at.y + .2) - from.y) / t + 9 * t, dz / t);
   throwNade(r, from.clone(), v); r.nadeCd = rand(12, 20);
@@ -6358,6 +6798,7 @@ function moveBot(r, dt) {
     } else r.hasGoal = false;
   }
   // dodge live grenades
+  for (const q of PLANES.list) { if (q.dead || q.owner === r || (q.owner.mxTeam && q.owner.mxTeam === r.mxTeam)) continue; const dx = p.x - q.pos.x, dz = p.z - q.pos.z, d = Math.hypot(dx, dz); if (d < 6) { wx += dz / (d || 1) * 2.4 * (r.netId && r.netId.length % 2 ? 1 : -1); wz -= dx / (d || 1) * 2.4 * (r.netId && r.netId.length % 2 ? 1 : -1); speed = 6.4; } }   // dodge planes sideways
   for (const n of NADES) { const dx = p.x - n.m.position.x, dz = p.z - n.m.position.z, d = Math.hypot(dx, dz); if (d < 7 && n.t < 1.5) { wx += dx / (d || 1) * 2.2; wz += dz / (d || 1) * 2.2; speed = 6.2; } }
   // personal space
   for (const o of robots) if (o !== r && !o.dead) { const dx = p.x - o.root.position.x, dz = p.z - o.root.position.z, d = Math.hypot(dx, dz); if (d < 1 && d > .01) { wx += dx / d * (1 - d) * 1.2; wz += dz / d * (1 - d) * 1.2; } }
@@ -6763,6 +7204,7 @@ function syncSettings() { for (const p of ['m', 'p']) { $(p + 'sens').value = CF
 
 /* ================= input ================= */
 function look(dx, dy) {
+  if (PLANES.S.steering && PLANES.steerLook(dx, dy)) return;   // steering your paper plane: the mouse flies it
   const s = .0021 * CFG.sens * lerp(1, W().adsFov / 78, P.ads);
   P.yaw -= dx * s; P.pitch = clamp(P.pitch - dy * s, -1.5, 1.5);
   springs.swayX.v -= dx * .0016 * FEEL.sway; springs.swayY.v += dy * .0016 * FEEL.sway;
@@ -6777,6 +7219,7 @@ document.addEventListener('mousemove', e => {
 });
 renderer.domElement.addEventListener('mousedown', e => {
   if (state !== 'play') return;
+  if (PLANES.S.steering) { if (e.button === 0) PLANES.pop(PLANES.S.steering); else if (e.button === 2) PLANES.stopSteer(); return; }
   if (e.button === 0) { mouseDown = true; P.trigReady = true; if (P.switchT > 0) P.drawClick = G.time; if (noLock) lookDrag = true; }   // drawClick: a tap during a weapon draw fires when the draw ends
   if (e.button === 2) { if (P.weapon === 'knife') knifeAttack(true); else if (P.weapon === 'boomerang') { BOOM.rDown = true; BOOM.rT = 0; } else { adsHeld = true; sfx.adsIn(); } }
   if (!document.pointerLockElement) lock();
@@ -6796,8 +7239,8 @@ addEventListener('keydown', e => {
   if (e.code === 'Space' && !e.repeat) P.jumpQ = .15;
   if (e.code === 'KeyC' && !e.repeat) { if (P.sprint && P.onGround && Math.hypot(P.vel.x, P.vel.z) > 6) startSlide(); else P.crouchHold = !P.crouchHold; }
   if (e.code === 'KeyE' && !e.repeat) tryDash();
-  if (e.code === 'KeyG' && !e.repeat && P.nades > 0) P.nadeHold = performance.now();
-  if (e.code === 'KeyF' && !e.repeat) overdrive();
+  if (e.code === 'KeyG' && !e.repeat) { if (PLANES.S.steering) PLANES.stopSteer(); else if (P.nades > 0) P.nadeHold = performance.now(); }
+  if (e.code === 'KeyF' && !e.repeat) PLANES.playerCatch();   // (Sector Nine's overdrive is not in Paper FPS)
   if (e.code === 'Tab') { e.preventDefault(); $('board').innerHTML = boardHTML(); $('board').hidden = false; }
   for (let i = 0; i < 5; i++) if (e.code === 'Digit' + (i + 1) && SLOTS()[i]) switchWeapon(SLOTS()[i]);
   if (e.code === 'KeyX' && !e.repeat) pickNearDrop();
@@ -6918,7 +7361,7 @@ function frame(now) {
       else if (benchT > 7) benchDone = true; }
     else if (benchDone && prTimer > 4) { prTimer = 0; if (frameAvg > 24 && PR > .6) { PR = Math.max(.6, PR - .1); resize(); } }
   }
-  if (hitstop > 0) { hitstop -= rdt; timeScale = .15; } else timeScale = damp(timeScale, 1, 20, rdt);
+  if (hitstop > 0) { hitstop -= rdt; timeScale = .15; } else if (window.SLOWMO > 0) { SLOWMO -= rdt; timeScale = PLANES.R.slowK; } else timeScale = damp(timeScale, 1, 20, rdt);
   // the real time since the last frame (rAF times are vsync-aligned): a smoothed step made motion lag behind the clock and
   // then catch up after every uneven frame (judder); the fixed-step simulation below is what keeps motion even
   sdt = rdt; const dt = rdt * timeScale;
@@ -6941,11 +7384,11 @@ function frame(now) {
     perf.bots = lerp(perf.bots || 0, botMs, .05);
     SIM.alpha = state === 'play' ? SIM.acc / SIM.dt : 1;
     simPresent(dt, rdt); if (state === 'play') { updateCamera(dt, rdt); simCamDone(); updateViewmodel(rdt); } simUnP(); recFrame();
-    updatePads(dt); updateNades(dt); updateRockets(dt); updateProj(dt); updateDecals(); updateDrops(dt); updateBoom(dt); updateRemoteBooms(dt);
+    updatePads(dt); updateNades(dt); updateRockets(dt); updateProj(dt); updateDecals(); updateDrops(dt); updateBoom(dt); updateRemoteBooms(dt); PLANES.update(dt);
   } else if (state === 'dead') {
     G.time += dt; G.matchT -= dt; P.dieT += rdt;
     fallDead(P.pos, P, dt);   // died in mid air: your body drops to the floor (others see it fall too)
-    updateRobots(dt, false); updatePads(dt); updateNades(dt); updateRockets(dt); updateProj(dt); updateDecals(); updateDrops(dt); updateBoom(dt); updateRemoteBooms(dt);
+    updateRobots(dt, false); updatePads(dt); updateNades(dt); updateRockets(dt); updateProj(dt); updateDecals(); updateDrops(dt); updateBoom(dt); updateRemoteBooms(dt); PLANES.update(dt);
     const kl = P.killer && !P.killer.dead ? P.killer.root.position : null;
     if (REC.on && P.dieT > DC.T && $('killcam').hidden) { $('killcam').hidden = false; $('death').classList.add('kc'); $('hud').classList.add('kcview'); stopDeathcam(); }
     if (updateDeathcam(rdt)) {}
@@ -7004,7 +7447,7 @@ function frame(now) {
   if (window.MODE_preRender) MODE_preRender(rdt);   // game modes: plant/defuse input, beeps, HUD, spectating
   const replaying = state === 'dead' && REC.on && P.dieT > DC.T && applyReplay();
   viewKick(rdt);   // hit-flinch camera kick: drawn AND kept on the camera until the next updateCamera, so a shot fired on the next frame goes exactly through the crosshair the player saw (it never moves P.pitch/yaw: the aim itself, the killcam and the network see no kick)
-  if (!GL.lost) composer.render(rdt);   // (context lost: the game keeps simulating; drawing resumes when the browser restores it)
+  if (!GL.lost) { composer.render(rdt); if (PLANES.S.steering) PLANES.renderPip(); }   // (context lost: the game keeps simulating; drawing resumes when the browser restores it)
   else if (!GL.hinted && now - GL.lostAt > 10000) { GL.hinted = true; banner('GRAPHICS DEVICE LOST', 'Press F5 to reload the game'); }
   if (replaying) restoreReplay();
   simRestore();
@@ -7024,7 +7467,7 @@ async function boot() {
   for (const id of GUN_IDS) if (!WM[id]) WM[id] = buildGunVM(id);
   WM.knife = buildKnifeVM();
 
-  FX = makeParticles(3500, true); SMOKE = makeParticles(800, false); DUST = makeDust(); PFX.init();
+  FX = makeParticles(3500, true); SMOKE = makeParticles(800, false); DUST = makeDust(); PFX.init(); PLANES.warm(); PAPER_MARKS.init();
   await loadMap(mapPref === 'random' ? 'yard' : mapPref);
   initDecals(); clearDecals();
   const tg = new THREE.BoxGeometry(1, 1, 1); tg.translate(0, 0, .5);

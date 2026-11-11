@@ -1,4 +1,4 @@
-/* Paper FPS: menu, HUD, transitions, title, weapon data, characters (modules/paper.js).
+/* Foldiers (Paper FPS engine fork): menu, HUD, transitions, title, weapon data, characters (modules/paper.js).
    - Title: data/game.json (the ONE place the name lives).
    - Menu: a cardboard menu (pick 1 of 4 characters, difficulty, Play vs Bots). Online stays dormant (not shown).
    - Match: Team Deathmatch blue (you + 3 bots) vs red (4 bots), first to 30 or 8 minutes (data/botmodes.json, run by botmodes.js).
@@ -27,7 +27,7 @@
   /* ---------------- data ---------------- */
   const getJSON = u => fetch(u, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   const dataP = Promise.all([getJSON('data/game.json'), getJSON('data/paper_weapons.json'), getJSON('data/paper/chars.json')]).then(([g, w, ch]) => {
-    U.game = g || { title: 'Paper FPS', short: 'Paper FPS' };
+    U.game = g || { title: 'Foldiers', short: 'Foldiers' };
     document.title = U.game.title;
     if (w && w.weapons) for (const id in w.weapons) if (WEAPONS[id]) { Object.assign(WEAPONS[id], w.weapons[id]); WEAPONS[id].label = WEAPONS[id].name + ' · ' + WEAPONS[id].cls.toLowerCase(); }
     U.weaponData = w;
@@ -85,6 +85,12 @@
 #pmenu{position:absolute;inset:0;display:flex;align-items:stretch;font-family:var(--pt);color:var(--pink);overflow:auto}
 #pmenu .card{position:relative;margin:26px 0 26px 34px;width:min(560px,calc(100vw - 40px));padding:30px 34px 28px;background:${BG.kraft},var(--pkraft);background-blend-mode:multiply;clip-path:${tornBox(1)};filter:drop-shadow(0 10px 18px rgba(0,0,0,.35));align-self:center}
 #pmenu h1{margin:0;font:400 64px/0.95 var(--pf);color:#fff;letter-spacing:.01em;text-shadow:0 4px 0 #8a5d2c,0 8px 14px rgba(0,0,0,.25);transform:rotate(-2deg)}
+#pmenu h1.logo{display:flex;flex-wrap:wrap;gap:3px;position:relative;margin:18px 0 0;transform:none;text-shadow:none}
+#pmenu h1.logo .helmet{position:absolute;left:-6px;top:-20px;width:58px;transform:rotate(-14deg);filter:drop-shadow(0 3px 0 rgba(0,0,0,.25));z-index:2}
+#pmenu .lt{display:inline-flex;align-items:center;justify-content:center;width:56px;height:66px;transform:rotate(var(--rot));filter:drop-shadow(0 4px 0 rgba(0,0,0,.25));clip-path:polygon(0 0,82% 0,100% 18%,100% 100%,0 100%)}
+#pmenu .lt.b{background:linear-gradient(135deg,#3c5fc7 0 50%,#2a479f 50% 100%)}#pmenu .lt.r{background:linear-gradient(135deg,#d24a3b 0 50%,#ad3226 50% 100%)}
+#pmenu .lt i{font:400 50px/1 var(--pf);font-style:normal;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+@media (max-width:700px){#pmenu .lt{width:38px;height:46px}#pmenu .lt i{font-size:34px}}
 #pmenu h1 em{display:block;font:900 14px var(--pt);color:var(--pink);opacity:.75;letter-spacing:.14em;text-transform:uppercase;text-shadow:none;margin-top:6px;font-style:normal}
 #pmenu .tag{margin:12px 0 18px;font-weight:900;font-size:16px}
 #pmenu .lab{font:900 12px var(--pt);letter-spacing:.16em;text-transform:uppercase;opacity:.8;margin:14px 0 8px}
@@ -148,10 +154,17 @@
   };
 
   /* ---------------- menu ---------------- */
+  // the wordmark: every letter is a folded paper tile (a diagonal crease: one half lit, one in shade), blue and red alternating
+  // like the two teams, with a little origami soldier's helmet perched on the first letter
+  function logoHTML(t) {
+    const L = [...String(t).toUpperCase()];
+    return `<svg class="helmet" viewBox="0 0 64 34" aria-hidden="true"><path d="M4 30 L14 8 L32 2 L50 8 L60 30Z" fill="#2f4fb0"/><path d="M14 8 L32 2 L32 30 L4 30Z" fill="#3c5fc7"/><path d="M32 2 L50 8 L60 30 L32 30Z" fill="#24408f"/><path d="M0 30 H64 V34 H0Z" fill="#1d3280"/></svg>` +
+      L.map((c, i) => `<span class="lt ${i % 2 ? 'r' : 'b'}" style="--rot:${((i * 37) % 9 - 4) * .9}deg"><i>${esc(c)}</i></span>`).join('');
+  }
   function menuHTML() {
-    const g = U.game || {}, title = String(g.short || g.title || 'Paper FPS').replace(/\s*\(.*\)\s*$/, ''), work = /\(working name\)/i.test(g.title || '') ? 'working name' : '';
+    const g = U.game || {}, title = String(g.short || g.title || 'Foldiers').replace(/\s*\(.*\)\s*$/, '');
     return `<div class="card" role="dialog" aria-label="Main menu">
-      <h1>${esc(title)}${work ? `<em>${esc(work)}</em>` : ''}</h1>
+      <h1 class="logo" aria-label="${esc(title)}">${logoHTML(title)}</h1>
       <div class="tag">${esc(g.tagline || 'Tear the map. Catch the plane. Fold the other team.')}</div>
       <div class="lab">Choose your fighter</div>
       <div class="chars" role="radiogroup" aria-label="Character">${U.chars.map(c => `<button type="button" class="ch" role="radio" data-ch="${esc(c.id)}" aria-checked="${c.id === U.char}">${c.img ? `<img src="${esc(c.img)}" alt="">` : `<svg viewBox="0 0 64 64">${c.svg || ''}</svg>`}<b>${esc(c.name)}</b><span>${esc(c.line || '')}</span></button>`).join('')}</div>
@@ -191,7 +204,7 @@
   const _startMatch = startMatch;
   startMatch = async function () {
     const r = await _startMatch.apply(this, arguments);
-    try { TEAR.reset(); PFX.clear(); } catch (e) {}
+    try { TEAR.reset(); PFX.clear(); PLANES.reset(); PAPER_MARKS.clear(); PAPER_DEATHS.warm(); } catch (e) {}
     return r;
   };
 
