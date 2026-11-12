@@ -17,8 +17,20 @@
   /* ---------------- end screen result ---------------- */
   const mend = $('mend'), mt = $('mendTitle');
   if (mend && mt) {
-    const sync = () => { const t = (mt.textContent || '').toLowerCase(); mend.classList.toggle('win', /victor|win/.test(t)); mend.classList.toggle('lose', /defeat|lose|lost/.test(t)); mend.classList.toggle('draw', /draw/.test(t)); };
+    const sync = () => { const t = (mt.textContent || '').toLowerCase(); mend.classList.toggle('win', /victor|win/.test(t)); mend.classList.toggle('lose', /defeat|lose|lost/.test(t)); mend.classList.toggle('draw', /draw/.test(t)); fill(); };
     new MutationObserver(sync).observe(mt, { childList: true, characterData: true, subtree: true }); sync();
+  }
+
+  // big team score + MVP for the one-card end screen (filled from the bot-match roster; hidden when there is none, e.g. FFA)
+  const escH = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  function fill() {
+    const sc = $('mendScore'), mv = $('mendMvp'); if (!sc || !mv) return;
+    const S = window.S9BotModes, M = S && S.M, pl = M && M.players ? [...M.players.values()] : [];
+    if (!pl.length) { sc.hidden = mv.hidden = true; return; }
+    const my = S.myTeam || 'atk', ot = my === 'atk' ? 'def' : 'atk', k = t => pl.filter(p => p.team === t).reduce((a, p) => a + (p.kills | 0), 0);
+    sc.innerHTML = `<span class="t b"><small>Blue</small>${k(my)}</span><em>:</em><span class="t r"><small>Red</small>${k(ot)}</span>`; sc.hidden = false;
+    const best = pl.slice().sort((a, b) => (b.kills | 0) - (a.kills | 0) || (a.deaths | 0) - (b.deaths | 0))[0];
+    mv.innerHTML = `<b>MVP</b><span class="${best.team === my ? 'b' : 'r'}">${best.id === 'me' ? 'You' : escH(best.n || 'Bot')}</span><small>${best.kills | 0} kill${(best.kills | 0) === 1 ? '' : 's'} · ${best.deaths | 0} death${(best.deaths | 0) === 1 ? '' : 's'}</small>`; mv.hidden = false;
   }
 
   /* ---------------- character portraits ---------------- */
@@ -41,7 +53,9 @@
         m.traverse(o => { if (o.isMesh) { o.frustumCulled = false; const src = Array.isArray(o.material) ? o.material[0] : o.material; o.material = new THREE.MeshStandardMaterial({ map: tx || (src && src.map) || null, color: tx || (src && src.map) ? 0xffffff : 0x2f4fb0, roughness: .88, metalness: 0, flatShading: false }); } });
         if (idle) { const mx = new THREE.AnimationMixer(m), a = mx.clipAction(idle.full || idle); a.play(); mx.update(.4); }
         m.rotation.y = .42; sc.add(m); m.updateMatrixWorld(true);
-        const bb = new THREE.Box3().setFromObject(m), h = Math.max(.5, bb.max.y - bb.min.y), cx = (bb.min.x + bb.max.x) / 2, cz = (bb.min.z + bb.max.z) / 2;
+        const bb = new THREE.Box3(), bv = new THREE.Vector3(); m.traverse(o => { if (o.isBone) bb.expandByPoint(o.getWorldPosition(bv)); });   // skinned: bind-pose geometry bounds are ~0, so frame the posed skeleton
+        if (bb.isEmpty() || bb.max.y - bb.min.y < .3) bb.setFromObject(m); else bb.max.y += (bb.max.y - bb.min.y) * .1;   // + the head above the head bone
+        const h = Math.max(.5, bb.max.y - bb.min.y), cx = (bb.min.x + bb.max.x) / 2, cz = (bb.min.z + bb.max.z) / 2;
         const viewH = h * .74, cy = bb.max.y - viewH / 2 + h * .03, d = viewH / 2 / Math.tan(cam.fov * Math.PI / 360);
         cam.position.set(cx + d * .12, cy + h * .04, cz + d); cam.lookAt(cx, cy, cz);
         r.render(sc, cam); out[id] = cv.toDataURL('image/png');

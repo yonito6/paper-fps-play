@@ -81,20 +81,21 @@
   function menuHTML() {
     const g = U.game || {}, title = String(g.short || g.title || 'Foldiers').replace(/\s*\(.*\)\s*$/, '');
     const pic = c => (U.portraits && U.portraits[c.id]) ? `<img class="pic" src="${U.portraits[c.id]}" alt="">` : c.img ? `<img class="pic" src="${esc(c.img)}" alt="">` : `<svg class="pic" viewBox="0 0 64 64" aria-hidden="true">${c.svg || ''}</svg>`;
+    const dname = { easy: 'Easy', normal: 'Normal', hard: 'Hard' };
     return `<div class="col">
-      <img class="logo" src="assets/brand/foldiers_logo_1024.webp" width="1024" height="400" alt="${esc(title)}">
-      <div class="board pp f-kraft" role="dialog" aria-label="Main menu">
+      <h1 class="logo-h"><img class="logo" src="assets/brand/foldiers_logo_1024.webp" width="1024" height="400" alt="${esc(title)}"></h1>
+      <div class="board" role="dialog" aria-label="Main menu">
         <p class="tagline">${esc(g.tagline || 'Tear the map. Catch the plane. Fold the other team.')}</p>
-        <div class="lab pt f-blue">Choose your Foldier</div>
-        <div class="chars" role="radiogroup" aria-label="Character">${U.chars.map(c => `<button type="button" class="ch pt f-cream" role="radio" data-ch="${esc(c.id)}" aria-checked="${c.id === U.char}"><i class="tape"></i>${pic(c)}<b>${esc(c.name)}</b><span>${esc(c.line || '')}</span></button>`).join('')}</div>
-        <div class="row2"><div class="lab pt f-blue">Bots</div><div class="chips" role="radiogroup" aria-label="Bot difficulty">${['easy', 'normal', 'hard'].map(d => `<button type="button" class="chip pt f-cream" role="radio" data-df="${d}" aria-checked="${d === U.diff}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div></div>
+        <div class="lab">Choose your Foldier</div>
+        <div class="chars" role="radiogroup" aria-label="Character">${U.chars.map((c, i) => `<button type="button" class="ch" role="radio" data-ch="${esc(c.id)}" aria-checked="${c.id === U.char}"><i class="bh h${i % 3 + 1}"></i>${pic(c)}<b>${esc(c.name)}</b><span>${esc(c.line || '')}</span></button>`).join('')}</div>
+        <div class="row2"><div class="lab">Bots</div><div class="chips" role="radiogroup" aria-label="Bot difficulty">${['easy', 'normal', 'hard'].map(d => `<button type="button" class="chip" role="radio" data-df="${d}" aria-checked="${d === U.diff}">${dname[d]}</button>`).join('')}</div></div>
+        <div class="play"><button type="button" class="go" id="pPlay"><b>Play</b><small>vs bots · Desk Town</small><i class="bh"></i></button></div>
         <div class="mode">Team Deathmatch · Blue (you + 3 bots) vs Red (4 bots) · first to 30 kills or 8 minutes</div>
-        <div class="play"><button type="button" class="go pt" id="pPlay"><b>Play</b><small>vs bots · Desk Town</small><i class="bh"></i></button><button type="button" class="sm pt f-cream" id="pKeysB" aria-expanded="false" aria-controls="pkeys">Controls</button><button type="button" class="sm pt f-cream" id="pSetB" aria-expanded="false" aria-controls="psetwrap">Settings</button></div>
-        <div id="pkeys" class="f-cream">${KEYS.map(([k, v]) => `<div><kbd>${k}</kbd>${v}</div>`).join('')}<div style="margin-top:8px">Shoot thin cardboard to tear holes you can see and shoot through. Shoot along a dashed crease to tear a flap open.</div></div>
+        <div class="smrow"><button type="button" class="sm" id="pKeysB" aria-expanded="false" aria-controls="pkeys">Controls</button><button type="button" class="sm" id="pSetB" aria-expanded="false" aria-controls="psetwrap">Settings</button></div>
+        <div id="pkeys">${KEYS.map(([k, v]) => `<div><kbd>${k}</kbd>${v}</div>`).join('')}<div style="margin-top:8px">Shoot thin cardboard to tear holes you can see and shoot through. Shoot along a dashed crease to tear a flap open.</div></div>
         <div id="psetwrap"></div>
       </div>
-    </div>
-    <div class="side"><div class="map pt f-cream"><i class="tape"></i><img src="assets/ui/map_desktown.jpg" alt=""><b>Desk Town</b><span>A cardboard toy town on a giant desk. 3 lanes, a ruler bridge, thin walls to shoot through.</span></div></div>`;
+    </div>`;
   }
   function buildMenu() {
     { const n = $('btnNext'), m = $('btnMenu'); if (n) n.textContent = 'Play again'; if (m) m.textContent = 'Main menu'; }
