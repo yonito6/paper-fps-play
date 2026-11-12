@@ -1,0 +1,44 @@
+{
+ "clips": {
+  "confetti": 2.2,
+  "headshot": 2.4,
+  "plane": 2.6,
+  "sniper": 2.8,
+  "shotgun": 2.4,
+  "boomerang": 2.4
+ },
+ "chars": {
+  "trooper": {
+   "pieces": 58,
+   "pieces_tris": 1040,
+   "strips": 144,
+   "strips_tris": 4596,
+   "cut": 58,
+   "cut_tris": 1080
+  },
+  "scout": {
+   "pieces": 62,
+   "pieces_tris": 1048,
+   "strips": 160,
+   "strips_tris": 4828,
+   "cut": 62,
+   "cut_tris": 1088
+  },
+  "marksman": {
+   "pieces": 58,
+   "pieces_tris": 1018,
+   "strips": 150,
+   "strips_tris": 4722,
+   "cut": 58,
+   "cut_tris": 1058
+  },
+  "heavy": {
+   "pieces": 61,
+   "pieces_tris": 1048,
+   "strips": 169,
+   "strips_tris": 5220,
+   "cut": 62,
+   "cut_tris": 1112
+  }
+ }
+}

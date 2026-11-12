@@ -38,6 +38,10 @@
 
   /* ---------- per-map personality (all multipliers; 0 = off) ---------- */
   const MAPCFG = {
+    // Foldiers Desk Town (ART, docs/ART_GAP.md "light stability"): a sunny paper world has no neon, wet floors, steam or sky ships, and the
+    // screen-space sun rays / glare are OFF: they switch on and off as the sun enters or leaves the frame, which the owner saw as
+    // "bright here, dark when I move". Dust motes stay (desk dust in the sun).
+    desktown: { rays: 0, shaft: 0, dust: .35, wet: 0, steam: 0, ships: 0, flick: 0, ember: 0, glare: 0, glow: .5 },
     yard: { rays: 0.8, shaft: .7, dust: 1, wet: 0, steam: .4, ships: 1, flick: 0, ember: 0, glare: 1, glow: .4 },
     glacier: { rays: 0.7, shaft: .5, dust: .35, wet: .25, steam: 0, ships: 1, flick: 0, ember: 0, glare: 1.1, glow: .8 },
     foundry: { rays: 0.6, shaft: .3, dust: .8, wet: 0, steam: 1, ships: 2, flick: .4, ember: 1.5, glare: .8, glow: 1.3 },

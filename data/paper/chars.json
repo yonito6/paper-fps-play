@@ -1,0 +1,135 @@
+{
+ "_about": "Foldiers characters (CHARS agent). All share the game mixamorig skeleton + ALL clips + the SAME hitboxes (the game attaches hit shapes to bones, see src/game/45-players hitGeometry), so no character is easier to hit. Team colour = swap the atlas (blue/red PNG, same UVs) or tint with the teammask. Units metres, +Y up, model faces -Z like the soldier (buildBot rotates it by PI).",
+ "skeleton": "mixamorig (49 skinned joints, identical to assets/models/soldier.gltf.json rest pose)",
+ "anims": "assets/paper/chars/paper_anims.json (game clip format, 36 clips)",
+ "hitboxes_shared": {
+  "head": {
+   "shape": "sphere",
+   "r": 0.15,
+   "bone": "Head",
+   "offset_y": 0.1
+  },
+  "chest": {
+   "shape": "box",
+   "size": [
+    0.46,
+    0.46,
+    0.32
+   ],
+   "bone": "Spine1",
+   "offset_y": 0.1
+  },
+  "pelvis": {
+   "shape": "box",
+   "size": [
+    0.38,
+    0.26,
+    0.28
+   ],
+   "bone": "Hips"
+  },
+  "thigh": {
+   "shape": "capsule",
+   "r": 0.095,
+   "len": 0.3
+  },
+  "shin": {
+   "shape": "capsule",
+   "r": 0.08,
+   "len": 0.32
+  },
+  "upper_arm": {
+   "shape": "capsule",
+   "r": 0.07,
+   "len": 0.2
+  },
+  "forearm": {
+   "shape": "capsule",
+   "r": 0.07,
+   "len": 0.2
+  }
+ },
+ "team_colours": {
+  "blue": "#2f4fb0",
+  "red": "#c0392b",
+  "accent_white": "#f2ede0"
+ },
+ "chars": [
+  {
+   "id": "trooper",
+   "name": "Trooper",
+   "role": "standard",
+   "personality": "Steady all-rounder in a folded gem hood: the soldier everyone wants on their side.",
+   "look_from": "owner turnaround sheet docs/reference/turnarounds/soldier_trooper_turnaround.png",
+   "model": "assets/paper/chars/trooper.glb",
+   "atlas": {
+    "blue": "assets/paper/chars/trooper_blue.png",
+    "red": "assets/paper/chars/trooper_red.png",
+    "mask": "assets/paper/chars/trooper_mask.png"
+   },
+   "tris": 1020,
+   "height_m": 1.824,
+   "body_halfwidth_m": 0.215,
+   "hitboxes": "shared (identical)",
+   "hitbox_note": "visual inside the hitboxes except the hood tip (+3 cm above the head sphere) and the sash flap",
+   "pieces": 57
+  },
+  {
+   "id": "scout",
+   "name": "Scout",
+   "role": "light",
+   "personality": "Quick and cheeky, pointed hat and flared epaulettes: first through every window.",
+   "look_from": "trooper base (owner sheet) + ref1 pointed hat + epaulettes",
+   "model": "assets/paper/chars/scout.glb",
+   "atlas": {
+    "blue": "assets/paper/chars/scout_blue.png",
+    "red": "assets/paper/chars/scout_red.png",
+    "mask": "assets/paper/chars/scout_mask.png"
+   },
+   "tris": 1028,
+   "height_m": 1.98,
+   "body_halfwidth_m": 0.19,
+   "hitboxes": "shared (identical)",
+   "hitbox_note": "cosmetic outside the hitboxes: hat cone tip (1.98 m, head sphere top 1.82 m) and brim (front 0.28 m vs sphere 0.15 m) - shots there MISS, like hats in other shooters",
+   "pieces": 61
+  },
+  {
+   "id": "marksman",
+   "name": "Marksman",
+   "role": "marksman",
+   "personality": "Patient watcher under a big folded hood: you never see the face, only the shot.",
+   "look_from": "trooper base (owner sheet) + ref3 window-soldier hood + coat tails",
+   "model": "assets/paper/chars/marksman.glb",
+   "atlas": {
+    "blue": "assets/paper/chars/marksman_blue.png",
+    "red": "assets/paper/chars/marksman_red.png",
+    "mask": "assets/paper/chars/marksman_mask.png"
+   },
+   "tris": 998,
+   "height_m": 1.89,
+   "body_halfwidth_m": 0.23,
+   "hitboxes": "shared (identical)",
+   "hitbox_note": "hood peak +7 cm above / +1 cm in front of the head sphere; coat tails behind the pelvis box are cosmetic",
+   "pieces": 57
+  },
+  {
+   "id": "heavy",
+   "name": "Heavy",
+   "role": "heavy",
+   "personality": "Wide, boxy and unbothered: big pauldrons, a visor slit and a very loud step.",
+   "look_from": "trooper base (owner sheet) + visor helmet + pauldrons + chest plate",
+   "model": "assets/paper/chars/heavy.glb",
+   "atlas": {
+    "blue": "assets/paper/chars/heavy_blue.png",
+    "red": "assets/paper/chars/heavy_red.png",
+    "mask": "assets/paper/chars/heavy_mask.png"
+   },
+   "tris": 1028,
+   "height_m": 1.82,
+   "body_halfwidth_m": 0.245,
+   "hitboxes": "shared (identical)",
+   "hitbox_note": "pauldrons reach x 0.35 m (arm capsules cover most of them; outer 5 cm cosmetic); body visually 7% wider than the trooper but hitboxes are identical",
+   "pieces": 60
+  }
+ ]
+}

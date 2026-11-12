@@ -1,14 +1,36 @@
 <title>Foldiers</title>
+<meta name="description" content="Foldiers: a free paper-and-cardboard shooter in your browser. Tear holes in the map, steer paper planes, catch them and send them back.">
+<meta name="theme-color" content="#2c4fb8">
+<link rel="icon" href="assets/brand/icons/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/brand/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/brand/icons/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/brand/icons/apple-touch-icon.png">
+<link rel="manifest" href="assets/brand/site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Foldiers">
+<meta property="og:title" content="Foldiers: tear the map, catch the plane">
+<meta property="og:description" content="A free paper-and-cardboard shooter in your browser. Shoot holes through the walls, steer paper planes, fold the other team.">
+<meta property="og:url" content="https://foldiers.com/">
+<meta property="og:image" content="https://foldiers.com/assets/brand/og_image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Foldiers logo: cardboard letters with bullet holes on a torn blue and red banner">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Foldiers: tear the map, catch the plane">
+<meta name="twitter:description" content="A free paper-and-cardboard shooter in your browser.">
+<meta name="twitter:image" content="https://foldiers.com/assets/brand/og_image.jpg">
+<link rel="preload" as="image" href="assets/brand/foldiers_logo_1024.webp">
+<link rel="preload" as="image" href="assets/paper/materials/512/kraft_col.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700;800&family=Changa+One:ital@0;1&display=swap">
 <style>
 /* Layout: full-bleed WebGL viewport; HUD pinned to corners like an instrument cluster, compass across the top */
 :root{
   --bg:#0b0d10; --ink:#ece6d8; --dim:#8b9097; --sodium:#ff9a3c; --alert:#ff4a3d; --cyan:#7fe7ff;
   --panel:rgba(11,13,16,.66); --line:rgba(236,230,216,.18);
-  --display:"Lilita One", "Arial Black", system-ui, sans-serif;
-  --mono:"Nunito", system-ui, sans-serif;   /* Foldiers: paper-craft fonts (the Sector Nine stencil/mono fonts are gone) */
+  --display:"Changa One", "Arial Black", system-ui, sans-serif;   /* Foldiers brand fonts: chunky slanted titles (logo feel) */
+  --mono:"Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;   /* + a clean, narrow, readable body/HUD font */
   color-scheme:dark;
 }
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hidden;font-family:var(--mono)}
@@ -146,7 +168,7 @@ button.ghost:focus-visible{outline:2px solid var(--sodium);outline-offset:3px}
 .online input{background:var(--bg);color:var(--ink);border:1px solid var(--line);font-family:var(--mono);font-size:14px;padding:8px 10px}
 .online input:focus-visible{outline:2px solid var(--sodium);outline-offset:1px}
 #onlineMsg.err{color:var(--alert)}
-#loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);font-size:12px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+#loading{display:block}   /* inside the Foldiers boot screen (#pboot), styled there */
 @media (pointer:coarse){.touchnote{display:block}}
 @media (max-width:640px){
   .overlay{background:rgba(11,13,16,.88)}
@@ -277,6 +299,252 @@ tr.me td{color:#ffd27a;background:rgba(255,154,60,.08)} td:nth-child(n+3),th:nth
 #dropHint kbd{font-family:var(--display);font-size:14px;padding:2px 8px;border-radius:4px;background:#ffd27a;color:#1a1208}
 #dropHint span b{color:var(--sodium)}
 #shieldNote{position:absolute;left:0;right:0;top:calc(50% + 70px);text-align:center;font-size:11px;letter-spacing:.3em;color:var(--cyan);opacity:0}
+/* ======================================================================================================================
+   FOLDIERS UI (BRAND/UI agent, 2026-11-12): every screen is built from the official logo's materials.
+   - Real cardboard: faces = the cardboard library textures (assets/paper/materials/512); torn corrugated rims + torn-fibre
+     edges = 9-slice pieces drawn by assets/brand/src/build_brand.py (assets/brand/ui/*_rim / *_mask / *_edge, 2x density).
+   - 3 layers per piece, all static (no filters / blur over the 3D view): element border-image = shadow + corrugated rim,
+     ::before = the paper face (texture, masked to the torn shape), ::after = torn white fibres + the paper lifting off the board.
+   - Type: Changa One (chunky slanted, like the logo letters) for titles / numbers, Barlow Semi Condensed for everything else.
+   ====================================================================================================================== */
+:root{
+  --k-ink:#2b2219; --k-ink2:#54412d; --k-blue:#2c4fb8; --k-blue-d:#1b3486; --k-red:#c8372a; --k-red-d:#8a2217;
+  --k-cream:#f4e9d2; --k-kraft:#c69b62;
+  --tx-kraft:url(assets/paper/materials/512/kraft_col.jpg); --tx-cream:url(assets/paper/materials/512/paper_col.jpg);
+  --tx-blue:url(assets/paper/materials/512/origami_blue_col.jpg); --tx-red:url(assets/paper/materials/512/origami_red_col.jpg);
+  --face-kraft:linear-gradient(rgba(255,226,178,.2),rgba(255,226,178,.2)),var(--tx-kraft) 0 0/300px,#c69b62;
+  --face-cream:linear-gradient(rgba(255,250,238,.45),rgba(255,250,238,.45)),var(--tx-cream) 0 0/260px,#f4e9d2;
+  --face-blue:var(--tx-blue) 0 0/240px,#2c4fb8; --face-red:var(--tx-red) 0 0/240px,#c8372a;
+  --sodium:#ffc94a; --alert:#ff5b45; --dim:#e4d3b6;
+}
+/* the kraft "logo letter" look for big titles: light kraft face, laminated beige edge, cardboard thickness, soft drop */
+.kraft-type,#pmenu .go b,#mend #mendTitle,#pause h2,#death .huge,#pwipe .t,#banner .huge,#mapload b{
+  font-family:var(--display)!important;font-style:italic;font-weight:400!important;color:#f3dcb3!important;letter-spacing:.01em;
+  text-shadow:1px 1px 0 #e2c28f,2px 2px 0 #c9a06a,3px 3px 0 #ad8048,4px 4px 0 #8d6233,5px 6px 0 rgba(43,24,8,.45),5px 9px 14px rgba(20,10,2,.35)!important}
+
+/* ---- 9-slice cardboard pieces ---- */
+.pp,.pt,#pause .sheet,#mend .sheet,#mxHud .sc,#mxHud .mid,#hud .corner.bl,#pAmmo,#pPlane,#pHint,#kcBan,#kcCard,#kcSkip,#killcam .kc-top,#deathBy,#kfeed .kf,#killbadge .kb-text,#psetwrap,#pkeys,#s9set .s9s-sec,#mend #mendBoard,#mend #mendTitle,#pause .kicker,#pause .go,#mend .go,#pause .ghost,#mend .ghost{position:relative;isolation:isolate;border-style:solid;border-color:transparent}
+.pp::before,.pp::after,.pt::before,.pt::after,#pause .sheet::before,#pause .sheet::after,#mend .sheet::before,#mend .sheet::after,#mxHud .sc::before,#mxHud .sc::after,#mxHud .mid::before,#mxHud .mid::after,#hud .corner.bl::before,#hud .corner.bl::after,#pAmmo::before,#pAmmo::after,#pPlane::before,#pPlane::after,#pHint::before,#pHint::after,#kcBan::before,#kcBan::after,#kcCard::before,#kcCard::after,#kcSkip::before,#kcSkip::after,#killcam .kc-top::before,#killcam .kc-top::after,#deathBy::before,#deathBy::after,#kfeed .kf::before,#kfeed .kf::after,#killbadge .kb-text::before,#killbadge .kb-text::after,#psetwrap::before,#psetwrap::after,#pkeys::before,#pkeys::after,#s9set .s9s-sec::before,#s9set .s9s-sec::after,#mend #mendBoard::before,#mend #mendBoard::after,#mend #mendTitle::before,#mend #mendTitle::after,#pause .kicker::before,#pause .kicker::after,#pause .go::before,#pause .go::after,#mend .go::before,#mend .go::after,#pause .ghost::before,#pause .ghost::after,#mend .ghost::before,#mend .ghost::after{content:'';position:absolute;z-index:-1;pointer-events:none}
+/* big board (panel): slice 120 @2x -> 60px, rim outset 20px */
+.pp,#pause .sheet,#mend .sheet,#psetwrap,#s9set .s9s-sec{border-width:0;border-image:url(assets/brand/ui/panel_rim.webp) 120 / 60px / 20px round}
+.pp::before,#pause .sheet::before,#mend .sheet::before,#psetwrap::before,#s9set .s9s-sec::before{inset:-20px;background:var(--face,var(--face-kraft));-webkit-mask-box-image:url(assets/brand/ui/panel_mask.png) 120 / 60px round}
+.pp::after,#pause .sheet::after,#mend .sheet::after,#psetwrap::after,#s9set .s9s-sec::after{inset:-20px;border:0 solid transparent;border-image:url(assets/brand/ui/panel_edge.webp) 120 / 60px round}
+/* small torn tag: slice 52 @2x -> 26px, rim outset 11px */
+.pt,#mxHud .sc,#mxHud .mid,#hud .corner.bl,#pAmmo,#pPlane,#pHint,#kcBan,#kcCard,#kcSkip,#killcam .kc-top,#deathBy,#kfeed .kf,#killbadge .kb-text,#pkeys,#mend #mendBoard,#mend #mendTitle,#pause .kicker,#pause .go,#mend .go,#pause .ghost,#mend .ghost{border-width:0;border-image:url(assets/brand/ui/tag_rim.webp) 52 / 26px / 11px round}
+.pt::before,#mxHud .sc::before,#mxHud .mid::before,#hud .corner.bl::before,#pAmmo::before,#pPlane::before,#pHint::before,#kcBan::before,#kcCard::before,#kcSkip::before,#killcam .kc-top::before,#deathBy::before,#kfeed .kf::before,#killbadge .kb-text::before,#pkeys::before,#mend #mendBoard::before,#mend #mendTitle::before,#pause .kicker::before,#pause .go::before,#mend .go::before,#pause .ghost::before,#mend .ghost::before{inset:-11px;background:var(--face,var(--face-cream));-webkit-mask-box-image:url(assets/brand/ui/tag_mask.png) 52 / 26px round}
+.pt::after,#mxHud .sc::after,#mxHud .mid::after,#hud .corner.bl::after,#pAmmo::after,#pPlane::after,#pHint::after,#kcBan::after,#kcCard::after,#kcSkip::after,#killcam .kc-top::after,#deathBy::after,#kfeed .kf::after,#killbadge .kb-text::after,#pkeys::after,#mend #mendBoard::after,#mend #mendTitle::after,#pause .kicker::after,#pause .go::after,#mend .go::after,#pause .ghost::after,#mend .ghost::after{inset:-11px;border:0 solid transparent;border-image:url(assets/brand/ui/tag_edge.webp) 52 / 26px round}
+.f-kraft{--face:var(--face-kraft)}.f-cream{--face:var(--face-cream)}.f-blue{--face:var(--face-blue)}.f-red{--face:var(--face-red)}
+.f-blue,.f-red{color:#fff}
+/* bullet-hole decals + masking tape (drawn by build_brand.py) */
+.bh{position:absolute;width:44px;height:44px;background:url(assets/brand/ui/hole1.webp) center/contain no-repeat;pointer-events:none;z-index:2}
+.bh.h2{background-image:url(assets/brand/ui/hole2.webp)}.bh.h3{background-image:url(assets/brand/ui/hole3.webp)}
+.tape{position:absolute;width:96px;height:26px;background:url(assets/brand/ui/tape.webp) center/100% 100% no-repeat;pointer-events:none;z-index:3}
+
+/* ---- boot / loading: two kraft sheets closed over the screen, the logo, a paper progress strip; the sheets tear open ---- */
+#pboot{position:fixed;inset:0;z-index:10000;overflow:hidden;background:#3a2716;font-family:var(--mono);color:var(--k-ink)}
+#pboot .s,#pwipe .s{position:absolute;top:-3%;bottom:-3%;width:56%;isolation:isolate;border-style:solid;border-color:transparent;border-width:0}
+#pboot .s::before,#pwipe .s::before,#pboot .s::after,#pwipe .s::after{content:'';position:absolute;inset:0;z-index:-1}
+#pboot .s.l,#pwipe .s.l{left:0;border-image:url(assets/brand/ui/sheet_rim.webp) 64 150 64 16 / 32px 75px 32px 8px round}
+#pboot .s.r,#pwipe .s.r{right:0;border-image:url(assets/brand/ui/sheetr_rim.webp) 64 16 64 150 / 32px 8px 32px 75px round}
+#pboot .s::before,#pwipe .s::before{background:var(--face-kraft)}
+#pboot .s.l::before,#pwipe .s.l::before{-webkit-mask-box-image:url(assets/brand/ui/sheet_mask.png) 64 150 64 16 / 32px 75px 32px 8px round}
+#pboot .s.r::before,#pwipe .s.r::before{-webkit-mask-box-image:url(assets/brand/ui/sheetr_mask.png) 64 16 64 150 / 32px 8px 32px 75px round}
+#pboot .s.l::after,#pwipe .s.l::after{border:0 solid transparent;border-image:url(assets/brand/ui/sheet_edge.webp) 64 150 64 16 / 32px 75px 32px 8px round}
+#pboot .s.r::after,#pwipe .s.r::after{border:0 solid transparent;border-image:url(assets/brand/ui/sheetr_edge.webp) 64 16 64 150 / 32px 8px 32px 75px round}
+#pboot .pb-c{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:14px;padding:16px;text-align:center}
+.pb-logo{width:min(760px,86vw,calc(46vh * 2.55));height:auto;transform:rotate(-2deg);animation:pbIn .7s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes pbIn{from{opacity:0;transform:rotate(-6deg) scale(.86)}}
+.pb-bar{position:relative;width:min(520px,78vw);height:22px;margin-top:8px;border-radius:3px;background:linear-gradient(rgba(43,24,8,.42),rgba(43,24,8,.24));box-shadow:inset 0 2px 3px rgba(0,0,0,.45),0 1px 0 rgba(255,236,200,.4)}
+.pb-bar i{position:absolute;inset:3px;background:var(--face-blue);transform-origin:left;transform:scaleX(0);transition:transform .25s ease-out;clip-path:polygon(0 0,100% 8%,99% 50%,100% 92%,0 100%)}
+.pb-plane{position:absolute;top:-17px;left:calc(var(--p,0) * (100% - 34px));width:38px;height:22px;transition:left .25s ease-out}
+#pboot #loading,#pbLoad{font:800 15px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--k-ink)}
+.pb-tip{max-width:min(560px,86vw);font:600 17px/1.35 var(--mono);color:var(--k-ink2);min-height:2.7em}
+#pboot.err .pb-bar{display:none}#pboot.err #loading{letter-spacing:.02em;text-transform:none;font-size:17px;max-width:80vw}
+#pboot.open .s.l{transform:translateX(-108%) rotate(-3deg);transition:transform .62s cubic-bezier(.7,0,.3,1)}
+#pboot.open .s.r{transform:translateX(108%) rotate(3deg);transition:transform .62s cubic-bezier(.7,0,.3,1)}
+#pboot.open .pb-c{opacity:0;transform:scale(1.06);transition:opacity .25s,transform .35s}
+#pboot.open{background:transparent;pointer-events:none;transition:background .2s}
+
+/* ---- paper wipe between screens (paper.js builds #pwipe; paperui.js adds the logo) ---- */
+#pwipe{position:fixed;inset:0;z-index:9999;pointer-events:none;overflow:hidden}
+#pwipe .s{filter:none!important;background:none!important;clip-path:none!important;transition:transform .42s cubic-bezier(.7,0,.25,1)!important}
+#pwipe .s.l{transform:translateX(-108%) rotate(-3deg)}#pwipe .s.r{transform:translateX(108%) rotate(3deg)}
+#pwipe.on .s.l,#pwipe.on .s.r{transform:none}
+#pwipe .c{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:8px;opacity:0;transform:scale(.88) rotate(-3deg);transition:opacity .18s,transform .35s cubic-bezier(.2,1.4,.4,1)}
+#pwipe.on .c{opacity:1;transform:none;transition-delay:.16s}
+#pwipe .c img{width:min(560px,70vw,calc(34vh * 2.55));height:auto;transform:rotate(-2deg)}
+#pwipe .t{position:static!important;transform:none!important;opacity:1!important;font-size:clamp(28px,4vw,46px)!important;white-space:nowrap}
+#pwipe .t:empty{display:none}
+@media (prefers-reduced-motion:reduce){#pwipe .s,#pboot .s,#pwipe .c{transition-duration:.01s!important}.pb-logo{animation:none}}
+
+/* ---- main menu ---- */
+#menu>.sheet{display:none!important}
+#menu{background:radial-gradient(120% 95% at 0% 50%,rgba(42,26,12,.62),rgba(42,26,12,.22) 46%,rgba(0,0,0,0) 70%)!important;padding:0!important;display:block!important}
+#menu[hidden]{display:none!important}
+#pmenu{position:absolute;inset:0;overflow:auto;font-family:var(--mono);color:var(--k-ink);display:grid;grid-template-columns:minmax(0,auto) 1fr;align-items:center;padding:clamp(10px,2.2vh,28px) clamp(14px,3vw,56px)}
+#pmenu .col{display:grid;justify-items:start;width:min(660px,calc(100vw - 28px));animation:pmIn .55s cubic-bezier(.2,1.2,.4,1) both}
+@keyframes pmIn{from{opacity:0;transform:translateY(26px) rotate(-1deg)}}
+#pmenu .logo{display:block;width:min(600px,100%,calc(28vh * 2.55));height:auto;margin:0 0 -16px 4px;position:relative;z-index:2;transform:rotate(-2.2deg);filter:drop-shadow(0 10px 10px rgba(30,15,4,.45))}
+#pmenu .board{width:100%;box-sizing:border-box;padding:clamp(22px,3vh,34px) clamp(18px,2.4vw,32px) clamp(18px,2.4vh,28px)}
+#pmenu .tagline{font:700 clamp(15px,1.7vh,18px)/1.25 var(--mono);margin:0 0 clamp(10px,1.5vh,16px);color:var(--k-ink)}
+#pmenu .lab{display:inline-block;font:800 13px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;padding:7px 14px 6px;margin:0 0 12px;transform:rotate(-1.2deg)}
+#pmenu .chars{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:clamp(12px,1.8vh,20px)}
+#pmenu .ch{cursor:pointer;border:0;font:inherit;color:var(--k-ink);text-align:center;padding:6px 6px 8px;display:grid;justify-items:center;align-content:start;gap:2px;transition:transform .16s cubic-bezier(.2,1.4,.4,1)}
+#pmenu .ch .pic{display:block;width:100%;height:clamp(78px,13vh,140px);object-fit:contain;object-position:50% 100%}
+#pmenu .ch svg.pic{fill:var(--k-blue);padding:10% 18%;box-sizing:border-box}
+#pmenu .ch b{display:block;font:400 clamp(19px,2.2vh,23px)/1 var(--display);font-style:italic;margin-top:3px}
+#pmenu .ch span{display:block;font:600 12.5px/1.25 var(--mono);opacity:.92;min-height:2.5em}
+#pmenu .ch:hover{transform:translateY(-3px) rotate(-1deg)}
+#pmenu .ch[aria-checked=true]{--face:var(--face-blue);color:#fff;transform:translateY(-5px) rotate(-1.5deg)}
+#pmenu .ch[aria-checked=true] svg.pic{fill:#fff}
+#pmenu .ch .tape{top:-13px;left:50%;margin-left:-40px;width:80px;transform:rotate(-4deg);display:none}#pmenu .ch[aria-checked=true] .tape{display:block}
+#pmenu .ch:focus-visible,#pmenu .chip:focus-visible,#pmenu .go:focus-visible,#pmenu .sm:focus-visible{outline:3px solid #fff7ea;outline-offset:4px}
+#pmenu .row2{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+#pmenu .row2 .lab{margin:0}
+#pmenu .chips{display:flex;gap:10px}
+#pmenu .chip{cursor:pointer;border:0;font:800 15px/1 var(--mono);letter-spacing:.04em;color:var(--k-ink);padding:9px 16px 8px;transition:transform .15s}
+#pmenu .chip:hover{transform:translateY(-2px)}
+#pmenu .chip[aria-checked=true]{--face:var(--face-red);color:#fff;transform:rotate(-2deg)}
+#pmenu .mode{font:600 14px/1.35 var(--mono);color:var(--k-ink2);margin:clamp(10px,1.4vh,14px) 0 0}
+#pmenu .play{margin-top:clamp(14px,2vh,22px);display:flex;gap:14px 16px;align-items:center;flex-wrap:wrap}
+#pmenu .go{cursor:pointer;border:0;font:inherit;--face:var(--face-blue);padding:8px 38px 12px 28px;display:grid;justify-items:start;gap:0;transition:transform .15s cubic-bezier(.2,1.4,.4,1);transform:rotate(-1.5deg)}
+#pmenu .go b{font-size:clamp(40px,5.2vh,56px);line-height:1;text-transform:uppercase}
+#pmenu .go small{font:800 13px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#e9eeff;margin:3px 0 0 4px}
+#pmenu .go .bh{right:-16px;top:-14px;width:48px;height:48px}
+#pmenu .go:hover{transform:translateY(-3px) rotate(-.5deg) scale(1.03)}#pmenu .go:active{transform:translateY(1px) rotate(-1.5deg) scale(.98)}
+#pmenu .sm{cursor:pointer;border:0;font:800 15px/1 var(--mono);letter-spacing:.06em;color:var(--k-ink);padding:10px 16px 9px;transition:transform .15s}
+#pmenu .sm:hover{transform:translateY(-2px) rotate(1deg)}#pmenu .sm[aria-expanded=true]{--face:var(--face-red);color:#fff}
+#pkeys{display:none;margin-top:20px;padding:14px 16px;font:600 14px/1.35 var(--mono);color:var(--k-ink);columns:2;column-gap:22px}#pkeys.on{display:block}
+#pkeys div{break-inside:avoid;margin:3px 0}#pkeys kbd{display:inline-block;font:800 12px/1 var(--mono);background:var(--k-ink);color:#fff7ea;padding:3px 7px 2px;border-radius:3px;margin-right:7px}
+#psetwrap{display:none;margin-top:24px;padding:16px 18px;--face:var(--face-cream)}#psetwrap.on{display:block}
+#pmenu .side{align-self:end;justify-self:end;display:grid;justify-items:end;gap:12px;animation:pmIn .55s .12s cubic-bezier(.2,1.2,.4,1) both}
+#pmenu .map{width:clamp(220px,18vw,320px);padding:10px 10px 12px;transform:rotate(2.2deg)}
+#pmenu .map img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;box-shadow:0 0 0 2px rgba(43,34,25,.25)}
+#pmenu .map b{display:block;font:400 22px/1 var(--display);font-style:italic;margin:9px 2px 3px}#pmenu .map span{display:block;font:700 13px/1.3 var(--mono);color:var(--k-ink2);margin:0 2px}
+#pmenu .map .tape{top:-12px;left:50%;margin-left:-48px;transform:rotate(-3deg)}
+@media (max-width:1100px){#pmenu{grid-template-columns:1fr}#pmenu .side{display:none}}
+@media (max-width:700px){#pmenu{padding:10px 12px 18px;align-items:start}#pmenu .col{width:100%}#pmenu .chars{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}#pmenu .ch .pic{height:96px}#pmenu .logo{margin-bottom:-8px}#pkeys{columns:1}}
+@media (max-height:780px) and (min-width:701px){#pmenu .ch span{display:none}#pmenu .tagline{display:none}}
+
+/* quick settings (menu + pause): kraft grid, blue paper sliders */
+.settings{border-top:0!important;padding-top:0!important;color:var(--k-ink);font-family:var(--mono);font-size:15px!important;max-width:none!important}
+.settings label{color:var(--k-ink)!important;font:800 13px/1 var(--mono)!important;letter-spacing:.14em}
+.settings output{color:var(--k-ink)!important;font:400 18px/1 var(--display)}
+.settings input[type=range]{-webkit-appearance:none;appearance:none;height:26px;background:transparent;accent-color:var(--k-blue)}
+.settings input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:2px;background:linear-gradient(rgba(43,34,25,.38),rgba(43,34,25,.22));box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+.settings input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:26px;margin-top:-9px;border:0;background:var(--face-blue);clip-path:polygon(10% 0,100% 6%,92% 100%,0 94%);cursor:pointer}
+.settings select{background:#fff8ea!important;color:var(--k-ink)!important;border:2px solid rgba(43,34,25,.4)!important;font:700 15px var(--mono)!important;padding:7px 8px!important;border-radius:3px}
+
+/* ---- pause ---- */
+#pause{background:rgba(36,22,10,.5)!important;place-items:center}
+#pause .sheet{justify-self:center!important;margin:0!important;width:min(560px,calc(100vw - 48px))!important;padding:30px 34px 28px!important;box-sizing:border-box;gap:16px!important;color:var(--k-ink)}
+#pause .kicker{display:inline-block;justify-self:start;color:#fff!important;--face:var(--face-red);font:800 13px/1 var(--mono)!important;letter-spacing:.2em!important;padding:7px 14px 6px;transform:rotate(-2deg)}
+#pause .kicker::after,#pause .go::after,#mend .go::after,#mend #mendTitle::after{display:none}
+#pause h2{font-size:clamp(44px,7vw,68px)!important;line-height:.95!important}
+#pause .row{gap:12px!important}
+#pause .go,#mend .go{--face:var(--face-blue);background:none!important;clip-path:none!important;color:#f3dcb3!important;font:400 30px/1 var(--display)!important;font-style:italic!important;letter-spacing:.02em!important;text-transform:uppercase;padding:10px 30px 13px!important;text-shadow:1px 1px 0 #c9a06a,2px 2px 0 #8d6233,3px 4px 0 rgba(20,10,2,.4)!important;transition:transform .15s;transform:rotate(-1.2deg);filter:none!important}
+#pause .go:hover,#mend .go:hover{transform:translateY(-2px) scale(1.03)}
+#pause .ghost,#mend .ghost{background:none!important;color:var(--k-ink)!important;font:800 15px/1 var(--mono)!important;letter-spacing:.06em!important;text-transform:none!important;padding:11px 18px 10px!important}
+#pause .go:focus-visible,#mend .go:focus-visible,#pause .ghost:focus-visible,#mend .ghost:focus-visible{outline:3px solid var(--k-blue)!important;outline-offset:5px}
+#btnArsenal2,#btnArsenal{display:none!important}
+
+/* ---- settings panel (settings.js #s9set): a kraft desk, cream torn sections, blue tabs ---- */
+#s9set{--ink:#2b2219;--dim:#54412d;--line:rgba(43,34,25,.22);--sodium:#2c4fb8;--cyan:#2c4fb8;--alert:#c8372a;background:var(--face-kraft)!important;color:var(--k-ink)!important}
+#s9set .s9s-head .kicker{font-size:0!important;width:200px;height:78px;background:url(assets/brand/foldiers_logo_512.webp) left center/contain no-repeat;transform:rotate(-2deg)}
+#s9set .s9s-head h2{font-family:var(--display)!important;font-style:italic;font-weight:400!important;color:#f3dcb3;text-shadow:1px 1px 0 #c9a06a,2px 2px 0 #ad8048,3px 3px 0 #8d6233,4px 5px 0 rgba(43,24,8,.4)}
+#s9set .s9s-tabs{border-bottom:0!important;gap:6px!important;padding-bottom:6px!important}
+#s9set .s9s-tab{font-family:var(--display)!important;font-style:italic;font-weight:400!important;color:var(--k-ink)!important;background:rgba(244,233,210,.6)!important;border:0!important;clip-path:polygon(0 4%,100% 0,97% 100%,3% 96%);padding:10px 16px 8px!important}
+#s9set .s9s-tab[aria-selected=true]{background:var(--face-blue)!important;color:#fff!important}
+#s9set .s9s-sec{border:0 solid transparent!important;--face:var(--face-cream);margin:22px 22px 10px}
+#s9set .s9s-sec>h3{color:var(--k-red)!important;font:800 13px/1 var(--mono)!important;letter-spacing:.2em;border-bottom:1px dashed rgba(43,34,25,.3)!important}
+#s9set .s9s-row{border-top:1px dashed rgba(43,34,25,.16)!important}#s9set .s9s-row:hover{background:rgba(255,255,255,.18)!important}
+#s9set .s9s-lab b{font-size:15px!important;font-weight:800!important}#s9set .s9s-lab>span{font-size:13px!important}
+#s9set .s9s-btn{background:#fff8ea!important;color:var(--k-ink)!important;border:2px solid rgba(43,34,25,.35)!important;font:800 13px/1 var(--mono)!important}
+#s9set .s9s-btn.pri{background:var(--face-blue)!important;color:#fff!important;border-color:var(--k-blue-d)!important}
+#s9set .s9s-seg button[aria-checked=true]{color:#fff!important}
+#s9set .s9s-num,#s9set .s9s-code{background:#fff8ea!important;color:var(--k-ink)!important}
+#s9set .s9s-foot{background:rgba(43,30,18,.18)!important;border-top:0!important}
+#s9set .s9s-status{color:var(--k-ink)!important}
+
+/* ---- HUD: torn team-paper tags, cardboard text, no filters (the view behind is 3D) ---- */
+#hud{text-shadow:none}
+#hud #compass,#hud .corner.tl,#hud .corner.tr>.label,#hud #hScore,#hud #matchbar,#hud #abil,#hud #pips,#hud #hWeapon,#hud .corner.bl>.label,#hud #hpsegs,#hud #combo,#hud #combobar{display:none!important}
+#mxHud{top:calc(16px + env(safe-area-inset-top,0px))!important;gap:6px!important;align-items:center!important}
+#mxHud .sc{font:400 34px/1 var(--display)!important;font-style:italic!important;min-width:64px;padding:5px 20px 8px!important;color:#fff!important;text-shadow:0 2px 0 rgba(0,0,0,.28)!important;background:none!important;border-radius:0!important;box-shadow:none!important;clip-path:none!important}
+#mxHud .sc.atk{--face:var(--face-blue);transform:rotate(-2deg)}#mxHud .sc.def{--face:var(--face-red);transform:rotate(2deg)}
+#mxHud .mid{--face:var(--face-cream);margin:0 4px!important;padding:5px 14px 6px;min-width:84px;gap:2px!important}
+#mxHud .mid .clk{font:400 24px/1 var(--display)!important;color:var(--k-ink)!important;text-shadow:none!important}
+#mxHud .mid .rd{font:800 11px/1 var(--mono)!important;letter-spacing:.14em!important;color:var(--k-ink2)!important;text-shadow:none!important;opacity:1!important;white-space:nowrap}
+#mxHud .alive i{border-radius:1px!important;box-shadow:0 1px 0 rgba(0,0,0,.35)}
+#xh i{background:#fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.35)!important}#xh .c{display:none}
+#hud .corner.bl{left:calc(28px + env(safe-area-inset-left,0px));bottom:calc(26px + env(safe-area-inset-bottom,0px));--face:var(--face-blue);padding:6px 16px 12px 14px;display:grid;gap:6px;transform:rotate(-1deg)}
+#hud #hHp{font:400 44px/1 var(--display)!important;font-style:italic;color:#fff!important;text-shadow:0 2px 0 rgba(10,20,60,.45)!important;display:flex;align-items:center;gap:10px}
+#hud #hHp::before{content:'';width:24px;height:24px;flex:none;background:linear-gradient(#fff,#fff) center/32% 100% no-repeat,linear-gradient(#fff,#fff) center/100% 32% no-repeat}
+#pHpBar{margin:0!important;width:min(230px,40vw)!important;height:10px!important;background:rgba(10,18,50,.45)!important;box-shadow:inset 0 1px 2px rgba(0,0,0,.45);clip-path:polygon(0 0,100% 0,98% 100%,0 100%)}
+#pHpBar i{display:block;height:100%;background:#fff3dc!important;transform-origin:left;transition:transform .15s}
+#pHpBar.low i{background:#ffb3a6!important}
+#hud .corner.bl:has(#pHpBar.low){--face:var(--face-red)}
+#hud .corner.br{right:calc(28px + env(safe-area-inset-right,0px));bottom:calc(26px + env(safe-area-inset-bottom,0px));display:flex!important;align-items:center;gap:0}
+#pAmmo{--face:var(--face-blue);display:flex;align-items:center;gap:12px;padding:6px 18px 8px 14px;transform:rotate(1deg)}
+#pGun{display:flex;align-items:center;height:36px;padding-right:12px;border-right:2px dashed rgba(255,255,255,.55)!important;color:#fff;filter:none!important}#pGun svg{height:24px;width:auto}#pGun img{height:34px;width:auto}
+#hud #hAmmo{font:400 42px/1 var(--display)!important;font-style:italic;color:#fff!important;text-shadow:0 2px 0 rgba(10,20,60,.45)!important}#hud #hAmmo small{font-size:22px;opacity:.9;margin-left:3px;color:#fff}
+#pPlane{position:absolute!important;right:calc(32px + env(safe-area-inset-right,0px))!important;bottom:calc(100px + env(safe-area-inset-bottom,0px))!important;--face:var(--face-cream);display:flex;align-items:center;gap:8px;padding:4px 12px 5px;font:800 15px/1 var(--mono)!important;color:var(--k-ink)!important;text-shadow:none!important;transform:rotate(-1.5deg)}
+#pPlane kbd{font:800 12px/1 var(--mono)!important;background:var(--k-ink)!important;color:#fff7ea!important;padding:3px 6px 2px!important;border-radius:3px}#pPlane svg{width:34px;height:20px}#pPlane svg path:first-child{fill:var(--k-red)}#pPlane.empty{opacity:.5}
+#pTip{font:800 20px/1.2 var(--mono)!important;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.55),0 0 6px rgba(0,0,0,.35)!important}#pTip kbd{font:inherit;background:#fff7ea;color:var(--k-ink);padding:1px 9px;border-radius:4px;margin:0 6px}
+#pHint{--face:var(--face-cream);clip-path:none!important;background:none!important;filter:none!important;max-width:min(560px,86vw)!important;padding:14px 22px 12px!important;font:700 18px/1.35 var(--mono)!important;color:var(--k-ink)!important}
+#pHint b{color:var(--k-blue)}
+#pSlice{font:800 14px var(--mono)!important}
+#kfeed{gap:7px!important}
+#kfeed .kf{--face:var(--face-cream);background:none!important;box-shadow:none!important;border-left:0!important;color:var(--k-ink)!important;font:700 14px/1.2 var(--mono)!important;padding:4px 12px 4px!important;border-radius:0!important;margin-right:8px}
+#kfeed .kf.k{--face:var(--face-blue);color:#fff!important}#kfeed .kf.d{--face:var(--face-red);color:#fff!important}
+#kfeed .kn{font-weight:800}#kfeed .ki{color:currentColor!important}
+#callout{font-family:var(--display)!important;font-style:italic;color:#fff!important;text-shadow:0 3px 0 rgba(0,0,0,.35)!important;letter-spacing:.03em!important}
+#killbadge .kb-emblem,#killbadge .kb-ring,#killbadge .kb-shine{display:none!important}
+#killbadge .kb-text{--face:var(--face-cream);padding:8px 22px 7px!important;clip-path:none!important;filter:none!important;background:none!important;text-align:center}
+#killbadge .kb-text b{font-family:var(--display)!important;font-style:italic;font-weight:400!important;color:var(--k-blue)!important;text-shadow:none!important;letter-spacing:.03em!important}#killbadge.kb-gold .kb-text b{color:var(--k-red)!important}
+#killbadge .kb-text span{color:var(--k-ink)!important;font-family:var(--mono)!important;font-weight:800}#killbadge .kb-text em{color:var(--k-ink)!important;font-family:var(--display)!important}
+#medals .medal svg{display:none!important}#medals .medal span{font:400 16px var(--display)!important;font-style:italic;color:var(--k-red)!important;border:3px solid var(--k-red);padding:3px 10px;border-radius:4px;transform:rotate(-6deg);background:rgba(244,233,210,.94);text-shadow:none!important;letter-spacing:.04em!important}
+#tags *{font-family:var(--mono)!important;font-weight:800!important}
+#fps{font-family:var(--mono)!important}#board{font-family:var(--mono)!important;background:rgba(43,30,18,.9)!important;border:0!important}#board *{font-family:inherit}
+#banner .label{font:800 14px var(--mono)!important;letter-spacing:.2em;color:#fff!important;text-shadow:0 2px 0 rgba(0,0,0,.45)}
+#mapload{background:var(--face-kraft)!important}#mapload span{font-family:var(--mono)!important;font-weight:800;color:var(--k-ink)!important}
+#reloadbar{background:rgba(0,0,0,.35)!important}#reloadbar i{background:#fff7ea!important}
+
+/* ---- death + killcam ---- */
+#death{background:radial-gradient(ellipse at center,rgba(60,30,8,0) 40%,rgba(50,24,6,.5))!important}
+#death .huge{font-size:clamp(56px,9vw,112px)!important;transform:rotate(-3deg)}
+#deathBy{--face:var(--face-cream);color:var(--k-ink);font:700 17px/1.3 var(--mono)!important;letter-spacing:.02em!important;padding:8px 18px 7px;max-width:min(640px,90vw);text-align:center}
+#deathT{font:800 13px/1 var(--mono)!important;letter-spacing:.24em!important;color:#fff!important;text-shadow:0 2px 0 rgba(0,0,0,.55)}
+#killcam{box-shadow:inset 0 0 0 5px rgba(200,55,42,.75)!important}
+#killcam .kc-top{--face:var(--face-red);background:none!important;padding:7px 16px 6px!important;gap:10px!important;transform:translateX(-50%) rotate(-1.5deg)!important}
+#killcam .kc-top i{background:#fff7ea!important}#killcam .kc-top b{font-family:var(--display)!important;font-style:italic;font-weight:400!important;color:#fff!important;letter-spacing:.06em!important}
+#killcam .kc-top span{color:#fff!important;font-weight:800}#killcam .kc-top em{color:#ffe6c9!important}
+body #kcBan,body #kcCard{--face:var(--face-cream);--kcc:var(--k-red);background:none!important;border-top:0!important;border-right:0!important;border-bottom:0!important;border-left:0!important;box-shadow:none!important;font-family:var(--mono)!important}
+body #kcBan small,body #kcCard small{color:var(--k-ink2)!important;font-weight:800}
+body #kcBan b,body #kcCard b{font-family:var(--display)!important;font-style:italic;font-weight:400!important;color:var(--k-red)!important}
+body #kcBan .kw,body #kcBan .kh,body #kcBan .kd,body #kcCard>div+div{border-left:1px dashed rgba(43,34,25,.3)!important;color:var(--k-ink)!important}
+body #kcBan .kh span,body #kcBan .kd span,body #kcCard span.hp,body #kcCard .kw,body #kcBan .kw span{color:var(--k-ink)!important}
+body #kcBan .kh i{background:rgba(43,34,25,.2)!important}body #kcBan .kh s{background:var(--k-blue)!important}
+body #kcBan em,body #kcCard em{background:var(--k-red)!important;color:#fff!important}
+body #kcSkip{--face:var(--face-cream);background:none!important;border:0 solid transparent!important;color:var(--k-ink)!important;font:800 13px/1 var(--mono)!important}body #kcSkip kbd{color:var(--k-red)!important}
+body #kcDown{background:var(--k-red)!important;color:#fff!important;font-family:var(--mono)!important;font-weight:800}
+
+/* ---- end screen: one kraft card, the logo on top, the result on a torn team banner ---- */
+#mend{display:flex!important;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at center,rgba(42,26,12,.45),rgba(30,18,8,.72))!important;z-index:60}#mend[hidden]{display:none!important}
+#mend .sheet{position:relative!important;inset:auto!important;transform:none!important;margin:0!important;width:min(760px,calc(100vw - 40px))!important;max-height:calc(100vh - 44px);overflow:auto;padding:22px clamp(16px,3vw,34px) 22px!important;box-sizing:border-box;text-align:center;justify-items:center;gap:10px!important;color:var(--k-ink);scrollbar-width:thin}
+#mend .mend-logo{display:block;width:min(300px,62%);height:auto;margin:0 auto -2px;transform:rotate(-2deg)}
+#mend #mendKicker{font:800 14px/1.2 var(--mono)!important;letter-spacing:.14em;text-transform:uppercase;color:var(--k-ink2)!important;margin:0;opacity:1!important}
+#mend #mendTitle{display:inline-block;--face:var(--face-blue);font-size:clamp(52px,8vw,84px)!important;line-height:1!important;margin:4px 0 8px!important;padding:6px 40px 14px;transform:rotate(-2deg)}
+#mend.lose #mendTitle{--face:var(--face-red)}#mend.draw #mendTitle{--face:linear-gradient(100deg,#2c4fb8 0 50%,#c8372a 50%)}
+#mend #mendBoard{--face:var(--face-cream);width:100%;box-sizing:border-box;text-align:left;margin:4px 0 6px;padding:10px 14px;max-width:100%;overflow-x:auto}
+#mend #mendBoard *{font-family:var(--mono)!important;color:var(--k-ink)!important;text-shadow:none!important;background:transparent!important}
+#mend #mendBoard table{width:100%;border-collapse:collapse;font-size:15px}#mend #mendBoard td,#mend #mendBoard th{padding:4px 7px;white-space:nowrap;border-bottom:1px dashed rgba(43,34,25,.22)!important;border-top:0!important}
+#mend #mendBoard th{font-weight:800!important;letter-spacing:.12em;font-size:12px}
+#mend #mendStats{font:700 15px/1.3 var(--mono)!important;margin:0 0 6px;color:var(--k-ink)!important}
+#mend .row{display:flex!important;flex-wrap:wrap;gap:12px 16px;justify-content:center;align-items:center}#mend .row .go,#mend .row .ghost{min-width:150px}#mend #mendT{flex-basis:100%;font:700 13px var(--mono)!important;color:var(--k-ink2)!important;opacity:1!important}
+body:has(#mend:not([hidden])) #rfx,body:has(#mend:not([hidden])) #hud{visibility:hidden!important}
+@media (max-width:520px){#mend .sheet{padding:18px 12px!important}#mend #mendBoard table{font-size:12.5px}#mend #mendTitle{padding:6px 24px 10px}}
+@media (max-height:800px){#mend .mend-logo{width:min(220px,50%)}#mend #mendTitle{font-size:clamp(44px,7vh,64px)!important}}
 </style>
 
 <div id="game"></div>
@@ -334,7 +602,7 @@ tr.me td{color:#ffd27a;background:rgba(255,154,60,.08)} td:nth-child(n+3),th:nth
   <div id="callout"></div>
   <div id="banner"><div class="huge" id="bannerT">WAVE 01</div><div class="label" id="bannerS">Hostiles inbound</div></div>
   <div id="killcam" hidden><div class="kc-top"><i></i><b>KILLCAM</b><span id="kcName"></span><em id="kcTime"></em></div><div id="kcCross"><i class="u"></i><i class="d"></i><i class="l"></i><i class="r"></i><i class="c"></i></div></div>
-  <div id="death" hidden><div class="huge">Eliminated</div><div id="deathBy"></div><div id="deathT">Respawning in 3</div></div>
+  <div id="death" hidden><div class="huge">Folded!</div><div id="deathBy"></div><div id="deathT">Respawning in 3</div></div>
   <div id="board" hidden></div>
 </div>
 
@@ -422,6 +690,7 @@ tr.me td{color:#ffd27a;background:rgba(255,154,60,.08)} td:nth-child(n+3),th:nth
 
 <div class="overlay" id="mend" hidden>
   <div class="sheet">
+    <img class="mend-logo" src="assets/brand/foldiers_logo_512.webp" width="512" height="200" alt="Foldiers">
     <div class="kicker" id="mendKicker">Match over</div>
     <h2 id="mendTitle">Victory</h2>
     <div id="mendBoard"></div>
@@ -445,7 +714,34 @@ tr.me td{color:#ffd27a;background:rgba(255,154,60,.08)} td:nth-child(n+3),th:nth
 </div>
 
 <div id="mapload" hidden><div><span class="label">Loading map</span><b></b><span></span></div></div>
-<div id="loading">Loading 0%</div>
+<div id="pboot" role="status" aria-label="Loading Foldiers">
+  <div class="s l"></div><div class="s r"></div>
+  <div class="pb-c">
+    <img class="pb-logo" src="assets/brand/foldiers_logo_1024.webp" width="1024" height="400" alt="Foldiers">
+    <div class="pb-bar"><i id="pbFill"></i><img class="pb-plane" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 22'%3E%3Cpath d='M1 11 L39 1 L22 21 L18 13Z' fill='%23fff7ea'/%3E%3Cpath d='M18 13 L39 1' stroke='%23c8372a' stroke-width='1.6'/%3E%3C/svg%3E" alt=""></div>
+    <div id="loading">Loading 0%</div>
+    <div class="pb-tip" id="pbTip">Shoot thin cardboard to tear holes you can see and shoot through.</div>
+  </div>
+</div>
+<script>/* Foldiers boot screen: the core writes "Loading N%" into #loading and removes it when the engine is ready; the paper
+   soldiers + guns load after that (paper:ready). Bar: engine 0-80 %, paper assets 80-100 %, then the two kraft sheets tear open. */
+(function () {
+  var B = document.getElementById('pboot'), F = document.getElementById('pbFill'), L = document.getElementById('loading'), T = document.getElementById('pbTip');
+  var TIPS = ['Shoot thin cardboard to tear holes you can see and shoot through.', 'Press G for a paper plane, steer it with the mouse.', 'An enemy plane coming at you? Press F to catch it and send it back.', 'Shoot along a dashed crease to rip a flap open.', 'Knife in hand: hold left click near thin card to cut a peek hole.'];
+  var ti = 0, pct = 0, eng = false, paper = false, done = false, creep = null;
+  function set(p) { pct = Math.max(pct, Math.min(100, p)); F.style.transform = 'scaleX(' + (pct / 100) + ')'; B.style.setProperty('--p', pct / 100); }
+  var tipT = setInterval(function () { if (done) return clearInterval(tipT); ti = (ti + 1) % TIPS.length; T.textContent = TIPS[ti]; }, 3200);
+  function finish() { if (done) return; done = true; clearInterval(creep); set(100); setTimeout(function () { B.classList.add('open'); setTimeout(function () { B.remove(); }, 900); }, 180); }
+  function check() { if (eng && (paper || !window.PAPER_UI && window.__pbMods)) finish(); }
+  new MutationObserver(function () {
+    if (eng) return;
+    if (!document.getElementById('loading')) { eng = true; var lt = document.createElement('div'); lt.id = 'pbLoad'; lt.textContent = 'Folding the soldiers...'; B.querySelector('.pb-c').insertBefore(lt, T);
+      creep = setInterval(function () { set(pct + (96 - pct) * .06); }, 120); setTimeout(finish, 30000); check(); return; }
+    var m = /(\d+)%/.exec(L.textContent); if (m) set(+m[1] * .8); else if (/could not/i.test(L.textContent)) B.classList.add('err');
+  }).observe(B, { subtree: true, childList: true, characterData: true });
+  addEventListener('paper:ready', function () { paper = true; check(); });
+  addEventListener('s9modules', function () { window.__pbMods = true; check(); });
+})();</script>
 
 <script>/* Automated test browsers (navigator.webdriver): fake pointer lock so headless QA never grabs the real OS mouse. */
 if (navigator.webdriver) { let plEl = null; const plFire = () => setTimeout(() => document.dispatchEvent(new Event('pointerlockchange')), 0); Object.defineProperty(Document.prototype, 'pointerLockElement', { get: () => plEl, configurable: true }); Element.prototype.requestPointerLock = function () { plEl = this; plFire(); return Promise.resolve(); }; Document.prototype.exitPointerLock = function () { plEl = null; plFire(); }; }</script>
@@ -457,6 +753,8 @@ if (navigator.webdriver) { let plEl = null; const plFire = () => setTimeout(() =
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="modules/papermat_ktx2.js"></script>
+<script src="modules/papermat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/utils/SkeletonUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/utils/BufferGeometryUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -1150,9 +1448,240 @@ const PAPER = (() => {
 function PAPER_EDGE_HOOK(sh) {
   sh.fragmentShader = sh.fragmentShader.replace('#include <output_fragment>', `
     { vec3 vdir = normalize(vViewPosition); float rim = pow(1.0 - abs(dot(normalize(normal), -vdir)), 3.0);
-      outgoingLight += diffuseColor.rgb * rim * 0.22 * vec3(1.0, .93, .8); }
+      outgoingLight += diffuseColor.rgb * rim * 0.07 * vec3(1.0, .93, .8); }   // (ART 2026-11-11: 0.22 washed out every grazing face)
     #include <output_fragment>`);
 }
+
+/* ================= ART pass (ART DIRECTOR, docs/ART_GAP.md): the whole frame vs the references ================= */
+// Numbers that make the frame match ref1-3 (warm low sun, warm bounce, deep blue sky, muted sage cutting mat, the REAL cardboard library
+// on the map, faceted paper shading on soldiers / hands / guns). Everything here is uniform-level or load-time: no extra passes, no
+// draw calls (post effects live in modules/paperpost.js). Unity: the same numbers go in data form (sun, hemisphere, sky gradient, LUT).
+const ART_LOOK = {
+  sun: 1.8, sunHex: 0xffd6a6,                       // ref: lit kraft (233,182,122) vs shade (172,126,74): ~2:1 linear, warm
+  hemiSky: 0x9cc0f2, hemiGround: 0xa07a56, hemi: .50, lmK: 1.30,   // shade sides of kraft in the refs are (172,126,74): bright warm bounce, never muddy   // bounce off the desk is warm kraft; the lightmap carries sky + AO
+  bakeFull: true,                                   // static world = the Cycles bake only (lm_full), see artLoadFullLM
+  exposure: .72, envMap: .22, paperTint: 0xd6cbb9,   // the cream library paper is near white; the refs' cream buildings are a light tan
+  sky: { zen: [.06, .26, .82], mid: [.20, .44, .90], hor: [.48, .66, .92], low: [.34, .37, .33], cloudAmt: .85, cloud: [1, .99, .97], sunGlow: .3 },
+  mat: { desat: .70, target: [122, 150, 136] },   // mean albedo the cutting mat lands on (the refs' lit floor (143,146,127) / (115,152,146))
+  fog: { col: [.80, .81, .85], density: .0056 },   // the refs' far town is softened by a light warm-grey haze   // cutting mat: (50,144,125) teal -> (118,142,128) muted sage like the refs
+  gun: { key: 0xffd6a6, keyI: 1.55, hemiSky: 0x9cc0f2, hemiGround: 0x9a7452, hemiI: .5, rimHex: 0xa8c4ff, rimI: .35, fillI: .18 },
+  char: { ground: [.58, .42, .29], sky: [.40, .52, .76], hemiK: .95, rim: .14, facet: .12, crease: .3 },   // turnaround ref: soft even studio light on laminated blue card
+};
+const ART_U = { ground: { value: new THREE.Color(...ART_LOOK.char.ground) }, sky: { value: new THREE.Color(...ART_LOOK.char.sky) }, k: { value: new THREE.Vector4(ART_LOOK.char.hemiK, ART_LOOK.char.rim, ART_LOOK.char.facet, ART_LOOK.char.crease) }, sun: { value: new THREE.Vector3(-.377, .454, .808) } };
+// quality tier at boot: CFG.q when the player chose one, else what graphics.js will pick (RTX / RX = High), so textures load once at the right size
+function artTier() {
+  let saved = null; try { saved = JSON.parse(localStorage.getItem('sector9-gfx') || 'null'); } catch (e) {}
+  if (saved && saved.user && saved.tier) return /ultra|high/.test(saved.tier) ? 'high' : saved.tier;
+  let gpu = ''; try { const gl = renderer.getContext(), x = gl.getExtension('WEBGL_debug_renderer_info'); gpu = String(x ? gl.getParameter(x.UNMASKED_RENDERER_WEBGL) : ''); } catch (e) {}
+  if (/swiftshader|llvmpipe|software/i.test(gpu)) return 'performance';
+  if (/intel|uhd|iris|hd graphics|mali|adreno/i.test(gpu) && !/arc/i.test(gpu)) return 'performance';
+  if (/rtx|radeon rx [67]\d{3}|apple m[2-9]/i.test(gpu)) return 'high';
+  return /high|balanced|performance/.test(CFG.q) ? CFG.q : 'balanced';
+}
+// the material library loads with the page (modules/papermat.js): KTX2 when its loader is on the page (4x less VRAM), JPG otherwise
+const ART = { tier: artTier(), lib: null, ready: false, mats: {}, glbMats: new Set(), log: [] };
+if (window.PaperMat) ART.lib = PaperMat.load({ tier: ART.tier, renderer, ktx2: !!THREE.KTX2Loader }).then(() => { ART.ready = true; }).catch(e => console.warn('[art] PaperMat', e));
+// --- the map: swap the GLB's generated materials for the library, re-light, re-colour the cutting mat, re-bake the sky
+if (typeof desktownFromData === 'function') {
+  const _dfd = desktownFromData;
+  desktownFromData = function (PM) {
+    try { artTearBases(); } catch (e) { console.warn('[art] tear bases', e); }
+    const r = _dfd.apply(this, arguments);
+    try { artMapPass(); } catch (e) { console.warn('[art] map pass', e); }
+    return r;
+  };
+}
+function artLibMat(kind, o) {
+  const DD = DESKTOWN_DATA, lm = DD && DD.lm;
+  return PaperMat.makeMaterial(kind, Object.assign({ vertexColors: true, envMapIntensity: ART_LOOK.envMap }, lm ? { lightMap: lm, lmSqrt: true, lmScale: DD.lmScale * DESKTOWN_LOOK.lmK * ART_LOOK.lmK, lmOnly: ART_LOOK.bakeFull } : {}, o));
+}
+// FULL BAKE (owner 2026-11-12: "the graphics are not matching my reference at all"; coordinator: Blender render == in-game frame):
+// the static world is lit ONLY by the MAP's complete Cycles bake (lm_full: sun direct + soft shadows + sky + bounce + AO); the
+// real-time sun and hemisphere light only what moves (soldiers, guns, drops, tear flaps). lm_full replaces lm.png as soon as it is
+// decoded (a texture swap, no shader change); the print / cutting-mat materials of the GLB get the same rule through a chained hook.
+const ART_LM = { tex: null, scale: 0, applied: false };
+function artLoadFullLM() {
+  if (!ART_LOOK.bakeFull || ART_LM.tex) return; const hi = ART.tier === 'high', v = '?v=' + Date.now();
+  const metaP = fetch('render/paper/map/bake_meta.json' + v).then(r => r.ok ? r.json() : null).catch(() => null);
+  new THREE.TextureLoader().load('assets/paper/map/' + (hi ? 'lm_full.png' : 'lm_full_2k.png') + v, async t => {
+    const meta = await metaP; t.flipY = false; t.encoding = THREE.LinearEncoding; t.generateMipmaps = true; t.anisotropy = 4; t.minFilter = THREE.LinearMipmapLinearFilter;
+    ART_LM.tex = t; ART_LM.scale = (meta && meta.lm_full && meta.lm_full.scale) || 2.5;
+    artApplyFullLM();
+  }, undefined, () => console.warn('[art] lm_full.png missing: the live sun stays'));
+}
+function artApplyFullLM() {
+  const DD = DESKTOWN_DATA, t = ART_LM.tex; if (!DD || !t) return; const k = ART_LM.scale * DESKTOWN_LOOK.lmK * ART_LOOK.lmK;
+  for (const n in ART.mats) { const m = ART.mats[n]; m.lightMap = t; PaperMat.tune(m, { lmScale: k }); }
+  for (const m of ART.glbMats) { m.lightMap = t; m.lightMapIntensity = k; }
+  const old = DD.lm; DD.lm = t; DD.lmScale = ART_LM.scale; ART_LM.applied = true;
+  if (old && old !== t) setTimeout(() => { try { old.dispose(); } catch (e) {} }, 500);   // (the sky-only map is not needed any more: 89 MB back)
+}
+// the GLB's own print / cutting-mat materials (26-desktown's deskLM hook): same full-bake rule, chained after their hook
+function artBakeOnlyHook(m) {
+  if (!ART_LOOK.bakeFull || m.userData.artBake || !m.lightMap) return; m.userData.artBake = 1;
+  const prev = m.onBeforeCompile, prevKey = m.customProgramCacheKey;
+  m.onBeforeCompile = sh => { if (prev && prev !== THREE.Material.prototype.onBeforeCompile) prev(sh); if (/artBakeOnly/.test(sh.fragmentShader)) return;
+    sh.fragmentShader = sh.fragmentShader.replace('irradiance += lightMapIrradiance;', 'irradiance = lightMapIrradiance; // artBakeOnly')
+      .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n reflectedLight.directDiffuse = vec3(0.0); reflectedLight.directSpecular = vec3(0.0);'); };
+  m.customProgramCacheKey = () => (prevKey ? prevKey.call(m) : '') + '|artBake1'; m.needsUpdate = true;
+}
+// tear panels clone the GLB's base materials (26-desktown glMat): give those bases a library twin first so holes/flaps match the walls
+function artTearBases() {
+  if (!window.PaperMat || !DESKTOWN_DATA) return;
+  DESKTOWN_DATA.gltf.scene.traverse(o => { if (!o.isMesh || !o.material || o.material.userData.tearBase) return; const n = o.material.name;
+    if (n === 'pm_kraft' || n === 'pm_paper') { const m = PaperMat.makeMaterial(n === 'pm_kraft' ? 'kraft' : 'paper', { tile: n === 'pm_kraft' ? .95 / 2 : .8 / 2, envMapIntensity: ART_LOOK.envMap, flat: n === 'pm_kraft' ? .55 : .55, macro: .05, normalScale: .55, color: n === 'pm_kraft' ? 0xffffff : ART_LOOK.paperTint }); m.userData.tile = 2; m.userData.paper = n === 'pm_kraft' ? 'kraft' : 'cream'; o.material.userData.tearBase = m; } });
+}
+function artMapPass() {
+  const DD = DESKTOWN_DATA; if (!DD) return; const root = DD.gltf.scene, L = ART_LOOK;
+  if (window.PaperMat) {
+    const swap = {};
+    root.traverse(o => {
+      if (!o.isMesh || !o.material) return; const n = o.material.name; let m = swap[n];   // (hidden T_ tear meshes too: they must not keep the GLB's 2K textures alive, ~85 MB)
+      if (!m) {
+        if (n === 'pm_kraft') m = artLibMat('kraft', { tile: .95 / 2, flat: .55, macro: .05, normalScale: .55 });   // GLB UV0 = metres / 2 m; 0.95 m tile = fine fibre, not sponge; flatten 0.55 kills the photo's 0.5 m blotches (coordinator review 2026-11-12)          // GLB UV0 = metres / 2 m (assets/paper/map/README.md)
+        else if (n === 'pm_paper') m = artLibMat('paper', { tile: .8 / 2, color: L.paperTint, flat: .55, macro: .05 });
+        else if (n === 'pm_edge') m = artLibMat('flute', {});                       // edge U = metres / 1.44 m = 8 flutes x 0.18 m board
+        else if (n === 'pm_mat') { artCuttingMat(o.material); artBakeOnlyHook(o.material); ART.glbMats.add(o.material); return; }
+        else if (n === 'pm_print') { artBakeOnlyHook(o.material); ART.glbMats.add(o.material); return; }   // (keeps its atlas)
+        else return;
+        swap[n] = m; ART.mats[n] = m;
+      }
+      o.material = m;
+    });
+  }
+  try { artLoadFullLM(); } catch (e) { console.warn('[art] lm_full', e); }
+  // light: warm low sun, warm desk bounce from below, blue sky from above (the lightmap already holds sky + AO + sun bounce)
+  if (typeof sun !== 'undefined' && sun) { sun.intensity = L.sun; sun.color.setHex(L.sunHex); ART_U.sun.value.copy(sun.position).normalize(); }
+  scene.traverse(l => { if (l.isHemisphereLight) { l.color.setHex(L.hemiSky); l.groundColor.setHex(L.hemiGround); l.intensity = L.hemi; } });
+  if (typeof grade !== 'undefined') grade.uniforms.uExposure.value = L.exposure;
+  try { const def = MAPS.find(m => m.id === 'desktown'); if (def) def.exposure = L.exposure; } catch (e) {}   // (modules/settings.js re-applies MAPS[].exposure x brightness on every map load)
+  if (scene.fog) { scene.fog.color.setRGB(...L.fog.col); scene.fog.density = L.fog.density; }
+  // sky: deeper blue, puffy paper clouds (re-baked once here: the cube map + environment)
+  try { const def = MAPS.find(m => m.id === 'desktown'); if (def && typeof bakeSky === 'function') { const sk = Object.assign({}, def.sky || DESKTOWN_LOOK, L.sky); bakeSky(artSkyMaterial(sk), def.accents); } } catch (e) { console.warn('[art] sky', e); }
+}
+// paper-cut sky for the re-bake: the same gradient / sun as skyMaterial2 (20-maps.js) but the clouds are flat white cut-outs with a
+// soft grey underside and a crisp edge (ref1-3), not wisps. Baked once into the sky cube + environment map: zero per-frame cost.
+function artSkyMaterial(k) {
+  const V = a => new THREE.Vector3(...a), C = a => new THREE.Color(...a);
+  return new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false,
+    uniforms: { uZen: { value: C(k.zen) }, uMid: { value: C(k.mid) }, uHor: { value: C(k.hor) }, uLow: { value: C(k.low) }, uSun: { value: V(k.sunDir || [-.5, .2, -.8]).normalize() }, uSunCol: { value: C(k.sunCol || [1, .9, .7]) },
+      uSunSize: { value: k.sunSize || 600 }, uSunGlow: { value: k.sunGlow ?? .5 }, uCloud: { value: C(k.cloud || [1, 1, 1]) }, uCloudAmt: { value: k.cloudAmt || 0 } },
+    vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position,1.0); gl_Position = p.xyww; }',
+    fragmentShader: `
+      uniform vec3 uZen, uMid, uHor, uLow, uSun, uSunCol, uCloud; uniform float uSunSize, uSunGlow, uCloudAmt; varying vec3 vDir;
+      float h21(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+      float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y); }
+      float fb(vec2 p){ float s=0., a=.5; for(int i=0;i<5;i++){ s+=a*vn(p); p*=2.03; a*=.5; } return s; }
+      // cumulus cut-outs: blobs (low frequency) with puffy bumps (mid frequency); 1 inside a cloud
+      float cloud(vec2 p){ float big = fb(p*.55 + 3.1), puff = fb(p*2.2 + 9.7); return big*.75 + puff*.35; }
+      void main(){
+        vec3 d = normalize(vDir); float h = d.y;
+        vec3 col = mix(uHor, uMid, smoothstep(0.,.25,h)); col = mix(col, uZen, smoothstep(.2,.8,h)); col = mix(col, uLow, smoothstep(0.,-.15,h));
+        float s = max(dot(d,uSun),0.);
+        col += uSunCol*pow(s,8.)*uSunGlow + uSunCol*pow(s,uSunSize)*30.;
+        if (uCloudAmt > 0. && h > -.02) {
+          vec2 cp = d.xz/(h+.22)*1.1; float c = cloud(cp);
+          float edge = smoothstep(.50,.53,c);                                  // crisp paper edge
+          float under = smoothstep(.50,.62,cloud(cp + vec2(0.,.06)));          // the cloud above this point: this is its underside
+          vec3 cc = mix(uCloud, uCloud*vec3(.80,.84,.92), under*.8);           // soft grey-blue underside, bright sunlit top
+          cc = mix(cc, uCloud*vec3(1.,.97,.9), pow(s,2.)*.25);                 // warm toward the sun
+          float fade = smoothstep(-.02,.12,h);                                // thin out at the horizon
+          col = mix(col, cc, edge*fade*uCloudAmt);
+        }
+        gl_FragColor = vec4(col,1.);
+      }`
+  });
+}
+// the cutting mat texture: the MAP's teal (50,144,125) -> the refs' muted sage (118,142,128); grid lines stay. 1024 px is plenty for a 10 m tile.
+function artCuttingMat(mat) {
+  const t = mat.map, im = t && t.image; if (!im || !im.width || t.userData.artMat) return; t.userData.artMat = 1;
+  const S = 1024, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0, S, S);
+  const id = g.getImageData(0, 0, S, S), d = id.data, { desat, target } = ART_LOOK.mat;
+  // target-based: whatever the MAP's mat colour is, its mean lands on the refs' sage (robust to map rebuilds); grid lines keep their contrast
+  let mr = 0, mg = 0, mb = 0; for (let i = 0; i < d.length; i += 64) { mr += d[i]; mg += d[i + 1]; mb += d[i + 2]; } const n = d.length / 64; mr /= n; mg /= n; mb /= n;
+  const ml = .3 * mr + .59 * mg + .11 * mb, dm = [ml + (mr - ml) * (1 - desat), ml + (mg - ml) * (1 - desat), ml + (mb - ml) * (1 - desat)];
+  const gain = [target[0] / Math.max(1, dm[0]), target[1] / Math.max(1, dm[1]), target[2] / Math.max(1, dm[2])], lift = [0, 0, 0];
+  for (let i = 0; i < d.length; i += 4) {
+    const r = d[i], gg = d[i + 1], b = d[i + 2], l = .3 * r + .59 * gg + .11 * b;
+    d[i] = Math.min(255, (l + (r - l) * (1 - desat)) * gain[0] + lift[0]); d[i + 1] = Math.min(255, (l + (gg - l) * (1 - desat)) * gain[1] + lift[1]); d[i + 2] = Math.min(255, (l + (b - l) * (1 - desat)) * gain[2] + lift[2]);
+  }
+  g.putImageData(id, 0, 0); t.image = c; t.needsUpdate = true; mat.roughness = .9; mat.envMapIntensity = ART_LOOK.envMap;
+}
+// --- characters: faceted paper shading on the body material (DESIGN.md "Character shading"): warm desk bounce from below, cool sky from
+// above, each fold plane its own brightness, a soft rim, crease-edge light. One shared program for every soldier (same hook + cache key).
+function ART_CHAR_HOOK(sh) {
+  sh.uniforms.artGround = ART_U.ground; sh.uniforms.artSky = ART_U.sky; sh.uniforms.artK = ART_U.k; sh.uniforms.artSun = ART_U.sun;
+  sh.uniforms.artObj = (this && this.userData && this.userData.artObj) || { value: new THREE.Vector4(1, 1, 1, 1) };   // x sun factor (0 in the world's shade), y bounce factor
+  sh.fragmentShader = sh.fragmentShader
+    .replace('#include <common>', '#include <common>\nuniform vec3 artGround, artSky, artSun; uniform vec4 artK, artObj;')
+    .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>
+    { vec3 nW = inverseTransformDirection(normal, viewMatrix);
+      float fh = fract(sin(dot(floor(nW * 4.0 + 0.5), vec3(12.9898, 78.233, 37.719))) * 43758.5453);   // one value per fold plane
+      float facet = 1.0 - artK.z * 0.5 + artK.z * fh;
+      vec3 hemi = mix(artGround, artSky, nW.y * 0.5 + 0.5) * artK.x * artObj.y;
+      reflectedLight.directDiffuse *= facet * artObj.x; reflectedLight.directSpecular *= artObj.x;   // in the baked world's shade the sun is off this object
+      // thin paper lets the sun through from behind (warm glow on the shade side of a sheet)
+      reflectedLight.indirectDiffuse += diffuseColor.rgb * pow(saturate(dot(-nW, artSun)), 2.0) * 0.18 * artObj.x * vec3(1.0, 0.9, 0.75);
+      reflectedLight.indirectDiffuse += diffuseColor.rgb * hemi * facet;
+      vec3 vdir = normalize(vViewPosition); float ndv = saturate(dot(normalize(normal), vdir));
+      float rim = pow(1.0 - ndv, 3.0) * artK.y;                                            // thin paper edge catching the sky / sun
+      vec3 rimCol = mix(artSky, vec3(1.0, 0.92, 0.78), saturate(dot(nW, artSun) * 0.5 + 0.5));
+      reflectedLight.indirectDiffuse += diffuseColor.rgb * rimCol * rim * 2.0 + rimCol * rim * artK.w * 0.3; }`);
+}
+function artCharShade(r) {
+  if (!r || !r.model) return;
+  r.artObj = r.artObj || { value: new THREE.Vector4(1, 1, 1, 1) }; r.artShade = r.artShade || { t: 0, k: 1 };
+  r.model.traverse(o => { if (!o.isMesh || !o.material) return; const m = o.material; if (m.userData.artChar || !m.isMeshStandardMaterial) return;
+    m.userData.artChar = 1; m.userData.artObj = r.artObj; m.onBeforeCompile = ART_CHAR_HOOK; m.customProgramCacheKey = () => 'artChar1'; m.envMapIntensity = .15; m.needsUpdate = true; });
+  // the contact blob under the feet: stretched away from the sun (soft paper shadow on the desk)
+  try { const s = ART_U.sun.value; for (const c of r.root.children) if (c.isMesh && c.geometry === HB.blob) { c.scale.set(1.45, 1.05, 1); c.rotation.z = Math.atan2(-s.z, -s.x); c.position.set(-s.x * .22, .03, -s.z * .22); c.material = c.material.userData.art ? c.material : Object.assign(c.material.clone(), { opacity: .5, color: new THREE.Color(.12, .08, .05), userData: { art: 1 } }); } } catch (e) {}
+}
+if (typeof buildBot === 'function') { const _bb = buildBot; buildBot = function () { const r = _bb.apply(this, arguments); try { artCharShade(r); } catch (e) { console.warn('[art] char', e); } return r; }; }
+// --- first-person gun / hands: the gun scene's key light follows the map sun (camera space) with the same warm colour; blue sky / warm desk hemisphere
+const ART_GUN = { done: false, shaded: 0, obj: { value: new THREE.Vector4(1, 1, 1, 1) }, key: null, rim: null, fill: null, hemi: null, q: new THREE.Quaternion(), v: new THREE.Vector3() };
+function artGunShade() {
+  if (typeof gunScene === 'undefined' || !window.PAPER_UI || !PAPER_UI.gunsLoaded || ART_GUN.shaded === PAPER_UI.gunsLoaded) return; ART_GUN.shaded = PAPER_UI.gunsLoaded;
+  let n = 0; gunScene.traverse(o => { if (!o.isMesh || !o.material) return; for (const m of [].concat(o.material)) { if (m.userData.artChar || !m.isMeshStandardMaterial) continue;
+    m.userData.artChar = 1; m.userData.artObj = ART_GUN.obj; m.onBeforeCompile = ART_CHAR_HOOK; m.customProgramCacheKey = () => 'artChar1'; m.envMapIntensity = .12; m.roughness = Math.max(m.roughness, .85); m.needsUpdate = true; n++; } });
+  if (n) try { renderer.compile(gunScene, gunCam); } catch (e) {}
+}
+function artGunLights() {
+  if (ART_GUN.done || typeof gunScene === 'undefined') return; ART_GUN.done = true; const G = ART_LOOK.gun;
+  for (const l of gunScene.children) {
+    if (l.isHemisphereLight) { ART_GUN.hemi = l; l.color.setHex(G.hemiSky); l.groundColor.setHex(G.hemiGround); l.intensity = G.hemiI; }
+    else if (l.isDirectionalLight) { if (l.intensity >= 1.4) { ART_GUN.key = l; l.color.setHex(G.key); l.intensity = G.keyI; } else if (l.intensity >= .8) { ART_GUN.rim = l; l.color.setHex(G.rimHex); l.intensity = G.rimI; } else { ART_GUN.fill = l; l.color.setHex(0xffe2c4); l.intensity = G.fillI; } }
+  }
+}
+// sun / shade for every soldier: a ray from the chest toward the sun against the map's collision boxes (350 slab tests, ~0.03 ms); the
+// factor eases over ~0.25 s so a soldier walking into a baked shadow darkens like the world around it, never pops
+const ART_RAY = { o: new THREE.Vector3(), d: new THREE.Vector3(), inv: new THREE.Vector3(), t: 0 };
+function artSunVisible(p) {
+  const o = ART_RAY.o.set(p.x, p.y + 1.1, p.z), d = ART_RAY.d.copy(ART_U.sun.value), inv = ART_RAY.inv.set(1 / d.x, 1 / d.y, 1 / d.z), far = 90;
+  const cols = (typeof world !== 'undefined' && world.colliders) || [];
+  for (let i = 0; i < cols.length; i++) { const b = cols[i]; if (b.walk && b.max.y - b.min.y < .35) continue;
+    const t1 = (b.min.x - o.x) * inv.x, t2 = (b.max.x - o.x) * inv.x, t3 = (b.min.y - o.y) * inv.y, t4 = (b.max.y - o.y) * inv.y, t5 = (b.min.z - o.z) * inv.z, t6 = (b.max.z - o.z) * inv.z;
+    const tmin = Math.max(Math.min(t1, t2), Math.min(t3, t4), Math.min(t5, t6)), tmax = Math.min(Math.max(t1, t2), Math.max(t3, t4), Math.max(t5, t6));
+    if (tmax >= Math.max(tmin, .3) && tmin < far) return false; }
+  return true;
+}
+function artShadeBots(dt) {
+  if (typeof robots === 'undefined' || !ART_LOOK.bakeFull) return;
+  ART_RAY.t += dt; const probe = ART_RAY.t > .16; if (probe) ART_RAY.t = 0;
+  for (const r of robots) { if (!r.artObj || !r.root) continue;
+    if (probe) r.artShade.k = artSunVisible(r.root.position) ? 1 : .12;
+    const v = r.artObj.value, k = v.x + (r.artShade.k - v.x) * Math.min(1, dt * 5); v.x = k; v.y = .85 + .15 * k; }
+}
+let ART_LAST = 0;
+function artFrame() {
+  if (!ART_GUN.done) artGunLights();
+  { const now = performance.now(), dt = Math.min(.1, (now - ART_LAST) / 1000 || 0); ART_LAST = now; try { artShadeBots(dt); } catch (e) {} }
+  try { artGunShade(); } catch (e) {}
+  // the player's own gun / hands follow the player's sun-or-shade like the soldiers do
+  if (typeof P !== 'undefined' && P.pos && ART_LOOK.bakeFull) { ART_RAY.t2 = (ART_RAY.t2 || 0) + 1; if (ART_RAY.t2 % 10 === 0) ART_GUN.want = artSunVisible(P.pos) ? 1 : .18; const v = ART_GUN.obj.value, w = ART_GUN.want == null ? 1 : ART_GUN.want; v.x += (w - v.x) * .08; v.y = .85 + .15 * v.x; }
+  const k = ART_GUN.key; if (k && typeof camera !== 'undefined') { ART_GUN.q.copy(camera.quaternion).invert(); ART_GUN.v.copy(ART_U.sun.value).applyQuaternion(ART_GUN.q); if (ART_GUN.v.y < .15) ART_GUN.v.y = .15; k.position.copy(ART_GUN.v).multiplyScalar(3); if (ART_GUN.rim) ART_GUN.rim.position.set(-ART_GUN.v.x * 2.5, 1.2, -1.5); }
+}
+if (typeof frame === 'function') { const _fr = frame; frame = function () { try { artFrame(); } catch (e) {} return _fr.apply(this, arguments); }; }
 /* ================= living weapons ================= */
 // glowing coils that heat up while firing, energy cells, and a live ammo display on the receiver
 const GUNFX = {};
@@ -2202,6 +2731,8 @@ function desktownFromData(PM) {
     if (cr) { const horiz = Math.abs(cr[3] - cr[1]) < Math.abs(cr[2] - cr[0]);
       if (horiz) { const v = clamp((cr[1] + cr[3]) / 2, .2, .9) * h; flap = { u0: w * .06, u1: w * .94, v0: Math.min(h * .06, v - .3), v1: v, hinge: 'bottom' }; }
       else { const u = clamp((cr[0] + cr[2]) / 2, .2, .9) * w; flap = { u0: w * .06, u1: u, v0: h * .06, v1: h * .94, hinge: 'left' }; } }
+    const fl = Math.abs(n[1]) > .9;
+    if (fl) { TEAR.add({ floor: true, x: t.centre[0], y: t.centre[1], z: t.centre[2], w, h, t: Math.min(.08, t.t || .06), rot: t.yaw || 0, mat: glMat(/paper/.test(t.mat || '') ? 'pm_paper' : 'pm_kraft') || PM('kraft') }); continue; }
     TEAR.add({ x: t.centre[0], y: t.centre[1] - h / 2, z: t.centre[2], w, h, t: Math.min(.08, t.t || .06), rot: Math.atan2(n[0], n[2]), mat: glMat(/paper/.test(t.mat || '') ? 'pm_paper' : 'pm_kraft') || PM(/paper/.test(t.mat || '') ? 'cream' : 'kraft'), flap });
   }
   if (typeof PAPER !== 'undefined' && PAPER.onMapBuilt) try { PAPER.onMapBuilt(root); } catch (e) { console.warn('onMapBuilt', e); }   // look hook (ART director)
@@ -2637,7 +3168,12 @@ const PAPER_MARKS = (() => {
   function clear() { if (!im) return; o.position.set(0, -50, 0); o.scale.setScalar(0); o.updateMatrix(); for (let i = 0; i < R.max; i++) { im.setMatrixAt(i, o.matrix); base[i] = null; } idx = 0; count = 0; im.instanceMatrix.needsUpdate = true; }
   return { R, init, add, hit, kindFor, clear, stats: { added: 0 }, get count() { return count; } };
 })();
-/* ================= audio ================= */
+/* ================= audio (Foldiers: paper + cardboard sound set, 2026-11-12) ================= */
+// Every sound is an original paper/cardboard recipe (tools/audio/recipes.js), rendered offline at consistent loudness into ONE sprite
+// (assets/paper/audio/foldiers_sfx.ogg|mp3, index data/paper_sounds.json), fetched + decoded at page load (before the first click,
+// on an OfflineAudioContext, so nothing is decoded mid-match) and sliced into buffers: PSND. sfx.* keeps the engine's event names;
+// each one plays its paper sound. Kept from Sector Nine (proven): the bus / voice budget / occlusion rules and a FRESH HRTF
+// PannerNode for every 3D sound. One default mix (data/paper_sounds.json "mix"), no alternative sound sets.
 const AU = { ctx: null };
 function initAudio() {
   if (AU.ctx) { if (AU.ctx.state === 'suspended') AU.ctx.resume(); return; }
@@ -2647,39 +3183,36 @@ function initAudio() {
     AU.master = c.createGain(); AU.master.gain.value = CFG.vol; AU.master.connect(comp);
     AU.dry = c.createGain(); AU.dry.connect(AU.master); AU.dry0 = AU.dry;
     AU.foe = c.createGain(); AU.foe.connect(AU.master);   // enemy / remote sounds placed in 3D (see bus)
-    // enemy gunfire / reloads / near misses / grenades / footsteps are placed with HRTF (front-back + height, like CS2), and EVERY
-    // 3D sound gets its own PannerNode: Chromium cross-fades a reused HRTF panner from its OLD direction for ~45 ms, so a reused one
-    // plays each new sound's onset from the previous place (footsteps had this; qa/probe_hrtf_reuse.js). One HRTF panner made now
-    // so the browser loads its HRTF data in the menu, not on the first enemy shot (until then HRTF plays unplaced).
+    // menu / UI sounds: their own output (the game bus is silent in the menu), master volume, silent while the tab is hidden
+    AU.ui = c.createGain(); AU.ui.gain.value = CFG.vol; const uc = c.createDynamicsCompressor(); uc.threshold.value = -10; uc.ratio.value = 3; AU.ui.connect(uc); uc.connect(c.destination);
+    // EVERY 3D sound gets its own PannerNode: Chromium cross-fades a reused HRTF panner from its OLD direction for ~45 ms, so a reused
+    // one plays each new sound's onset from the previous place (qa/probe_hrtf_reuse.js). One made now so HRTF data loads in the menu.
     try { const w = c.createPanner(); w.panningModel = 'HRTF'; AU.hrtfWarm = w; } catch (e) {}
-    const ir = (dur, decay) => { const len = c.sampleRate * dur, b = c.createBuffer(2, len, c.sampleRate); for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay); } return b; };
-    AU.verb = c.createConvolver(); AU.verb.buffer = ir(2.6, 3); const vg = c.createGain(); vg.gain.value = .3; AU.verb.connect(vg); vg.connect(AU.master);
-    AU.echo = c.createDelay(1); AU.echo.delayTime.value = .27; const fb = c.createGain(); fb.gain.value = .28; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400;
-    AU.echo.connect(lp); lp.connect(fb); fb.connect(AU.echo); const eo = c.createGain(); eo.gain.value = .2; lp.connect(eo); eo.connect(AU.master);
+    // a small warm room (a toy town on a desk): short diffuse reverb + one soft slap off the far desk
+    const ir = (dur, decay) => { const len = c.sampleRate * dur, b = c.createBuffer(2, len, c.sampleRate); for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); let lp = 0; for (let i = 0; i < len; i++) { lp += .35 * ((Math.random() * 2 - 1) - lp); d[i] = lp * 1.6 * Math.pow(1 - i / len, decay); } } return b; };
+    AU.verb = c.createConvolver(); AU.verb.buffer = ir(1.4, 3.2); const vg = c.createGain(); vg.gain.value = .26; AU.verb.connect(vg); vg.connect(AU.master);
+    AU.echo = c.createDelay(1); AU.echo.delayTime.value = .21; const fb = c.createGain(); fb.gain.value = .22; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1200;
+    AU.echo.connect(lp); lp.connect(fb); fb.connect(AU.echo); const eo = c.createGain(); eo.gain.value = .16; lp.connect(eo); eo.connect(AU.master);
     AU.noise = c.createBuffer(1, c.sampleRate * 2, c.sampleRate); { const d = AU.noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    // room tone of a quiet room with a desk: very soft, warm, slowly breathing (no wind, no machine hum)
     const brown = c.createBuffer(1, c.sampleRate * 4, c.sampleRate); { const d = brown.getChannelData(0); let l = 0; for (let i = 0; i < d.length; i++) { l = (l + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l * 3.5; } }
-    // ambience: wind + distant hum
-    const ws = c.createBufferSource(); ws.buffer = brown; ws.loop = true; const wf = c.createBiquadFilter(); wf.type = 'lowpass'; wf.frequency.value = 240; const wg = c.createGain(); wg.gain.value = .028;
-    const lfo = c.createOscillator(); lfo.frequency.value = .07; const lg = c.createGain(); lg.gain.value = 50; lfo.connect(lg); lg.connect(wf.frequency); lfo.start();
+    const ws = c.createBufferSource(); ws.buffer = brown; ws.loop = true; const wf = c.createBiquadFilter(); wf.type = 'lowpass'; wf.frequency.value = 320; const wg = c.createGain(); wg.gain.value = .014;
+    const lfo = c.createOscillator(); lfo.frequency.value = .05; const lg = c.createGain(); lg.gain.value = 60; lfo.connect(lg); lg.connect(wf.frequency); lfo.start();
     ws.connect(wf); wf.connect(wg); wg.connect(AU.master); ws.start();
-    setTimeout(() => { try { AU.hitBuf = { body: hitSample('body'), head: hitSample('head'), shield: hitSample('shield') }; warmGunVoices(); loadGunSamples(); } catch (e) {} }, 300);
+    PSND.attach(); setTimeout(() => { try { audioHooks(); } catch (e) { console.warn('[sound] hooks', e); } }, 0);
   } catch (e) { AU.ctx = null; }
 }
-// How other players' / bots' sounds are mixed (same numbers in data/sound_mix.json for the Unity port; qa/qa_sound.js
-// checks they match). CS2 / Valorant rules: an enemy shot or a close footstep is NEVER dropped: everything within `near`
-// metres always plays (only a hard safety cap per window, far above any real fight); sources between `near` and `range`
-// share a small `budget` per window, so far-away noise thins out first and can never starve a close enemy; beyond
-// `range` nothing plays. Falloff is the panner's inverse model: gain = ref / (ref + roll * (d - ref)), full volume inside ref.
-// close: inside this many metres not even the safety cap applies (only absCap, far above any real fight): a close enemy is
-// never refused, even when a frame hitch or a bundled packet piles many sounds into one window
+// How other players' / bots' sounds are mixed (same numbers in data/sound_mix.json for the Unity port). CS2 / Valorant rules: an
+// enemy shot or a close footstep is NEVER dropped: everything within `near` metres always plays (only a hard safety cap per window);
+// sources between `near` and `range` share a small `budget` per window (far noise thins out first); beyond `range` nothing plays.
 const SOUND_MIX = { v: 1, window: .5, hardCap: 64, absCap: 192, categories: {
   shot:    { near: 30, close: 15, range: 120, budget: 8, ref: 5, roll: 1.1, prio: 3 },   // enemy / remote gunfire (all weapons)
   foestep: { near: 15, close: 8, range: 40, budget: 6, ref: 3, roll: 1.25, prio: 2 },   // enemy footsteps + landings
   foley:   { near: 15, close: 6, range: 30, budget: 4, ref: 3, roll: 1.2, prio: 2 },    // enemy reloads
   whiz:    { near: 8, close: 4, range: 55, budget: 2, ref: 2, roll: 1, prio: 2 },       // near misses past your head
-  impact:  { near: 10, range: 55, budget: 3, ref: 3, roll: 1, prio: 1 },      // bullet impacts, disc bounces
-  step:    { near: 10, range: 55, budget: 3, ref: 3, roll: 1, prio: 1 },      // robot / bot steps (old synth)
-  misc:    { near: 15, range: 55, budget: 4, ref: 4, roll: 1, prio: 1 },      // deaths, nade bounces, add-on sounds
+  impact:  { near: 10, range: 55, budget: 3, ref: 3, roll: 1, prio: 1 },      // bullet impacts, tears, boomerang hits
+  step:    { near: 10, range: 55, budget: 3, ref: 3, roll: 1, prio: 1 },      // fallback steps
+  misc:    { near: 15, range: 55, budget: 4, ref: 4, roll: 1, prio: 1 },      // deaths, plane flights, add-on sounds
 } };
 const VOICE_CAT = { bot: 'shot', shot: 'shot', foestep: 'foestep', foley: 'foley', whiz: 'whiz', impact: 'impact', step: 'step', misc: 'misc' };
 const VOICES = {}; for (const k in VOICE_CAT) VOICES[k] = [0, 0, 0];   // per kind: [window start, far sounds in it, all sounds in it]
@@ -2687,38 +3220,38 @@ const VOICE_ALL = [0, 0, 0, 0];   // [window start, sounds of prio 1, 2, 3]: a t
 function voice(kind, pos, must) {
   if (!AU.ctx) return false;
   const cat = SOUND_MIX.categories[VOICE_CAT[kind] || 'misc'], d = pos ? camera.position.distanceTo(pos) : 0;
-  if (must) { VOICES[kind] && VOICES[kind][2]++; VOICE_ALL[Math.min(3, Math.max(1, cat.prio | 0))]++; return true; }   // a shot that hits YOU: always (never thinned, see shotAtMe)
+  if (must) { VOICES[kind] && VOICES[kind][2]++; VOICE_ALL[Math.min(3, Math.max(1, cat.prio | 0))]++; return true; }   // a shot that hits YOU: always
   if (d > cat.range) return false;
   const v = VOICES[kind] || VOICES.misc, now = AU.ctx.currentTime, W = SOUND_MIX.window;
   if (now - v[0] >= W) { v[0] = now; v[1] = 0; v[2] = 0; }
   if (now - VOICE_ALL[0] >= W) { VOICE_ALL[0] = now; VOICE_ALL[1] = VOICE_ALL[2] = VOICE_ALL[3] = 0; }
   const pr = Math.min(3, Math.max(1, cat.prio | 0));
-  if (d <= cat.near) {   // close: always plays; only a safety cap, and impacts / misc can never use up the room enemy shots need
+  if (d <= cat.near) {
     let busy = 0; for (let i = pr; i <= 3; i++) busy += VOICE_ALL[i];
     if (busy >= (d <= (cat.close || 0) ? SOUND_MIX.absCap : SOUND_MIX.hardCap * (pr === 3 ? 1 : pr === 2 ? .75 : .5))) return false;
-  } else { if (v[1] >= cat.budget) return false; v[1]++; }   // far: a small shared budget (far noise thins out first)
+  } else { if (v[1] >= cat.budget) return false; v[1]++; }
   v[2]++; VOICE_ALL[pr]++; return true;
 }
-// (hrtf: a positional sound the player localises: enemy shots, reloads, whiz, grenades, steps. Impacts / spawns / deaths stay equalpower: many per second, no front-back need.)
-// occl: behind a wall / floor / corner the sound is muffled by what is in the way and played from the opening it comes round (occlude())
+// (hrtf: a positional sound the player localises: enemy shots, reloads, whiz, planes, steps. Impacts / deaths stay equalpower.)
+// occl: behind a wall / floor / corner the sound is muffled by what is in the way and played from the opening it comes round
+// (occlude(); holes torn in thin card let it through, see audioHooks)
 function bus({ pos = null, verb = 0, echo = 0, ref = 4, vol = 1, hrtf = false, roll = 1.1, occl = false, feet = false } = {}) {
   AU.count = (AU.count || 0) + 1;
   const c = AU.ctx, g = c.createGain(); let out = g, at = pos, oc = null;
   if (pos && occl && typeof occlude === 'function') { oc = occlude(pos, _obus, feet);
     if (oc.dB < 0) { vol *= Math.pow(10, oc.dB / 20); const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = oc.lp; f.Q.value = .5; g.connect(f); out = f; if (oc.via) at = oc.via; } }
-  g.gain.value = vol; AU.lastOcc = oc ? { kind: oc.kind, dB: oc.dB, lp: oc.lp, mat: oc.mat, thick: oc.thick, via: oc.via ? [oc.via.x, oc.via.y, oc.via.z] : null } : null;
+  g.gain.value = vol; AU.lastOcc = oc ? { kind: oc.kind, dB: oc.dB, lp: oc.lp, mat: oc.mat, thick: oc.thick, via: oc.via ? [oc.via.x, oc.via.y, oc.via.z] : null, holes: oc.holes || 0 } : null;
   if (pos) {
     const p = c.createPanner(); p.panningModel = hrtf ? 'HRTF' : 'equalpower'; p.distanceModel = 'inverse'; p.refDistance = ref; p.rolloffFactor = roll; p.maxDistance = 120;
     if (p.positionX) { p.positionX.value = at.x; p.positionY.value = at.y; p.positionZ.value = at.z; } else p.setPosition(at.x, at.y, at.z);
     out.connect(p); out = p;
   }
-  // positional sounds go to AU.foe (your hit-confirm ducks AU.dry, never enemy gunfire); while an add-on has swapped AU.dry
-  // for its own bus (killcam replay, footsteps volume) they follow that swap
   const dest = pos && AU.foe && AU.dry === AU.dry0 ? AU.foe : AU.dry; out.connect(dest); AU.lastRoute = dest;
-  if (verb) { const s = c.createGain(); s.gain.value = verb; out.connect(s); s.connect(AU.verb); }
-  if (echo) { const s = c.createGain(); s.gain.value = echo; out.connect(s); s.connect(AU.echo); }
+  if (verb && AU.verb) { const s = c.createGain(); s.gain.value = verb; out.connect(s); s.connect(AU.verb); }
+  if (echo && AU.echo) { const s = c.createGain(); s.gain.value = echo; out.connect(s); s.connect(AU.echo); }
   return g;
 }
+// tiny live synth helpers (kept for add-ons; the game's own sounds all come from PSND)
 function nz(dest, t, dur, type, f, q, vol, attack = .001, fEnd = 0) {
   const c = AU.ctx, s = c.createBufferSource(); s.buffer = AU.noise;
   const fl = c.createBiquadFilter(); fl.type = type; fl.frequency.setValueAtTime(f, t); if (fEnd) fl.frequency.exponentialRampToValueAtTime(fEnd, t + dur); fl.Q.value = q;
@@ -2730,248 +3263,335 @@ function osc(dest, t, dur, type, f0, f1, vol, attack = .002) {
   const g = c.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + attack); g.gain.exponentialRampToValueAtTime(.0008, t + dur);
   o.connect(g); g.connect(dest); o.start(t); o.stop(t + dur + .05);
 }
-// synthesises one hit-confirm sample into a buffer (sample by sample, so it can be shaped more carefully than node graphs)
-function hitSample(kind) {
-  const c = AU.ctx, sr = c.sampleRate, len = Math.floor(sr * (kind === 'head' ? .55 : .2)), b = c.createBuffer(1, len, sr), d = b.getChannelData(0);
-  let lp = 0, bp1 = 0, bp2 = 0, ph = 0;
-  for (let i = 0; i < len; i++) {
-    const t = i / sr, env = (tau) => Math.exp(-t / tau), atk = Math.min(1, t / .0008);
-    let v = 0;
-    if (kind === 'shield') {
-      // glassy zap: detuned high partials + filtered crackle
-      v += (Math.sin(2 * Math.PI * 2650 * t) * .5 + Math.sin(2 * Math.PI * 3980 * t + 1) * .35 + Math.sin(2 * Math.PI * 5310 * t) * .2) * env(.045);
-      const n = Math.random() * 2 - 1; bp1 += .55 * (n - bp1); v += (n - bp1) * .5 * env(.02);
-      v += Math.sign(Math.sin(2 * Math.PI * (900 - 2600 * t) * t)) * .12 * env(.03);
-    } else {
-      // thock: pitched-down body punch, soft-clipped
-      const f = 95 + 170 * Math.exp(-t / .018); ph += 2 * Math.PI * f / sr;
-      v += Math.tanh(Math.sin(ph) * 2.2) * .62 * env(.045);
-      // impact crunch: band-limited noise burst
-      const n = Math.random() * 2 - 1; lp += .32 * (n - lp); bp2 += .08 * (lp - bp2); v += (lp - bp2) * 1.5 * env(.012);
-      // the tick you listen for: inharmonic metallic partials
-      v += (Math.sin(2 * Math.PI * 3150 * t) * .32 + Math.sin(2 * Math.PI * 4720 * t + .7) * .22 + Math.sin(2 * Math.PI * 6480 * t + 1.9) * .12) * env(.022);
-      if (kind === 'head') {
-        // headshot: armour crack + a bell that rings out
-        v += (Math.random() * 2 - 1) * .35 * env(.006);
-        v += (Math.sin(2 * Math.PI * 2093 * t) * .34 + Math.sin(2 * Math.PI * 2093 * 2.76 * t) * .14 + Math.sin(2 * Math.PI * 2093 * 5.4 * t) * .05) * env(.16) * Math.min(1, t / .004);
-        v += Math.sin(2 * Math.PI * 1046 * t) * .12 * env(.09);
-      }
-    }
-    d[i] = Math.max(-1, Math.min(1, v * atk * .9));
+
+/* ================= PSND: the paper sound bank ================= */
+const PSND = (() => {
+  const S = { ready: false, error: null, buf: {}, cat: {}, mix: { gun: 1, foley: 1, hit: 1, world: 1, death: 1, move: 1, ui: 1 }, last: {}, played: {}, miss: {}, log: null, fmt: null, ms: 0 };
+  // ogg (Vorbis) where the browser decodes it (Chrome / Firefox / Edge), else mp3 (Safari)
+  let fmt = 'mp3'; try { const a = document.createElement('audio'); if (a.canPlayType && a.canPlayType('audio/ogg; codecs="vorbis"')) fmt = 'ogg'; } catch (e) {}
+  const t0 = performance.now();
+  async function decode(bytes, sr) {
+    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    const oc = new OAC(1, 1, sr); return await new Promise((res, rej) => { const p = oc.decodeAudioData(bytes, res, rej); if (p && p.then) p.then(res, rej); });
   }
-  return b;
-}
-const sfx = {
-  shot() { if (!AU.ctx) return; const t = AU.ctx.currentTime, p = rand(.94, 1.06), d = bus({ verb: .42, echo: .32 });
-    nz(d, t, .03, 'highpass', 3800, .7, .6); nz(d, t, .2, 'bandpass', 1050 * p, .8, 1.0, .001, 420); nz(d, t, .38, 'lowpass', 380, .7, .55, .003);
-    osc(d, t, .14, 'sine', 150 * p, 40, 1.15); osc(d, t, .018, 'square', 2600, 1600, .05);
-    const dc = AU.dry, tc = t + rand(.34, .48); osc(dc, tc, .07, 'sine', rand(5000, 6300), 4800, .035); osc(dc, tc + rand(.09, .15), .05, 'sine', rand(4300, 5600), 4100, .022); },
-  dry(id) { if (!AU.ctx) return; const b = AU.dryBuf && AU.dryBuf[dryClass(id)];
-    if (b) { const s = AU.ctx.createBufferSource(); s.buffer = b; s.playbackRate.value = rand(.98, 1.02); s.connect(bus({ vol: DRY_FIRE[dryClass(id)].vol })); s.start(0); return; }   // recorded click (yours only: not positional, not sent)
-    const t = AU.ctx.currentTime; osc(AU.dry, t, .025, 'square', 1500, 1100, .07); nz(AU.dry, t, .03, 'highpass', 4000, 1, .12); },
-  magOut() { if (!AU.ctx) return; const t = AU.ctx.currentTime; osc(AU.dry, t, .02, 'square', 900, 700, .08); nz(AU.dry, t + .02, .14, 'bandpass', 2200, 3, .22, .01, 900); },
-  magIn() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .06, 'bandpass', 1600, 4, .4); osc(AU.dry, t, .04, 'square', 420, 260, .12); nz(AU.dry, t + .05, .04, 'highpass', 3000, 1, .2); },
-  bolt() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .05, 'bandpass', 2600, 5, .35); osc(AU.dry, t + .04, .05, 'square', 1200, 600, .1); nz(AU.dry, t + .05, .08, 'bandpass', 3400, 6, .3); },
-  adsIn() { if (!AU.ctx) return; nz(AU.dry, AU.ctx.currentTime, .12, 'lowpass', 900, 1, .08, .03); },
-  // hit confirm: pre-rendered samples (a meaty thock + a bright metallic tick; headshots add a ringing ding), played on their own
-  // bus straight to the master while gunfire ducks for a moment, so every hit cuts through the noise
-  hit(crit, shield) { if (!AU.ctx) return; const c = AU.ctx, now = c.currentTime, H = AU.hitS || (AU.hitS = { last: 0, chain: 0 });
-    if (now - H.last < .05) return;
-    H.chain = now - H.last < .45 ? Math.min(H.chain + 1, 6) : 0; H.last = now;
-    if (!AU.hitBuf) AU.hitBuf = { body: hitSample('body'), head: hitSample('head'), shield: hitSample('shield') };
-    const src = c.createBufferSource(); src.buffer = AU.hitBuf[shield ? 'shield' : crit ? 'head' : 'body']; src.playbackRate.value = 1 + H.chain * .03;
-    const g = c.createGain(); g.gain.value = crit ? 1.15 : .95; src.connect(g); g.connect(AU.master); src.start(now + .008);
-    const dg = AU.dry.gain; dg.cancelScheduledValues(now); dg.setValueAtTime(dg.value, now); dg.linearRampToValueAtTime(.72, now + .012); dg.linearRampToValueAtTime(1, now + .14); },   // (was .45: on a kill the hit duck + the kill thump below together dipped every other sound)
-  kill(pos, crit) { if (!AU.ctx) return; const t = AU.ctx.currentTime;
-    osc(AU.dry, t, .28, 'sine', 95, 38, .6); osc(AU.dry, t + .02, .12, 'triangle', 1318, 1318, .14); osc(AU.dry, t + .09, .22, 'triangle', crit ? 1976 : 1760, crit ? 1976 : 1760, .13);
-    const d = bus({ pos, verb: .5, echo: .3, ref: 6 }); nz(d, t, .9, 'lowpass', 900, .7, 1.1, .004, 120); osc(d, t, .6, 'sine', 80, 28, .9); osc(d, t, .5, 'sawtooth', 600, 50, .12); },
-  multi(n) { if (!AU.ctx) return; const t = AU.ctx.currentTime; const notes = [880, 1108, 1318, 1760]; for (let i = 0; i < Math.min(n, 4); i++) osc(AU.dry, t + i * .06, .25, 'triangle', notes[i], notes[i], .12); },
-  enemyShot(pos) { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ pos, verb: .35, echo: .25, ref: 5 });
-    osc(d, t, .12, 'sawtooth', 1300, 260, .35); nz(d, t, .1, 'bandpass', 1800, 2, .6); osc(d, t, .08, 'sine', 180, 60, .5); },
-  charge(pos) { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ pos, ref: 4 }); osc(d, t, .45, 'sine', 500, 1500, .12, .3); },
-  whiz(pos) { if (!voice('whiz', pos)) return; const t = AU.ctx.currentTime, d = bus({ pos, hrtf: true, occl: true, ref: 2 }); nz(d, t, .18, 'bandpass', 3200, 4, .6, .03, 900); },
-  impact(pos, metal) { if (!voice('impact', pos)) return; const t = AU.ctx.currentTime, d = bus({ pos, ref: 3, vol: .55 });
-    if (metal) { osc(d, t, .12, 'square', rand(1800, 2600), 1400, .06); nz(d, t, .06, 'bandpass', 3500, 5, .3); } else nz(d, t, .08, 'bandpass', 900, 1.2, .35); },
-  hurt() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .16, 'lowpass', 420, 1, .7); osc(AU.dry, t, .18, 'sine', 110, 55, .5); nz(AU.dry, t, .05, 'bandpass', 3000, 3, .2); },
-  step(sprint, land, crouch) { if (!AU.ctx) return; const t = AU.ctx.currentTime; const v = (land ? 1 : sprint ? .75 : .55) * (crouch ? .45 : 1), d = bus({ verb: .08, vol: v }), p = rand(.9, 1.1);
-    nz(d, t, land ? .16 : .085, 'lowpass', 170 * p, .9, 1.0, .002); osc(d, t, land ? .12 : .07, 'sine', 105 * p, 50, .8);
-    nz(d, t + .012, .055, 'bandpass', rand(1700, 2600), 1.3, .4, .002); nz(d, t + .03, .045, 'highpass', 4800, .7, .14);
-    if (land) nz(d, t + .02, .2, 'bandpass', 900, 1, .35, .01); },
-  // an enemy's footstep, placed in 3D (HRTF, so you hear front/back too): boot thud + gear rattle, sprint louder, crouch-walk near silent
-  foeStep(pos, sprint, land, crouch) { if (!AU.ctx || !voice('foestep', pos)) return; const t = AU.ctx.currentTime, p = rand(.88, 1.08);
-    const v = (land ? 1.5 : sprint ? 1.25 : .9) * (crouch ? .3 : 1), d = bus({ pos, hrtf: true, ref: 3, roll: 1.25, verb: .14, vol: v });
-    nz(d, t, land ? .17 : .1, 'lowpass', 210 * p, 1, 1.1, .002); osc(d, t, land ? .13 : .08, 'sine', 92 * p, 46, .9);
-    nz(d, t + .01, .06, 'bandpass', rand(1500, 2300), 1.4, .55, .002); nz(d, t + .035, .05, 'highpass', 4200, .8, .22);
-    if (sprint || land) nz(d, t + .05, .07, 'bandpass', rand(3000, 4200), 4, .18, .004); },
-  equip() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .12, 'lowpass', 800, 1, .12, .03); nz(AU.dry, t + .2, .05, 'bandpass', 2800, 5, .35); osc(AU.dry, t + .21, .05, 'square', 1100, 700, .08); },
-  sniper() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .55, echo: .45 });
-    nz(d, t, .035, 'highpass', 3000, .7, .9); nz(d, t, .3, 'bandpass', 700, .7, 1.2, .001, 260); nz(d, t, .7, 'lowpass', 300, .7, .8, .004);
-    osc(d, t, .3, 'sine', 120, 30, 1.4); osc(d, t, .03, 'square', 1800, 900, .08); },
-  robotStep(pos, heavy) { if (!voice('step', pos)) return; const t = AU.ctx.currentTime, d = bus({ pos, ref: 3, vol: heavy ? .9 : .5 }); nz(d, t, .1, 'lowpass', heavy ? 260 : 420, 1, .6); osc(d, t, .06, 'square', heavy ? 90 : 140, 60, .05); },
-  spawn(pos) { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ pos, verb: .5, ref: 6 }); osc(d, t, .6, 'sawtooth', 120, 900, .08, .4); nz(d, t + .4, .3, 'highpass', 1500, 1, .3); },
-  pickup() { if (!AU.ctx) return; const t = AU.ctx.currentTime; osc(AU.dry, t, .09, 'triangle', 660, 990, .16); osc(AU.dry, t + .07, .12, 'triangle', 990, 1320, .16); },
-  wave() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .6, echo: .4 }); osc(d, t, 1.4, 'sawtooth', 110, 108, .09, .5); osc(d, t, 1.4, 'sawtooth', 110.8, 109, .09, .5); osc(d, t + .7, 1.2, 'sawtooth', 82.4, 82, .09, .4); },
-  clear() { if (!AU.ctx) return; const t = AU.ctx.currentTime; [523, 659, 784, 1046].forEach((f, i) => osc(AU.dry, t + i * .09, .4, 'triangle', f, f, .12)); },
-  botShot(pos, kind) { if (!voice('bot', pos)) return; const sniper = kind === true || kind === 'sniper' || kind === 'helix', sg = kind === 'breacher', smg = kind === 'wasp' || kind === 'pistol';
-    const t = AU.ctx.currentTime, near = camera.position.distanceTo(pos) < 18, d = bus({ pos, verb: near ? .25 : 0, ref: 5, vol: sniper || sg ? 1.1 : smg ? .45 : .6 });
-    nz(d, t, sniper ? .4 : sg ? .35 : .14, 'bandpass', sniper ? 620 : sg ? 700 : (smg ? 1500 : 1100) * rand(.94, 1.06), .8, .95, .001, sniper ? 220 : 430); osc(d, t, sniper || sg ? .3 : .09, 'sine', sniper || sg ? 100 : 165, 38, sniper || sg ? 1.2 : .55); },
-  botStep(pos) { if (!voice('step', pos)) return; const t = AU.ctx.currentTime, d = bus({ pos, ref: 2.5, vol: .5 }); nz(d, t, .07, 'lowpass', 260, 1, .7); nz(d, t + .01, .04, 'bandpass', 2200, 1.5, .25); },
-  botDeath(pos) { if (!voice('misc', pos)) return; const t = AU.ctx.currentTime, d = bus({ pos, verb: .4, ref: 5, vol: .7 }); nz(d, t, .5, 'lowpass', 700, .7, .8, .004, 120); osc(d, t, .4, 'sawtooth', 500, 60, .1); },
-  thrust() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .32, 'bandpass', 900, .8, .55, .01, 2600); osc(AU.dry, t, .25, 'sine', 90, 160, .35); },
-  dash() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .28, 'bandpass', 1800, .9, .7, .005, 500); osc(AU.dry, t, .18, 'sawtooth', 220, 70, .12); },
-  slide() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .7, 'bandpass', 1400, .6, .4, .02, 500); nz(AU.dry, t, .6, 'lowpass', 300, .8, .4, .02); },
-  nadeThrow(pos) { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ pos, hrtf: true, occl: true, ref: 3 }); nz(d, t, .15, 'bandpass', 1200, 1, .3, .03, 600); osc(d, t, .08, 'square', 1700, 1500, .05); },
-  nadeBounce(pos) { if (!voice('misc', pos)) return; const t = AU.ctx.currentTime, d = bus({ pos, hrtf: true, occl: true, ref: 3, vol: .6 }); osc(d, t, .08, 'square', rand(1500, 2100), 1300, .07); nz(d, t, .05, 'bandpass', 3000, 4, .25); },
-  explode(pos) { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ pos, verb: .7, echo: .5, ref: 8, vol: 1.3 });
-    nz(d, t, .04, 'highpass', 2500, .7, 1); nz(d, t, 1.4, 'lowpass', 1100, .7, 1.4, .003, 90); osc(d, t, .9, 'sine', 70, 24, 1.6); osc(d, t, .4, 'sawtooth', 300, 40, .25); nz(d, t + .05, .5, 'bandpass', 3200, 1, .35, .01, 900); },
-  overdrive() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .5 }); osc(d, t, .9, 'sawtooth', 110, 440, .16, .05); osc(d, t, .9, 'sawtooth', 111, 445, .16, .05); nz(d, t, .5, 'highpass', 2000, 1, .3, .2); },
-  overdriveReady() { if (!AU.ctx) return; const t = AU.ctx.currentTime; [660, 880, 1320].forEach((f, i) => osc(AU.dry, t + i * .07, .25, 'triangle', f, f, .12)); },
-  death() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .6 }); osc(d, t, 1.2, 'sine', 220, 55, .4, .01); nz(d, t, 1, 'lowpass', 500, 1, .4, .05, 100); },
-  spawnMe() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .4 }); osc(d, t, .5, 'sine', 300, 900, .14, .1); nz(d, t + .3, .3, 'highpass', 2500, 1, .2); },
-  knifeSwing(heavy) { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, heavy ? .3 : .2, 'bandpass', heavy ? 1300 : 2200, 1.2, .5, .03, heavy ? 500 : 900); osc(AU.dry, t, .12, 'sine', 900, 1800, .04); },
-  knifeHit() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .12, 'bandpass', 3200, 3, .6); osc(AU.dry, t, .18, 'sawtooth', 1400, 300, .12); osc(AU.dry, t, .25, 'sine', 120, 50, .5); },
-  smg() { if (!AU.ctx) return; const t = AU.ctx.currentTime, p = rand(.95, 1.08), d = bus({ verb: .2, vol: .75 }); nz(d, t, .02, 'highpass', 4200, .7, .5); nz(d, t, .1, 'bandpass', 1500 * p, 1, .8, .001, 700); osc(d, t, .07, 'sine', 210 * p, 70, .7); osc(d, t, .03, 'square', 3200, 2000, .04); },
-  shotgun() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .55, echo: .4, vol: 1.2 }); nz(d, t, .04, 'highpass', 2600, .7, .9); nz(d, t, .45, 'lowpass', 700, .7, 1.4, .002, 120); osc(d, t, .35, 'sine', 95, 30, 1.6); osc(d, t, .12, 'sawtooth', 900, 120, .2); nz(d, t + .28, .05, 'bandpass', 2600, 4, .25); nz(d, t + .38, .06, 'bandpass', 1900, 4, .25); },
-  rail() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .7, echo: .5, vol: 1.1 }); osc(d, t, .5, 'sawtooth', 2400, 90, .3, .001); osc(d, t, .5, 'sine', 5200, 300, .12); nz(d, t, .3, 'bandpass', 3800, 2, .7, .001, 600); osc(d, t, .4, 'sine', 70, 30, 1.3); osc(d, t + .05, .8, 'sine', 880, 870, .06, .05); },
-  pistol() { if (!AU.ctx) return; const t = AU.ctx.currentTime, p = rand(.96, 1.05), d = bus({ verb: .4, echo: .3, vol: .85 }); nz(d, t, .025, 'highpass', 3600, .7, .55); nz(d, t, .14, 'bandpass', 1300 * p, .9, .9, .001, 500); osc(d, t, .1, 'sine', 180 * p, 50, .9); osc(d, t, .04, 'triangle', 2400, 1800, .08); },
-  launch(pos) { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ pos: pos || null, verb: .5, echo: .35, ref: 5, vol: 1.1 }); nz(d, t, .5, 'bandpass', 600, .8, .9, .02, 2400); osc(d, t, .3, 'sine', 140, 50, 1.1); nz(d, t, .9, 'lowpass', 900, .7, .4, .05, 200); },
-  killConfirm(crit, multi) { if (!AU.ctx) return; const t = AU.ctx.currentTime;
-    osc(AU.dry, t, .22, 'sine', 120, 40, .6); nz(AU.dry, t, .12, 'lowpass', 600, 1, .4, .002);   // softer sub thump: at .9 it drove the compressor (-9 dB, 0.3 s release) and pumped every other sound down
-    const base = crit ? 1568 : 1318; osc(AU.dry, t + .01, .35, 'triangle', base, base, .16); osc(AU.dry, t + .07, .45, 'triangle', base * 1.5, base * 1.5, .13); osc(AU.dry, t + .07, .6, 'sine', base * 3, base * 3, .05);
-    if (crit) { nz(AU.dry, t, .06, 'highpass', 6000, 1, .35); osc(AU.dry, t, .9, 'sine', 3136, 3120, .08); }
-    const d = bus({ verb: .8 }); osc(d, t + .05, .8, 'sine', base * 2, base * 2.02, .05, .1); },
-  medal(i) { if (!AU.ctx) return; const t = AU.ctx.currentTime, f = [988, 1175, 1319, 1568, 1760][i % 5]; osc(AU.dry, t, .3, 'triangle', f, f, .1); osc(AU.dry, t + .03, .4, 'sine', f * 2, f * 2, .05); },
-  thunder() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .9, echo: .5, vol: 1.4 }); nz(d, t, 2.6, 'lowpass', 500, .7, 1.2, .05, 60); nz(d, t, .3, 'highpass', 1500, .7, .4, .002); osc(d, t, 2, 'sine', 50, 25, 1); },
-  crossbow() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .08, 'bandpass', 900, 2, .5, .001, 300); osc(AU.dry, t, .18, 'triangle', 180, 90, .35); osc(AU.dry, t + .01, .3, 'sine', 420, 400, .06); },
-  minigun() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .15, vol: .5 }); nz(d, t, .05, 'bandpass', 1300 * rand(.9, 1.1), 1, .8, .001, 600); osc(d, t, .05, 'sine', 140, 60, .5); },
-  spinup(k) { if (!AU.ctx) return; const t = AU.ctx.currentTime; osc(AU.dry, t, .3, 'sawtooth', 120 + k * 260, 140 + k * 280, .04, .05); },
-  burst() { if (!AU.ctx) return; const t = AU.ctx.currentTime, p = rand(.97, 1.03), d = bus({ verb: .35, echo: .15, vol: .85 }); nz(d, t, .025, 'highpass', 3800, .7, .5); nz(d, t, .14, 'bandpass', 1250 * p, .9, .9, .001, 500); osc(d, t, .1, 'sine', 170 * p, 50, .75); },
-  judge() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .6, echo: .45, vol: 1.3 }); nz(d, t, .04, 'highpass', 2400, .7, .9); nz(d, t, .4, 'lowpass', 900, .7, 1.3, .002, 150); osc(d, t, .35, 'sine', 90, 30, 1.6); osc(d, t, .08, 'square', 1400, 600, .1); },
-  arc() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .22, 'bandpass', rand(2500, 4500), 3, .35, .005); osc(AU.dry, t, .2, 'sawtooth', rand(60, 90), 50, .15); },
-  disc() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .25, 'bandpass', 1600, 2, .5, .01, 3200); osc(AU.dry, t, .2, 'sine', 700, 1400, .1); },
-  discBounce(pos) { if (!voice('impact', pos)) return; const t = AU.ctx.currentTime, d = bus({ pos, ref: 4 }); osc(d, t, .25, 'triangle', 2400, 1800, .18); nz(d, t, .05, 'highpass', 5000, 1, .3); },
-  seeker() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .3, 'bandpass', 900, 1, .45, .01, 2600); osc(AU.dry, t, .2, 'sawtooth', 300, 900, .06); },
-  cryo() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .5, vol: .8 }); osc(d, t, .25, 'sine', 2400, 600, .2); nz(d, t, .2, 'highpass', 4000, 1, .3, .002); osc(d, t, .15, 'triangle', 900, 1800, .1); },
-  flame() { if (!AU.ctx) return; const t = AU.ctx.currentTime; nz(AU.dry, t, .4, 'lowpass', 900, .8, .4, .02, 500); nz(AU.dry, t, .3, 'bandpass', 2400, .6, .12, .02); },
-  chargeStart() { if (!AU.ctx) return; const t = AU.ctx.currentTime; osc(AU.dry, t, 1.1, 'sawtooth', 80, 640, .08, .1); osc(AU.dry, t, 1.1, 'sine', 160, 1280, .06, .1); },
-  voidfire() { if (!AU.ctx) return; const t = AU.ctx.currentTime, d = bus({ verb: .8, echo: .5, vol: 1.2 }); osc(d, t, .6, 'sawtooth', 900, 60, .3); nz(d, t, .5, 'bandpass', 600, 1, .9, .002, 150); osc(d, t, .5, 'sine', 55, 30, 1.4); },
-  heart() { if (!AU.ctx) return; const t = AU.ctx.currentTime; osc(AU.dry, t, .12, 'sine', 70, 45, .5); osc(AU.dry, t + .17, .12, 'sine', 62, 40, .35); },
-};
-/* ================= weapon voices: every gun gets its own pre-rendered sound ================= */
-// tiny offline synth: each recipe writes layers into one buffer once; shots then just play it (cheap, and far richer than live nodes)
-const GSND = {};
-function gsBuild(dur, fn) {
-  const c = AU.ctx, sr = c.sampleRate, n = Math.floor(sr * dur), b = c.createBuffer(1, n, sr), d = b.getChannelData(0);
-  const L = {
-    // pitched tone with exponential pitch glide and decay; shape: sin | tri | saw | sq | fm
-    tone(t0, f0, f1, glide, tau, vol, shape = 'sin', drive = 1) { let ph = 0; for (let i = Math.floor(t0 * sr); i < n; i++) { const t = i / sr - t0, e = Math.exp(-t / tau) * Math.min(1, t / .0015); if (e < 1e-4 && t > .01) break; const f = f1 + (f0 - f1) * Math.exp(-t / glide); ph += f / sr; const x = ph % 1;
-      const v = shape === 'saw' ? 2 * x - 1 : shape === 'sq' ? (x < .5 ? 1 : -1) : shape === 'tri' ? 4 * Math.abs(x - .5) - 1 : shape === 'fm' ? Math.sin(2 * Math.PI * ph + 2.2 * Math.sin(2 * Math.PI * ph * 2.71)) : Math.sin(2 * Math.PI * ph);
-      d[i] += Math.tanh(v * drive) / Math.tanh(drive) * e * vol; } },
-    // filtered noise (state-variable filter, cutoff can sweep); mode lp | bp | hp
-    noise(t0, mode, f0, f1, sweep, q, tau, vol, atk = .0008) { let lo = 0, bd = 0; for (let i = Math.floor(t0 * sr); i < n; i++) { const t = i / sr - t0, e = Math.exp(-t / tau) * Math.min(1, t / atk); if (e < 1e-4 && t > .01) break; const f = f1 + (f0 - f1) * Math.exp(-t / sweep), F = 2 * Math.sin(Math.PI * Math.min(f, sr / 6) / sr);
-      const x = Math.random() * 2 - 1, hi = x - lo - bd / q; bd += F * hi; lo += F * bd; d[i] += (mode === 'lp' ? lo : mode === 'bp' ? bd : hi) * e * vol; } },
-    // plucked string (Karplus-Strong): crossbow strings
-    pluck(t0, f, tau, vol, bright = .5) { const N = Math.max(2, Math.round(sr / f)), buf = new Float32Array(N).map(() => Math.random() * 2 - 1); let k = 0; const fb = Math.exp(-1 / (tau * f));
-      for (let i = Math.floor(t0 * sr); i < n; i++) { const a = buf[k], bb = buf[(k + 1) % N]; buf[k] = fb * (a * (1 - bright * .5) + bb * bright * .5); d[i] += a * vol; k = (k + 1) % N; } },
-    // crackle: sparse random clicks (electricity, fire)
-    crackle(t0, dens, tau, vol, len) { for (let i = Math.floor(t0 * sr), e0 = Math.floor((t0 + len) * sr); i < Math.min(n, e0); i++) { const t = i / sr - t0; if (Math.random() < dens / sr) { const a = (Math.random() * 2 - 1) * vol * Math.exp(-t / tau); for (let j = 0; j < 40 && i + j < n; j++) d[i + j] += a * Math.exp(-j / 6) * (j % 2 ? -1 : 1); } } },
+  async function load(f) {
+    const j = await (await fetch('data/paper_sounds.json', { cache: 'no-cache' })).json();
+    let ab;
+    try { ab = await decode(await (await fetch(j.file + '.' + f)).arrayBuffer(), j.sr); }
+    catch (e) { if (f === 'mp3') throw e; f = 'mp3'; ab = await decode(await (await fetch(j.file + '.mp3')).arrayBuffer(), j.sr); }
+    S.fmt = f; Object.assign(S.mix, j.mix || {}); delete S.mix.about;
+    const d = ab.getChannelData(0), k = ab.sampleRate / j.sr;
+    // an mp3 decode can start a few ms late (encoder delay): re-align every slice by the first non-silent sample
+    let on = 0; while (on < d.length && Math.abs(d[on]) < 2e-3) on++; const shift = Math.round(on - j.onset0 * k); S.shift = shift;
+    for (const id in j.sounds) { const e = j.sounds[id]; S.cat[id] = e.cat;
+      S.buf[id] = e.v.map(([s, n]) => { const a = Math.max(0, Math.round(s * k) + shift), L = Math.max(1, Math.min(d.length - a, Math.round(n * k))); const b = new AudioBuffer({ length: L, numberOfChannels: 1, sampleRate: ab.sampleRate }); b.copyToChannel(d.subarray(a, a + L), 0); return b; });
+      if (e.loop) S.loop = Object.assign(S.loop || {}, { [id]: true }); }
+    S.ready = true; S.ms = Math.round(performance.now() - t0); S.attach();
+    try { dispatchEvent(new CustomEvent('foldiers:audio-ready', { detail: { ms: S.ms, fmt: f, sounds: Object.keys(S.buf).length } })); } catch (e) {}
+  }
+  S.promise = load(fmt).catch(e => { S.error = String(e && e.message || e); console.warn('[sound] Foldiers sound bank not loaded:', S.error); });
+  // once the bank AND the audio context exist: hand the shared buffers to the engine tables (gun voices, killcam hit confirms)
+  S.attach = () => { if (!S.ready) return;
+    for (const k in GUN_VOICE) { const id = gunId(k); if (id && S.buf[id]) GSND[k] = S.buf[id][0]; }
+    if (S.buf.hit_body) AU.hitBuf = { body: S.buf.hit_body[0], head: S.buf.hit_head[0], shield: S.buf.hit_shield[0] }; };
+  const R = (a, b) => a + Math.random() * (b - a);
+  S.has = id => !!S.buf[id];
+  S.buffer = (id, v) => { const L = S.buf[id]; if (!L) return null; return L[v == null ? Math.floor(Math.random() * L.length) : Math.min(L.length - 1, v)]; };
+  // play one sound. o: pos (3D), hrtf, occl, feet, ref, roll, vol, rate, jit (pitch jitter, default 2.5 %), v (variant), delay, verb, echo,
+  // lp (low-pass Hz), dest (an AudioNode: skip the bus), ui (menu output), loop. Returns the source (or null).
+  S.play = (id, o = {}) => {
+    const c = AU.ctx, L = S.buf[id]; if (!c) return null; if (!L) { S.miss[id] = (S.miss[id] || 0) + 1; return null; }
+    let v = o.v; if (v == null) { v = Math.floor(Math.random() * L.length); if (L.length > 1 && v === S.last[id]) v = (v + 1) % L.length; } S.last[id] = v;
+    const src = c.createBufferSource(); src.buffer = L[Math.min(v, L.length - 1)]; src.loop = !!o.loop;
+    const j = o.jit == null ? .025 : o.jit; src.playbackRate.value = (o.rate || 1) * (j ? R(1 - j, 1 + j) : 1);
+    const vol = (o.vol == null ? 1 : o.vol) * (S.mix[S.cat[id]] == null ? 1 : S.mix[S.cat[id]]);
+    let d = o.dest; if (d) { const g = c.createGain(); g.gain.value = vol; g.connect(d); d = g; }
+    else if (o.ui && AU.ui) { const g = c.createGain(); g.gain.value = vol; g.connect(AU.ui); d = g; }
+    else d = bus({ pos: o.pos || null, hrtf: !!o.hrtf, occl: !!o.occl, feet: !!o.feet, ref: o.ref || 4, roll: o.roll || 1.1, vol, verb: o.verb || 0, echo: o.echo || 0 });
+    if (o.lp) { const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp; f.Q.value = .5; src.connect(f); f.connect(d); } else src.connect(d);
+    src.start(o.delay > 0 ? c.currentTime + o.delay : 0);
+    S.played[id] = (S.played[id] || 0) + 1; if (S.log) { S.log.push(id); if (S.log.length > 4000) S.log.splice(0, 1000); }
+    return src;
   };
-  fn(L);
-  let pk = 0; for (let i = 0; i < n; i++) pk = Math.max(pk, Math.abs(d[i])); const g = pk > .95 ? .95 / pk : 1;
-  for (let i = 0; i < n; i++) d[i] = Math.tanh(d[i] * g * 1.2) / Math.tanh(1.2);   // gentle glue
-  return b;
-}
-const GUN_VOICE = {
-  // K-7: punchy pulse rifle - sharp crack, a falling plasma "pew", thump
-  shot: { dur: .5, verb: .4, echo: .3, vol: 1, fn: L => { L.noise(0, 'hp', 6000, 3000, .01, .7, .012, .9); L.tone(0, 1900, 260, .03, .07, .35, 'sq', 1.5); L.tone(0, 160, 48, .03, .09, 1, 'sin', 2); L.noise(0, 'bp', 1600, 500, .05, 1, .07, .8); L.noise(.002, 'lp', 600, 200, .1, .8, .2, .3); } },
-  // V-9 Wasp: high, buzzy ion zip
-  smg: { dur: .25, verb: .18, echo: .1, vol: .8, fn: L => { L.tone(0, 3200, 900, .02, .035, .45, 'saw', 2); L.noise(0, 'bp', 3800, 1500, .02, 2.5, .03, .6); L.tone(0, 230, 90, .02, .04, .7, 'sin', 2.5); L.noise(0, 'hp', 7000, 7000, 1, .7, .006, .5); } },
-  // Breacher: huge plasma boom, sizzle tail, pump rack
-  shotgun: { dur: .9, verb: .55, echo: .4, vol: 1.25, fn: L => { L.noise(0, 'hp', 3500, 1500, .02, .7, .02, 1); L.noise(0, 'lp', 1400, 120, .08, .8, .22, 1.2); L.tone(0, 120, 32, .05, .2, 1.2, 'sin', 3); L.noise(.01, 'bp', 5200, 2600, .15, 3, .2, .25); L.crackle(.02, 900, .12, .25, .25);
-    L.noise(.36, 'bp', 2400, 1800, .03, 4, .03, .45); L.tone(.36, 700, 400, .02, .02, .15, 'sq'); L.noise(.47, 'bp', 1700, 1300, .03, 4, .035, .5); L.tone(.47, 500, 300, .02, .025, .2, 'sq'); } },
-  // Helix railgun: electric crack + metallic twang ring + rising whine tail
-  rail: { dur: 1.1, verb: .7, echo: .5, vol: 1.1, fn: L => { L.noise(0, 'hp', 8000, 4000, .02, .7, .015, 1); L.tone(0, 4200, 120, .06, .35, .35, 'saw', 1.2); L.tone(0, 880, 880, 1, .45, .14, 'fm'); L.tone(0, 1318, 1318, 1, .3, .08, 'sin'); L.tone(0, 90, 30, .06, .3, 1, 'sin', 2); L.crackle(0, 2500, .08, .35, .2); L.tone(.08, 300, 2400, .3, .5, .05, 'sin'); } },
-  // Longbow sniper: supersonic snap, cannon body, long rolling tail
-  sniper: { dur: 1.4, verb: .6, echo: .55, vol: 1.2, fn: L => { L.noise(0, 'hp', 9000, 5000, .005, .7, .006, 1.2); L.noise(0, 'bp', 900, 260, .1, .7, .18, 1.1); L.tone(0, 130, 28, .08, .35, 1.3, 'sin', 3); L.noise(.004, 'lp', 400, 80, .4, .7, .5, .5); } },
-  // BR-6 Obelisk (owner pick 2026-11-10, option E): a real recorded sample, assets/audio/guns/obelisk_fire.ogg|mp3 (credits: assets/audio/CREDITS.md),
-  // decoded in the menu (loadGunSamples); until it is decoded the Longbow voice plays. vol: -14.2 LUFS sample -> about -13 LUFS in game, level with
-  // the other heavy guns (Judge -12.3, Breacher -13.5) and ~6.5 dB over the Longbow (-19.7). Its own long outdoor tail: less game reverb than the Longbow.
-  obelisk: { dur: 1.4, verb: .3, echo: .25, vol: 1.15, sample: 'assets/audio/guns/obelisk_fire', fn: L => GUN_VOICE.sniper.fn(L) },
-  // Nova launcher: hollow "foomp" + rocket hiss
-  launch: { dur: 1.2, verb: .5, echo: .35, vol: 1.1, fn: L => { L.tone(0, 260, 60, .05, .14, 1.1, 'sin', 2.5); L.noise(0, 'lp', 700, 200, .1, 1.2, .1, .8); L.noise(.03, 'bp', 1800, 3200, .4, .8, .45, .35, .05); L.noise(.05, 'hp', 4000, 4000, 1, .7, .4, .15, .1); } },
-  // M-2 pistol: tight snap
-  pistol: { dur: .45, verb: .4, echo: .3, vol: .85, fn: L => { L.noise(0, 'hp', 5500, 3000, .01, .7, .01, .9); L.noise(0, 'bp', 1400, 600, .04, .9, .06, .9); L.tone(0, 210, 60, .025, .07, .9, 'sin', 2); L.tone(0, 2600, 1700, .02, .02, .1, 'tri'); } },
-  // Stinger crossbow: string twang + whoosh, nearly silent otherwise
-  crossbow: { dur: .8, verb: .2, echo: 0, vol: .9, fn: L => { L.pluck(0, 98, .35, .5, .4); L.pluck(0, 147, .25, .25, .6); L.noise(0, 'bp', 900, 300, .05, 1.5, .05, .6); L.tone(0, 160, 70, .03, .05, .6, 'sin', 2); L.noise(.01, 'bp', 1200, 2600, .12, 1.2, .14, .25, .03); } },
-  // Titan minigun: low gritty brrt per round
-  minigun: { dur: .16, verb: .12, echo: 0, vol: .55, fn: L => { L.tone(0, 150, 70, .02, .035, .8, 'sq', 1.5); L.noise(0, 'bp', 1100, 500, .03, 1, .03, .8); L.noise(0, 'hp', 4500, 4500, 1, .7, .005, .4); } },
-  // Triad burst: crisp clipped mid with a metallic tick
-  burst: { dur: .4, verb: .32, echo: .15, vol: .85, fn: L => { L.noise(0, 'hp', 6000, 3500, .01, .7, .01, .8); L.noise(0, 'bp', 1250, 650, .04, 1, .05, .9); L.tone(0, 190, 55, .02, .06, .8, 'sin', 2); L.tone(0, 3300, 3100, .1, .03, .12, 'tri'); L.tone(0, 5200, 5000, .1, .02, .06); } },
-  // Judge: thunderous boom with a golden ring
-  judge: { dur: 1.2, verb: .6, echo: .45, vol: 1.3, fn: L => { L.noise(0, 'hp', 4000, 2000, .015, .7, .02, 1); L.noise(0, 'lp', 1100, 150, .08, .8, .2, 1.2); L.tone(0, 110, 28, .05, .25, 1.4, 'sin', 3); L.tone(.003, 1760, 1755, 1, .35, .1, 'sin'); L.tone(.003, 1760 * 2.76, 1760 * 2.75, 1, .2, .05); } },
-  // Arc thrower: electric crackle burst with a buzzing tone
-  arc: { dur: .35, verb: .2, echo: 0, vol: .7, fn: L => { L.crackle(0, 6000, .12, .6, .3); L.tone(0, 120, 110, 1, .1, .25, 'saw', 3); L.noise(0, 'bp', 4200, 2500, .1, 3, .08, .4); } },
-  // Ricochet: metallic "shing" spin-out
-  disc: { dur: .6, verb: .35, echo: .2, vol: .9, fn: L => { L.noise(0, 'bp', 2400, 6800, .15, 6, .25, .5); L.tone(0, 900, 2200, .12, .2, .25, 'fm'); L.tone(0, 3500, 3450, 1, .3, .08); L.tone(0, 180, 70, .03, .06, .7, 'sin', 2); } },
-  // Seeker: missile ignition fwoosh with a lock-on beep
-  seeker: { dur: .7, verb: .35, echo: .2, vol: .9, fn: L => { L.noise(0, 'bp', 700, 2600, .2, .9, .35, .7, .01); L.noise(0, 'hp', 3000, 3000, 1, .7, .2, .25, .02); L.tone(0, 200, 60, .04, .08, .8, 'sin', 2); L.tone(0, 1975, 1975, 1, .05, .15, 'sq'); L.tone(.07, 2637, 2637, 1, .05, .12, 'sq'); } },
-  // Cryo: crystalline chime over a freezing hiss
-  cryo: { dur: .8, verb: .55, echo: .3, vol: .85, fn: L => { L.noise(0, 'hp', 5000, 8000, .2, .7, .2, .5); for (const [f, v] of [[2349, .2], [3136, .14], [4186, .1], [5587, .06]]) L.tone(0, f, f * .995, 1, .35, v); L.tone(0, 600, 1800, .05, .08, .25, 'tri'); L.tone(0, 150, 60, .03, .06, .5, 'sin', 2); } },
-  // Inferno: roaring flame gust
-  flame: { dur: .5, verb: .1, echo: 0, vol: .75, fn: L => { L.noise(0, 'lp', 900, 500, .2, .7, .3, .9, .04); L.noise(0, 'bp', 2000, 1200, .2, .6, .25, .3, .03); L.crackle(0, 300, .3, .3, .45); } },
-  // Void lance: deep sub "vwoom" discharge with phasey tail
-  voidfire: { dur: 1.4, verb: .8, echo: .5, vol: 1.2, fn: L => { L.tone(0, 1200, 45, .08, .5, .5, 'saw', 1.5); L.tone(0, 70, 32, .2, .5, 1.3, 'sin', 2.5); L.noise(0, 'bp', 600, 120, .3, 1, .45, .8); L.tone(.02, 220, 110, .4, .7, .18, 'fm'); L.noise(0, 'hp', 7000, 3000, .02, .7, .02, .7); } },
+  return S;
+})();
+const psnd = (id, o) => PSND.play(id, o);
+const _sv = () => (typeof camera !== 'undefined' && camera) ? camera.position : null;
+const nearMe = (pos, m = 1.6) => !pos || !_sv() || _sv().distanceTo(pos) < m;
+
+/* ================= sfx: every game event -> its paper sound ================= */
+const HIT_DUCK = (now) => { const dg = AU.dry.gain; dg.cancelScheduledValues(now); dg.setValueAtTime(dg.value, now); dg.linearRampToValueAtTime(.72, now + .012); dg.linearRampToValueAtTime(1, now + .14); };
+const wclass = id => id === 'breacher' ? 'shotgun' : id === 'sniper' || id === 'obelisk' || id === 'helix' ? 'sniper' : id === 'wasp' || id === 'pistol' ? 'smg' : id === 'boomerang' ? 'boomerang' : id === 'knife' ? 'knife' : id === 'plane' ? 'plane' : 'rifle';
+const curW = () => (typeof P !== 'undefined' && P && P.weapon) || 'carbine';
+function planeCaughtNow() { try { if (typeof PLANES === 'undefined') return false; const c = PLANES.S.stats.caught; if (c !== AU.seenCaught) { AU.seenCaught = c; return true; } } catch (e) {} return false; }
+const sfx = {
+  shot() { gunVoice('shot'); },
+  smg() { gunVoice('smg'); },
+  shotgun() { gunVoice('shotgun'); },
+  sniper() { gunVoice('sniper'); },
+  dry(id) { psnd('dry_' + dryClass(id), { vol: 1 }); },
+  magOut() { const w = wclass(curW()); psnd(w === 'shotgun' ? 'shell_in' : 'mag_out', { rate: w === 'smg' ? 1.1 : 1 }); },
+  magIn() { const w = wclass(curW()); if (w === 'shotgun') { psnd('shell_in'); psnd('shell_in', { delay: .16 }); psnd('gun_pump', { delay: .34, vol: .9 }); } else { psnd('mag_in', { rate: w === 'smg' ? 1.1 : 1 }); if (w === 'rifle') psnd('tape_rip', { delay: .12, vol: .55 }); } },
+  bolt() { psnd('gun_bolt'); },
+  adsIn() { const el = document.getElementById('wxCatch'); if (el && el.classList.contains('on') && !(AU.promptT > performance.now() - 1500)) { AU.promptT = performance.now(); psnd('plane_prompt', { ui: !AU.out }); return; } psnd('ads_in'); },
+  // hit confirm for YOUR hit (2D, straight to the master, gunfire ducks a moment): body / HEADSHOT / limb / wallbang / shield.
+  // Context (zone, wallbang, kill) comes from the damage hook (audioHooks: damageBot). Consecutive hits rise slightly in pitch.
+  hit(crit, shield) { if (!AU.ctx) return; const c = AU.ctx, now = c.currentTime, H = AU.hitS || (AU.hitS = { last: 0, chain: 0 }), C = AU.hitCtx || {}; AU.hitCtx = null;
+    if (now - H.last < .05 && !(crit && !H.crit)) return;
+    H.chain = now - H.last < .45 ? Math.min(H.chain + 1, 6) : 0; H.last = now; H.crit = !!crit;
+    const id = shield ? 'hit_shield' : C.wb ? 'hit_wall' : crit ? 'hit_head' : C.zone === 'limb' ? 'hit_limb' : 'hit_body', rate = 1 + H.chain * .022;
+    psnd(id, { dest: AU.master, rate, jit: .01, vol: 1 }); if (C.wb && crit) psnd('hit_head', { dest: AU.master, rate, jit: .01, vol: .6, lp: 3500 });
+    HIT_DUCK(now); AU.lastHit = { id, t: now }; },
+  // kill markers (your kill): paper rip + confetti sparkle + two card notes; headshot kill brighter
+  killConfirm(crit, multi) { psnd(crit ? 'kill_confirm_head' : 'kill_confirm', { dest: AU.master, jit: .005 }); },
+  kill(pos, crit) { if (!(AU.deathT > performance.now() - 120)) psnd('death_confetti', { pos, ref: 5, verb: .25 }); },
+  botDeath(pos) { if (!(AU.deathT > performance.now() - 120) && voice('misc', pos)) psnd('death_confetti', { pos, ref: 5, verb: .2 }); },
+  multi(n) { if (n >= 2) psnd('streak', { v: Math.min(n, 4) - 2, dest: AU.master, jit: 0, delay: .12 }); },
+  enemyShot(pos) { gunVoice('shot', pos); },
+  charge(pos) { psnd('boom_wind', { pos, ref: 4 }); },
+  whiz(pos) { if (!voice('whiz', pos)) return; psnd('whiz', { pos, hrtf: true, occl: true, ref: 2, roll: 1 }); },
+  // a bullet hits the world: the sound of what it hit (the shot mark just placed by PAPER_MARKS says which surface)
+  impact(pos, metal) { if (!AU.ctx) return; const now = performance.now();
+    if (AU.lastTear && now - AU.lastTear.t < 40 && pos && AU.lastTear.p.distanceTo(pos) < .5) return;   // a tear sound already played for this hit
+    if (!voice('impact', pos)) return;
+    const M = AU.lastMark && now - AU.lastMark.t < 40 && pos && AU.lastMark.p.distanceTo(pos) < .6 ? AU.lastMark : null;
+    let id = M ? impactOf(M) : metal ? 'imp_metal' : 'imp_card_thick';
+    if (metal && !M && curW() === 'knife' && nearMe(pos, 3)) id = 'imp_card_thick';   // the cutter's blade into a card wall
+    psnd(id, { pos, ref: 3, roll: 1, vol: .9 }); },
+  hurt() { const C = AU.hurtCtx || {}; AU.hurtCtx = null; psnd(C.crit ? 'hurt_head' : 'hurt', { vol: 1 }); },
+  step(sprint, land, crouch) { psnd(land ? 'imp_card_thick' : 'imp_mat', { vol: (land ? .5 : sprint ? .35 : .25) * (crouch ? .4 : 1) }); },   // (fallback: modules/footsteps.js plays the real surface steps)
+  foeStep(pos, sprint, land, crouch) { if (!voice('foestep', pos)) return; psnd(land ? 'imp_card_thick' : 'imp_mat', { pos, hrtf: true, occl: true, feet: true, ref: 3, roll: 1.25, vol: (land ? 1.2 : sprint ? 1 : .7) * (crouch ? .3 : 1) }); },
+  equip() { if (planeCaughtNow()) return planeCatchSnd(); const w = wclass(curW());
+    if (w === 'plane') return psnd('plane_unfold'); psnd('equip', { rate: { rifle: 1, smg: 1.1, shotgun: .9, sniper: .86, boomerang: 1.05, knife: 1.2 }[w] || 1 });
+    if (w === 'knife') psnd('knife_swing', { vol: .35, rate: 1.3, delay: .08 }); },
+  robotStep(pos, heavy) { if (!voice('step', pos)) return; psnd('imp_card_thick', { pos, ref: 3, vol: heavy ? .8 : .5 }); },
+  spawn(pos) { psnd('spawn_me', { pos, ref: 6 }); },
+  pickup() { psnd('pickup'); },
+  wave() { psnd('round_go', { ui: true }); },
+  clear() { psnd('sting_win', { ui: true }); },
+  botShot(pos, kind) { gunVoice('shot', pos, .8); },
+  botStep(pos) { if (!voice('step', pos)) return; psnd('imp_mat', { pos, ref: 2.5, vol: .5 }); },
+  thrust() { psnd('paper_flap'); },
+  dash() { psnd('paper_flap', { rate: 1.2 }); },
+  slide() { psnd('crouch', { vol: 1.4, rate: .8 }); },
+  nadeThrow(pos) { const me = nearMe(pos, 1.6); psnd('plane_throw', me ? {} : { pos, hrtf: true, occl: true, ref: 3 }); },
+  nadeBounce(pos) { if (!voice('misc', pos)) return; psnd('imp_card_thick', { pos, hrtf: true, occl: true, ref: 3, vol: .7, rate: 1.15 }); },   // (a dropped gun bouncing on card)
+  explode(pos) { psnd('plane_pop', { pos, ref: 8, roll: 1, verb: .35, echo: .2 }); if (pos) psnd('debris', { pos, ref: 4, delay: .7, vol: .8 }); },
+  overdrive() { psnd('streak', { v: 2 }); },
+  overdriveReady() { psnd('streak', { v: 0 }); },
+  death() { psnd('death_me'); },
+  spawnMe() { psnd('spawn_me'); },
+  knifeSwing(heavy) { psnd(heavy ? 'knife_swing_heavy' : 'knife_swing'); },
+  // knifeHit: the engine uses it for a cutter stab, each stroke of a SLICE, a boomerang blade lodging in a body and a plane catch
+  knifeHit() { if (AU.inDeath) return; if (planeCaughtNow()) return planeCatchSnd();
+    if (typeof KSLICE !== 'undefined' && KSLICE.S.active) return psnd('knife_slice', { vol: 1 });
+    if (curW() === 'boomerang' && typeof BOOM !== 'undefined') return psnd('boom_hit');
+    psnd('knife_stab'); },
+  pistol() { gunVoice('pistol'); },
+  launch(pos) { const me = !pos || nearMe(pos, 1.6); psnd('plane_throw', me ? {} : { pos, hrtf: true, occl: true, ref: 4 }); },
+  medal(i) { psnd('medal', { v: i % 5, jit: 0 }); },
+  thunder() { psnd('floor_break', { vol: .6, rate: .7 }); },
+  minigun() { gunVoice('minigun'); }, burst() { gunVoice('burst'); }, judge() { gunVoice('judge'); }, rail() { gunVoice('rail'); }, crossbow() { gunVoice('crossbow'); },
+  arc() { gunVoice('arc'); }, disc() { gunVoice('disc'); }, seeker() { gunVoice('seeker'); }, cryo() { gunVoice('cryo'); }, flame() { gunVoice('flame'); }, voidfire() { gunVoice('voidfire'); },
+  discBounce(pos) { if (!voice('impact', pos)) return; psnd('boom_clang', { pos, ref: 4 }); },
+  spinup(k) { psnd('boom_wind', { rate: .8 + (k || 0) * .5, vol: .7 }); },
+  chargeStart() { psnd('boom_wind', { vol: .8 }); },
+  heart() { psnd('heart'); },
+  // added for Foldiers (hooks requested in docs/BUGS.md "Audio requests"; the poller in audioTick covers them until then)
+  jump() { psnd('jump'); }, crouch() { psnd('crouch'); }, boomWind(spin) { psnd('boom_wind', { rate: .85 + (spin || 0) * .5, vol: .5 + (spin || 0) * .5 }); },
+  uiClick() { psnd('ui_click', { ui: true, jit: .04 }); }, uiHover() { psnd('ui_hover', { ui: true, jit: .05 }); }, uiBack() { psnd('ui_back', { ui: true }); },
+  killFeed() { psnd('kill_feed', { ui: !AU.out, jit: .03 }); },
+  roundStart() { psnd('round_start', { ui: true }); }, roundGo() { psnd('round_go', { ui: true }); },
+  win() { psnd('sting_win', { ui: true }); }, lose() { psnd('sting_lose', { ui: true }); }, victory() { psnd('sting_victory', { ui: true }); },
+  planeRTS() { psnd('plane_rts', { dest: AU.master }); },
+  death2(kind, pos) { const id = 'death_' + kind; if (!PSND.has(id)) return; AU.deathT = performance.now(); if (!nearMe(pos, .5) && !voice('misc', pos)) return; psnd(id, { pos, ref: 5, roll: 1, verb: .2 }); },
 };
+function planeCatchSnd() { const me = typeof PLANES !== 'undefined' && PLANES.S.steering && PLANES.S.caughtAt === G.time; psnd('plane_catch', { dest: me ? AU.master : null, vol: me ? 1 : .7 }); }
+// which impact sound a shot mark (PAPER_MARKS.kindFor + the collider's wallbang class) stands for
+function impactOf(M) {
+  const k = M.kind; if (k === 'mat') return 'imp_mat'; if (k === 'wood') return 'imp_wood'; if (k === 'scuff') return M.metal ? 'imp_metal' : 'imp_plastic';
+  if (k === 'paper') return 'imp_paper'; if (k === 'blast') return 'imp_card_thick'; if (k === 'slash') return 'imp_card_thin';
+  return M.wall === 'card' ? 'imp_card_thin' : 'imp_card_thick';
+}
+
+/* ================= gun voices ================= */
+// GUN_VOICE[name]: the bank id of each engine weapon sound (own shot = near; someone else's shot also mixes in a FAR tail with distance).
+// Kept as a table (+ GSND / gsBuild) because the killcam and add-ons read it. Sector Nine guns that Foldiers does not use point at the
+// nearest paper gun, so no old sound can ever play.
+const GSND = {};
+function gsBuild(dur, fn) {   // (add-ons: a silent buffer of that length; the paper bank fills GSND for every listed voice)
+  const c = AU.ctx; return c.createBuffer(1, Math.max(1, Math.floor(c.sampleRate * Math.min(dur || .1, 2))), c.sampleRate);
+}
+const GV = (id, far, o = {}) => Object.assign({ id, far, dur: .5, verb: .12, echo: .06, vol: 1, fn: () => {} }, o);
+const GUN_VOICE = {
+  shot: GV('gun_rifle', 'gun_rifle_far'), smg: GV('gun_smg', 'gun_smg_far', { vol: .9 }), shotgun: GV('gun_shotgun', 'gun_shotgun_far', { pump: true }),
+  sniper: GV('gun_sniper', 'gun_sniper_far', { verb: .2, echo: .15 }), obelisk: GV('gun_sniper', 'gun_sniper_far', { verb: .2, echo: .15 }), rail: GV('gun_sniper', 'gun_sniper_far'),
+  pistol: GV('gun_smg', 'gun_smg_far'), burst: GV('gun_rifle', 'gun_rifle_far'), minigun: GV('gun_smg', 'gun_smg_far', { vol: .7 }), judge: GV('gun_shotgun', 'gun_shotgun_far'),
+  launch: GV('plane_throw', null), crossbow: GV('boom_throw', null), arc: GV('gun_smg', 'gun_smg_far'), disc: GV('boom_throw', null), seeker: GV('plane_throw', null),
+  cryo: GV('gun_rifle', 'gun_rifle_far'), flame: GV('shred_wall', null), voidfire: GV('gun_sniper', 'gun_sniper_far'),
+};
+// the paper ids of the boomerang voices (55-weapons.js defines its own GUN_VOICE entries for them; these ids win)
+const PAPER_VOICE = { boomThrow: 'boom_throw', boomWhirr: 'boom_whirr', boomCatch: 'boom_catch', boomHit: 'boom_hit', boomClang: 'boom_clang' };
+function gunId(k) { return PAPER_VOICE[k] || (GUN_VOICE[k] && GUN_VOICE[k].id) || null; }
 function gunVoice(name, pos, vol = 1, delay = 0) {
-  const v = GUN_VOICE[name]; if (!v || !AU.ctx) return false;
-  if (!GSND[name]) GSND[name] = gsBuild(v.dur, v.fn);
-  const c = AU.ctx, src = c.createBufferSource(); src.buffer = GSND[name]; src.playbackRate.value = rand(.96, 1.04);
-  const d = bus({ pos: pos || null, hrtf: !!pos, occl: !!pos, verb: pos ? v.verb * .7 : v.verb, echo: v.echo, ref: SOUND_MIX.categories.shot.ref, roll: SOUND_MIX.categories.shot.roll, vol: v.vol * vol });
-  if (pos) { const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = clamp(16000 - camera.position.distanceTo(pos) * 220, 1800, 16000); src.connect(f); f.connect(d); } else src.connect(d);
-  src.start(delay > 0 ? c.currentTime + delay : 0); return true;
+  const v = GUN_VOICE[name] || {}, id = gunId(name); if (!AU.ctx || !id || !PSND.has(id)) return false;
+  const gv = v.id ? v : { verb: .1, echo: 0, vol: 1 };
+  if (!pos) {   // your own gun: 2D, the room is in the sound
+    psnd(id, { vol: (gv.vol || 1) * vol, verb: gv.verb, echo: gv.echo, delay, jit: .03 });
+    if (v.pump) psnd('gun_pump', { delay: delay + .36, vol: .9 });
+    return true; }
+  // someone else's: placed in 3D (HRTF, occluded, fresh panner per sound). Near body and far tail cross-fade with distance (12-45 m),
+  // and the air takes the top off far shots.
+  const m = SOUND_MIX.categories.shot, d = camera.position.distanceTo(pos), farK = v.far ? clamp((d - 12) / 33, 0, 1) : 0, air = clamp(16000 - d * 220, 1800, 16000);
+  const o = { pos, hrtf: true, occl: true, ref: m.ref, roll: m.roll, verb: (gv.verb || .1) * .7, echo: gv.echo || 0, delay, lp: air, jit: .03 };
+  if (farK < 1) psnd(id, Object.assign({}, o, { vol: (gv.vol || 1) * vol * Math.sqrt(1 - farK) }));
+  if (farK > 0) psnd(v.far, Object.assign({}, o, { vol: (gv.vol || 1) * vol * Math.sqrt(farK) * 1.1 }));
+  if (v.pump && d < 30) psnd('gun_pump', { pos, hrtf: true, occl: true, ref: 3, roll: 1.2, delay: delay + .36, vol: .8 });
+  return true;
 }
-// warm every buffer in idle time after audio starts, so the first shot of each gun never stalls a frame
-function warmGunVoices() { if (!AU.ctx) return; const ks = Object.keys(GUN_VOICE).filter(k => !GSND[k]); if (!ks.length) return; GSND[ks[0]] = gsBuild(GUN_VOICE[ks[0]].dur, GUN_VOICE[ks[0]].fn); setTimeout(warmGunVoices, 30); }
-// recorded gun samples (GUN_VOICE[k].sample): fetched + decoded once in the menu; GSND[k] then holds the recording for your own gun, bots,
-// other online players and the killcam alike (all of them play GSND[k]). ogg where the browser plays it (Chrome/Firefox), else mp3 (Safari)
-// empty-magazine clicks per gun type (owner request 2026-11-11): real 9 mm dry-fire recording shaped per type, assets/audio/guns/dry_<type>.ogg|mp3
-// (credits assets/audio/CREDITS.md; variants on the s9-gunsfx listening page). vol: about -30 LUFS in game: quiet, a gunshot is ~-13
-const DRY_FIRE = { pistol: { vol: .55 }, rifle: { vol: .42 }, sniper: { vol: .4 }, shotgun: { vol: .4 } };
-const DRY_OF = { pistol: 'pistol', wasp: 'pistol', judge: 'pistol', sniper: 'sniper', obelisk: 'sniper', helix: 'sniper', breacher: 'shotgun', poopgun: 'shotgun' };
+function warmGunVoices() { PSND.attach(); }
+function loadGunSamples() { PSND.attach(); }
+const DRY_FIRE = { smg: { vol: 1 }, rifle: { vol: 1 }, sniper: { vol: 1 }, shotgun: { vol: 1 } };
+const DRY_OF = { pistol: 'smg', wasp: 'smg', judge: 'smg', sniper: 'sniper', obelisk: 'sniper', helix: 'sniper', breacher: 'shotgun', poopgun: 'shotgun' };
 const dryClass = id => DRY_OF[id] || 'rifle';
-function loadGunSamples() {
-  if (!AU.ctx || AU.samplesAsked) return; AU.samplesAsked = true; let ext = 'mp3'; try { if (new Audio().canPlayType('audio/ogg; codecs="vorbis"')) ext = 'ogg'; } catch (e) {}
-  for (const k in GUN_VOICE) { const v = GUN_VOICE[k]; if (!v.sample) continue;
-    fetch(v.sample + '.' + ext).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }).then(b => AU.ctx.decodeAudioData(b)).then(buf => { GSND[k] = buf; v.loaded = true; })
-      .catch(e => console.warn('[sound] gun sample ' + k + ' not loaded (the synthesized voice stays):', e && e.message || e)); }
-  AU.dryBuf = AU.dryBuf || {};
-  for (const c in DRY_FIRE) fetch('assets/audio/guns/dry_' + c + '.' + ext).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); }).then(b => AU.ctx.decodeAudioData(b)).then(buf => { AU.dryBuf[c] = buf; })
-    .catch(e => console.warn('[sound] dry-fire click ' + c + ' not loaded (the old click stays):', e && e.message || e));
-}
-for (const k in GUN_VOICE) { const old = sfx[k]; sfx[k] = function (...a) { if (!gunVoice(k, a[0] && a[0].isVector3 ? a[0] : null)) old && old.apply(sfx, a); }; }   // (given a position = someone else's gun, placed in 3D)
-{ const oldBot = sfx.botShot, BOTV = { sniper: 'sniper', obelisk: 'obelisk', helix: 'rail', breacher: 'shotgun', wasp: 'smg', pistol: 'pistol', carbine: 'shot', triad: 'burst', judge: 'judge', titan: 'minigun', arc: 'arc', inferno: 'flame', cryo: 'cryo', void: 'voidfire', nova: 'launch', stinger: 'crossbow', ricochet: 'disc', seeker: 'seeker' };
-  // every weapon has its own voice: the table above, else the weapon's own sound (add-on guns register theirs in GUN_VOICE)
-  sfx.botShot = function (pos, kind, delay, atMe) { const k = kind === true ? 'sniper' : kind, s = BOTV[k] || (WEAPONS[k] && GUN_VOICE[WEAPONS[k].sound] ? WEAPONS[k].sound : null);
-    if (!s || !AU.ctx) return oldBot.call(sfx, pos, kind); if (!voice('bot', pos, atMe)) return false; return gunVoice(s, pos, .8, delay || 0); }; }   // false = refused (busy far-sound budget)
-// The shot that hits / kills YOU is always heard (CoD / CS2: you always hear what killed you), wherever the shooter is: its voice
-// skips the far-sound budget (a far sniper in a busy fight was refused: the budget was full of other far gunfire) and is placed
-// at most 25 m away in the shooter's direction, so it stays clearly audible over your own death sound. Direction is unchanged.
+// (kept for the killcam / 90-flow test exports) the hit-confirm buffers
+function hitSample(kind) { return PSND.buffer(kind === 'head' ? 'hit_head' : kind === 'shield' ? 'hit_shield' : 'hit_body', 0) || AU.ctx.createBuffer(1, 64, AU.ctx.sampleRate); }
+for (const k in GUN_VOICE) if (!sfx[k]) sfx[k] = function (...a) { gunVoice(k, a[0] && a[0].isVector3 ? a[0] : null); };
+{ const BOTV = { sniper: 'sniper', obelisk: 'obelisk', helix: 'rail', breacher: 'shotgun', wasp: 'smg', pistol: 'pistol', carbine: 'shot', triad: 'burst', judge: 'judge', titan: 'minigun', arc: 'arc', inferno: 'flame', cryo: 'cryo', void: 'voidfire', nova: 'launch', stinger: 'crossbow', ricochet: 'disc', seeker: 'seeker' };
+  // every weapon has its own voice: the table above, else the weapon's own sound name
+  sfx.botShot = function (pos, kind, delay, atMe) { const k = kind === true ? 'sniper' : kind, s = BOTV[k] || (typeof WEAPONS !== 'undefined' && WEAPONS[k] && gunId(WEAPONS[k].sound) ? WEAPONS[k].sound : 'shot');
+    if (!AU.ctx) return false; if (!voice('bot', pos, atMe)) return false; return gunVoice(s, pos, .8, delay || 0); }; }   // false = refused (busy far budget)
+// The shot that hits / kills YOU is always heard, placed at most 25 m away in the shooter's direction (CoD / CS2)
 const SHOT_AT_ME_M = 25;
-const SILENT_HIT_W = new Set(['knife', 'nade', 'stinger', 'ricochet', 'seeker', 'boomerang', 'nova', 'poopgun', 'flytrap', 'ftspit', 'ftpoison', 'lava', 'acid', 'laser']);   // hits that are not a gunshot (own sounds)
+const SILENT_HIT_W = new Set(['knife', 'nade', 'stinger', 'ricochet', 'seeker', 'boomerang', 'nova', 'poopgun', 'flytrap', 'ftspit', 'ftpoison', 'lava', 'acid', 'laser', 'plane']);
 function shotAtMe(p) { const c = camera.position, d = p.distanceTo(c); if (d > SHOT_AT_ME_M) p.sub(c).multiplyScalar(SHOT_AT_ME_M / d).add(c); return p; }
-// an enemy reloading near you (CS2: you hear the mag come out): mag out, mag in, a bolt for the sniper; placed in 3D
-sfx.foeReload = function (pos, kind) { if (!voice('foley', pos)) return; const t = AU.ctx.currentTime, c = SOUND_MIX.categories.foley, d = bus({ pos, hrtf: true, occl: true, ref: c.ref, roll: c.roll, vol: .9, verb: .06 });
-  if (kind === 'sniper' || kind === 'obelisk') { nz(d, t + .1, .05, 'bandpass', 2600, 5, .35); osc(d, t + .14, .05, 'square', 1200, 600, .1); nz(d, t + .5, .08, 'bandpass', 3400, 6, .3); return; }
-  osc(d, t + .1, .02, 'square', 900, 700, .08); nz(d, t + .12, .14, 'bandpass', 2200, 3, .22, .01, 900);
-  nz(d, t + .62, .06, 'bandpass', 1600, 4, .4); osc(d, t + .62, .04, 'square', 420, 260, .12); nz(d, t + .67, .04, 'highpass', 3000, 1, .2); };
+// an enemy reloading near you (CS2: you hear the mag come out): card mag out / in, paper shells, the sniper's bolt; placed in 3D
+sfx.foeReload = function (pos, kind) { if (!voice('foley', pos)) return; const c = SOUND_MIX.categories.foley, o = { pos, hrtf: true, occl: true, ref: c.ref, roll: c.roll, vol: 1.1 }, w = wclass(kind);
+  if (w === 'sniper') { psnd('gun_bolt', Object.assign({ delay: .1 }, o)); return; }
+  if (w === 'shotgun') { psnd('shell_in', Object.assign({ delay: .1 }, o)); psnd('shell_in', Object.assign({ delay: .4 }, o)); return; }
+  psnd('mag_out', Object.assign({ delay: .1 }, o)); psnd('mag_in', Object.assign({ delay: .62 }, o)); };
+
+/* ================= hooks: context for the sounds (wrapping engine functions, like the other add-ons do) ================= */
+// The engine's sound calls carry little detail (sfx.hit(crit) does not say wallbang / limb, sfx.impact(pos) does not say what was hit,
+// deaths call no sound). These wrappers note the detail just before the engine calls sfx; each one calls the original unchanged.
+const _ow2 = V3(), _occ2 = new Map();
+function audioHooks() {
+  if (AU.hooked) return; AU.hooked = true;
+  const H = AU.hooks = {};
+  // 1) a hit on a bot / remote player: zone + wallbang + kill for YOUR hit confirm; the crumple heard AT the body for everyone else's
+  if (typeof damageBot === 'function') { const o = damageBot; damageBot = function (r, dmg, crit, point, dir, zone, attacker, weapon) {
+      if (r && !r.dead && !(r.shield > 0)) {
+        const mine = attacker === PLAYER_ENT, wb = !!(r.wbT && typeof G !== 'undefined' && r.wbT === G.time && r.wbBy === attacker);
+        if (mine) AU.hitCtx = { zone, wb, kill: r.hp - dmg <= 0, weapon };
+        else if (point && !SILENT_HIT_W.has(weapon) && voice('impact', point)) { const now = performance.now(); if (!(AU.bodyT > now - 45)) { AU.bodyT = now; psnd(crit ? 'head_impact' : 'body_impact', { pos: point, ref: 3, roll: 1.2, vol: .8 }); } } }
+      return o.apply(this, arguments); }; H.damageBot = true; }
+  // 2) you get hit: headshot or not
+  if (typeof hurtPlayer === 'function') { const o = hurtPlayer; hurtPlayer = function (dmg, from, attacker, crit, weapon) { AU.hurtCtx = { crit: !!crit, weapon }; return o.apply(this, arguments); }; H.hurtPlayer = true; }
+  // 3) deaths by cause: the paper death sound at the body (confetti / shred / crumple / halve / flatten / unfold), then debris settling
+  if (typeof PAPER_DEATHS !== 'undefined' && PAPER_DEATHS.start) { const o = PAPER_DEATHS.start; PAPER_DEATHS.start = function (r, k, dir) {
+      let pos = null; try { pos = r.root.position.clone(); pos.y += 1.1; } catch (e) {}
+      try { sfx.death2(k, pos); if (pos) psnd('debris', { pos, ref: 3, delay: k === 'unfold' ? 1.5 : .9, vol: .6 }); } catch (e) {}
+      AU.inDeath = true; try { return o.apply(this, arguments); } finally { AU.inDeath = false; } }; H.deaths = true; }
+  // 4) shot marks: which surface the bullet hit (the impact sound right after reads it)
+  if (typeof PAPER_MARKS !== 'undefined' && PAPER_MARKS.hit) { const o = PAPER_MARKS.hit; PAPER_MARKS.hit = function (obj, p, n, weapon) {
+      try { const m = obj && obj.material && !Array.isArray(obj.material) ? obj.material : null; AU.lastMark = { t: performance.now(), p: p.clone(), kind: PAPER_MARKS.kindFor(obj, weapon), wall: obj && obj.userData.wall, metal: !!(m && (m.metalness > .5 || (m.userData && m.userData.paper === 'grey'))), w: weapon }; } catch (e) {}
+      return o.apply(this, arguments); }; H.marks = true; }
+  // 5) kill feed: a soft paper tick for kills you were not part of (yours have the kill confirm / your death sound)
+  if (typeof kfeed === 'function') { const o = kfeed; kfeed = function (killer, victim) { try { if (killer !== PLAYER_ENT && victim !== PLAYER_ENT) sfx.killFeed(); } catch (e) {} return o.apply(this, arguments); }; H.kfeed = true; }
+  // 6) torn card: a punch-through "thup" + tear per hole, a long rip when a flap tears open, shotgun shreds, floors cracking
+  addEventListener('foldiers:tear', onTear); H.tear = true;
+  // 7) occlusion: the numbers from data/sound_occlusion.json (thin card is leaky) + holes in thin card / floors let sound through
+  fetch('data/sound_occlusion.json', { cache: 'no-cache' }).then(r => r.json()).then(j => { if (typeof OCC === 'undefined') return; for (const k of ['ttl', 'cell', 'maxDist', 'diffractDist', 'maxExtra']) if (j[k] != null) OCC[k] = j[k]; Object.assign(OCC.mat, j.mat || {}); for (const k of ['thick', 'around', 'over', 'budget']) if (j[k]) Object.assign(OCC[k], j[k]); AU.occData = j; }).catch(() => {});
+  if (typeof occlude === 'function' && typeof losHit === 'function') { const o = occlude; occlude = function (src, out, feet) { const r = o(src, out, feet); try { holesThrough(src, r, feet); } catch (e) {} return r; }; H.occlude = true; }
+  // 8) round flow stingers (roundfx): paper versions of every cue
+  roundFxSounds(); H.roundfx = !!window.S9RoundFX;
+  // 9) menu / HUD buttons: a cardboard tap on click, a soft paper tick on hover
+  document.addEventListener('pointerdown', e => { const b = e.target && e.target.closest && e.target.closest('button,[role=button],.btn,a[href],.card,.chip,input[type=range]'); if (b && !b.disabled) sfx.uiClick(); }, true);
+  document.addEventListener('pointerover', e => { const b = e.target && e.target.closest && e.target.closest('button,[role=button],.btn'); if (!b || b === AU.hovEl || b.disabled) return; AU.hovEl = b; const n = performance.now(); if (n - (AU.hovT || 0) > 70) { AU.hovT = n; sfx.uiHover(); } }, true);
+  document.addEventListener('keydown', e => { if (e.code === 'Escape' && typeof state !== 'undefined' && state !== 'play') sfx.uiBack(); }, true);
+  // 10) the killcam pre-renders some sfx once: if that ran before the bank was decoded it has silence; it reads AU.hitBuf live (set by PSND.attach)
+}
+// a thin-card panel's open share (holes + slits + open flap + knife cut-outs + windows) -> how much sound gets through it
+function panelOpen(P_) { if (!P_) return 0; const A = P_.w * P_.h; let o = 0;
+  for (const h of P_.holes || []) o += Math.PI * h.r * h.r; for (const s of P_.slits || []) o += (s.r || .03) * 2 * Math.hypot((s.u1 || 0) - (s.u0 || 0), (s.v1 || 0) - (s.v0 || 0));
+  if (P_.flap && P_.flap.open) o += (P_.flap.u1 - P_.flap.u0) * (P_.flap.v1 - P_.flap.v0);
+  for (const c of P_.cuts || []) if (c.w && c.h) o += c.w * c.h; for (const k of P_.knife || []) if (k.closed && k.area) o += k.area;
+  return Math.min(1, o / Math.max(.05, A)); }
+// after occlude(): when the thing in the way is a TORN thin card panel (wall or floor), the holes leak sound: less muffling, brighter,
+// and with a big enough hole the sound comes from the hole. Cached per source cell like occlude().
+function holesThrough(src, r, feet) {
+  if (!r || r.kind !== 'blocked' || typeof TEAR === 'undefined') return;
+  const L = camera.position, key = Math.round(src.x / .5) + ',' + Math.round(src.y / .5) + ',' + Math.round(src.z / .5) + '|' + Math.round(L.x) + ',' + Math.round(L.y) + ',' + Math.round(L.z), now = performance.now(), c = _occ2.get(key);
+  let res = c && now - c.t < 150 ? c : null;
+  if (!res) { _ow2.set(src.x, src.y + (feet ? .4 : 0), src.z); const h = losHit(L, _ow2); res = { t: now, open: 0, via: null, card: null };
+    if (h) { const u = h.object.userData; if (u.tear !== undefined) { const P_ = TEAR.panels[u.tear]; res.card = P_ && P_.floor ? 'floor' : 'card'; res.open = panelOpen(P_);
+        let big = null; for (const q of (P_ && P_.holes) || []) if (q.r > .1 && (!big || q.r > big.r)) big = q;
+        if (big && P_.mesh) res.via = new THREE.Vector3(big.u - P_.w / 2, big.v - P_.h / 2, 0).applyMatrix4(P_.mesh.matrixWorld); } }
+    _occ2.set(key, res); if (_occ2.size > 300) _occ2.delete(_occ2.keys().next().value); }
+  if (!res.card) return;
+  const base = (AU.occData && AU.occData.mat && AU.occData.mat[res.card === 'floor' ? 'cardFloor' : 'card']) || (res.card === 'floor' ? [-8, 1500] : [-6, 2100]);
+  const k = Math.min(1, Math.sqrt(res.open) * 2.2);   // ~20 % torn open = nearly open air
+  const dB = base[0] * (1 - k), lp = base[1] + (16000 - base[1]) * k * k;
+  if (dB > r.dB) { r.dB = dB; r.lp = Math.max(r.lp, lp); r.mat = res.card; r.holes = +res.open.toFixed(3); if (res.via && k > .35) r.via = res.via; }
+}
+// tear events (62-tearing.js): every hole / slit / flap a bullet or blast makes in thin card
+function onTear(e) { try {
+  const d = e.detail, p = new THREE.Vector3(d.x, d.y, d.z), now = performance.now(); AU.lastTear = { t: now, p };
+  if (d.weapon === 'knife' || d.kind === 'cut') return;   // the cutter's slice strokes have their own sound
+  let floor = null; for (const P_ of TEAR.panels) if (P_.floor && P_.mesh && P_.mesh.parent && Math.abs(P_.mesh.position.y - p.y) < .25 && Math.abs(P_.mesh.position.x - p.x) < P_.w && Math.abs(P_.mesh.position.z - p.z) < P_.w + P_.h) { floor = P_; break; }
+  if (d.kind === 'flap') { psnd('flap_tear', { pos: p, ref: 4, roll: 1, hrtf: true }); psnd('debris', { pos: p, ref: 3, delay: .5, vol: .7 }); return; }
+  if (floor) { const op = panelOpen(floor); if (op > .06 && !floor._snd) { floor._snd = 1; psnd('floor_break', { pos: p, ref: 5, roll: 1, hrtf: true }); psnd('debris', { pos: new THREE.Vector3(p.x, p.y - 1.5, p.z), ref: 3, delay: .55 }); return; } }
+  if (d.weapon === 'breacher') { if (now - (AU.shredT || 0) < 80) return; AU.shredT = now; if (voice('impact', p)) psnd('shred_wall', { pos: p, ref: 3, roll: 1 }); return; }
+  if (!voice('impact', p)) return;
+  psnd('imp_card_thin', { pos: p, ref: 3, roll: 1, rate: floor ? .82 : 1 });
+} catch (x) {} }
+// round flow cues (modules/roundfx.js): replace its synthesised moments with the paper stingers (same moments, same timing)
+function roundFxSounds() {
+  const RF = window.S9RoundFX; if (!RF || !RF.SND || RF.SND._paper) return; const N = RF.SND; N._paper = true;
+  const u = (id, o) => () => psnd(id, Object.assign({ ui: true }, o || {}));
+  Object.assign(N, { tick: n => psnd('ui_tick', { ui: true, v: Math.max(0, Math.min(4, 5 - (n | 0))), jit: 0 }), go: u('round_go'), intro: u('round_start'), win: u('sting_win'), lose: u('sting_lose'),
+    clutchWin: u('sting_victory'), score: u('score_tick'), mvp: u('medal', { v: 4 }), heart: () => psnd('heart', { ui: true }), clutch: u('match_point'), matchPoint: u('match_point'),
+    planted: u('match_point'), defused: u('sting_win'), blast: u('plane_pop', { vol: .5 }), halftime: u('round_start'), victory: u('sting_victory'), defeat: u('sting_lose'),
+    podium: n => psnd('medal', { ui: true, v: Math.max(0, 4 - (n | 0)) }), cheer: () => psnd('debris', { ui: true, vol: 1.4 }), card: i => psnd('ui_click', { ui: true, rate: 1 + (i | 0) * .06, jit: 0 }),
+    medal: () => psnd('medal', { ui: true, v: 3 }), plate: u('score_tick'), board: u('ui_back'), celIntro: u('round_start', { vol: .7 }), barTick: () => psnd('score_tick', { ui: true }), drop: u('imp_card_thick') });
+  for (const k in N) if (typeof N[k] === 'function' && !/^_/.test(k) && !['tick', 'go', 'intro', 'win', 'lose', 'clutchWin', 'score', 'mvp', 'heart', 'clutch', 'matchPoint', 'planted', 'defused', 'blast', 'halftime', 'victory', 'defeat', 'podium', 'cheer', 'card', 'medal', 'plate', 'board', 'celIntro', 'barTick', 'drop'].includes(k)) N[k] = u('ui_click');
+}
+
+/* ================= per frame: listener, plane flights, jump / crouch, UI bus ================= */
+const PFLY = new Map(), PSEEN = { returns: 0, shotDown: 0, caught: -1 }, MOVEW = { ground: true, crouch: false };
+function planeTick() {
+  if (typeof PLANES === 'undefined' || !AU.ctx || !PSND.has('plane_loop')) return; const c = AU.ctx, now = c.currentTime, st = PLANES.S.stats;
+  for (const p of PLANES.list) { let h = PFLY.get(p);
+    if (!h && !p.dead && camera.position.distanceTo(p.pos) < 40) {   // one looping flutter per plane, its own HRTF panner moving with it
+      const src = c.createBufferSource(); src.buffer = PSND.buffer('plane_loop', 0); src.loop = true; src.loopStart = 0; src.loopEnd = src.buffer.duration;
+      const g = c.createGain(); g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(.9 * (PSND.mix.world || 1), now + .12);
+      const pan = c.createPanner(); pan.panningModel = 'HRTF'; pan.distanceModel = 'inverse'; pan.refDistance = 2.5; pan.rolloffFactor = 1.2; pan.maxDistance = 60;
+      src.connect(g); g.connect(pan); pan.connect(AU.foe && AU.dry === AU.dry0 ? AU.foe : AU.dry); src.start(now, Math.random() * src.buffer.duration);
+      h = { src, g, pan }; PFLY.set(p, h); PSND.played.plane_loop = (PSND.played.plane_loop || 0) + 1; }
+    if (!h) continue;
+    if (p.dead) { h.g.gain.cancelScheduledValues(now); h.g.gain.setTargetAtTime(0, now, .03); h.src.stop(now + .2); PFLY.delete(p); continue; }
+    const q = p.pos; if (h.pan.positionX) { h.pan.positionX.setTargetAtTime(q.x, now, .02); h.pan.positionY.setTargetAtTime(q.y, now, .02); h.pan.positionZ.setTargetAtTime(q.z, now, .02); } else h.pan.setPosition(q.x, q.y, q.z);
+    h.src.playbackRate.setTargetAtTime(clamp(p.speed / 15, .7, 1.4), now, .05); }
+  for (const [p, h] of PFLY) if (!PLANES.list.includes(p)) { try { h.src.stop(); } catch (e) {} PFLY.delete(p); }
+  if (st.returns > PSEEN.returns) sfx.planeRTS(); PSEEN.returns = st.returns;
+  if (st.shotDown > PSEEN.shotDown) { const p = PLANES.list.filter(q => q.dead).pop(); psnd('plane_down', p ? { pos: p.pos.clone(), ref: 4, hrtf: true } : {}); } PSEEN.shotDown = st.shotDown;
+  if (AU.seenCaught == null) AU.seenCaught = st.caught;
+  if (st.caught !== AU.seenCaught) { AU.seenCaught = st.caught; planeCatchSnd(); }   // (a catch that did not go through sfx.equip / knifeHit)
+}
+function moveTick() {
+  if (typeof P === 'undefined' || typeof state === 'undefined' || state !== 'play' || P.dead) { MOVEW.ground = true; return; }
+  const g = !!P.onGround; if (MOVEW.ground && !g && P.vel && P.vel.y > 4) sfx.jump(); MOVEW.ground = g;
+  const cr = (P.crouch || 0) > .5; if (cr !== MOVEW.crouch && g && !P.walk) psnd('crouch', { vol: cr ? 1 : .6, rate: cr ? 1 : 1.15 }); MOVEW.crouch = cr;
+}
 const camFwd = V3(), camUp = V3();
 function updateListener() {
   if (!AU.ctx) return; const l = AU.ctx.listener, p = camera.position;
   camera.getWorldDirection(camFwd); camUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
   if (l.positionX) { l.positionX.value = p.x; l.positionY.value = p.y; l.positionZ.value = p.z; l.forwardX.value = camFwd.x; l.forwardY.value = camFwd.y; l.forwardZ.value = camFwd.z; l.upX.value = camUp.x; l.upY.value = camUp.y; l.upZ.value = camUp.z; }
   else { l.setPosition(p.x, p.y, p.z); l.setOrientation(camFwd.x, camFwd.y, camFwd.z, camUp.x, camUp.y, camUp.z); }
+  if (AU.ui) AU.ui.gain.value = document.hidden ? 0 : CFG.vol;
+  try { planeTick(); moveTick(); if (!AU.hooked && PSND.ready) audioHooks(); else if (AU.hooked && window.S9RoundFX && !S9RoundFX.SND._paper) roundFxSounds(); } catch (e) { AU.tickErr = String(e && e.message || e); }
 }
-
 /* ================= springs ================= */
 // springs integrate in fixed 1/240 s slices (the remainder carried to the next call), so a kick or sway moves the same way
 // at 30, 60, 144 or 240 fps; the returned value is blended inside the current slice, so it is smooth at any frame rate
@@ -3196,8 +3816,10 @@ const PVM = (() => {
     // ref3: the hand comes up from below, fingers up, the pinch (thumb + index) on the plane's tail
     pinch: () => new T.Matrix4().makeBasis(new T.Vector3(0, 0, 1), new T.Vector3(-1, 0, 0), new T.Vector3(0, -1, 0)),
   };
+  // grip socket of a pose: an [x,y,z] array (old poses file) or { pos, axes } (new art-agent format); only the position is used here
+  const sockOf = pose => { const v = (S.hand.poses.grip_sockets || {})[pose]; return Array.isArray(v) ? v : v && Array.isArray(v.pos) ? v.pos : [0, -.03, -.07]; };
   function placeHand(mesh, side, c) {
-    const sock = new T.Vector3(...((S.hand.poses.grip_sockets || {})[c.pose] || [0, -.03, -.07])); if (side === 'L') sock.x = -sock.x;
+    const sock = new T.Vector3(...sockOf(c.pose)); if (side === 'L') sock.x = -sock.x;
     const M = c.basis === 'pinch' ? BASIS.pinch() : side === 'L' ? BASIS.L(c.yaw) : BASIS.R();
     const r = c.rot || [0, 0, 0]; M.premultiply(new T.Matrix4().makeRotationFromEuler(new T.Euler(r[0] * D2R, r[1] * D2R, r[2] * D2R, 'XYZ')));
     mesh.quaternion.setFromRotationMatrix(M);
@@ -3278,7 +3900,7 @@ const PVM = (() => {
           } catch (e) { console.warn('paper gun', gid, e); }
         }
         if (typeof P !== 'undefined' && P.weapon && WM[P.weapon]) setModel(P.weapon);
-        scopeCss();         warm(); S.ready = true;
+        scopeCss();         warm(); S.ready = true; setTimeout(teamPrep, 4000);
       } catch (e) { S.err = String(e && e.message || e); console.warn('PVM', e); }
       S.stats.loadMs = Math.round(performance.now() - t0);
       return S;
@@ -3292,8 +3914,13 @@ const PVM = (() => {
       "#scope::before{content:'';position:absolute;left:50%;top:50%;width:72vmin;height:72vmin;transform:translate(-50%,-50%);border-radius:50%;box-shadow:inset 0 0 6vmin 1vmin rgba(30,18,6,.55)}",
       '#scope i{background:#2b2420!important;box-shadow:none!important}#scope .h{height:2px!important;margin-top:-1px}#scope .v{width:2px!important;margin-left:-1px}',
       '#scope .h,#scope .v{-webkit-mask:radial-gradient(circle at center,transparent 0 1.6vmin,#000 1.7vmin 36vmin,transparent 36.1vmin);mask:radial-gradient(circle at center,transparent 0 1.6vmin,#000 1.7vmin 36vmin,transparent 36.1vmin)}',
-      '#scope .tl,#scope .tr,#scope .tb{display:none!important}#scope .dot{width:5px!important;height:5px!important;margin:-2.5px 0 0 -2.5px!important;background:#c0392b!important;box-shadow:0 0 0 1px rgba(255,255,255,.6)!important}'].join('\n');
+      '#scope .tl,#scope .tr,#scope .tb{display:none!important}#scope .dot{width:7px!important;height:7px!important;margin:-3.5px 0 0 -3.5px!important;background:#e0392b!important;box-shadow:0 0 0 1.5px #fff,0 0 0 2.5px rgba(30,20,10,.85)!important;z-index:2}',
+      // aim point while aiming down sights (not the sniper: its scope has its own): exactly the screen centre = where the shot goes
+      '#pvmDot{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;opacity:0;z-index:5}',
+      "#pvmDot::before{content:'';position:absolute;left:-3.5px;top:-3.5px;width:7px;height:7px;border-radius:50%;background:#e0392b;box-shadow:0 0 0 1.5px #fff,0 0 0 2.5px rgba(30,20,10,.85)}",
+      "#pvmDot.ring::before{left:-2.5px;top:-2.5px;width:5px;height:5px}#pvmDot.ring::after{content:'';position:absolute;left:-13px;top:-13px;width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(30,20,10,.8),inset 0 0 0 1px rgba(30,20,10,.8)}"].join('\n');
     document.head.appendChild(st);
+    if (!document.getElementById('pvmDot')) { const d = document.createElement('div'); d.id = 'pvmDot'; (document.getElementById('hud') || document.body).appendChild(d); }
   }
   // compile every paper program now (both render targets), never on the first equip / ADS / throw
   function warm() {
@@ -3321,7 +3948,7 @@ const PVM = (() => {
   function update(dt) {
     const vm = S.vm[P.weapon];
     if (P.weapon !== lastW) { lastW = P.weapon; if (arc) arc.visible = false; lastReload = 0; lastFlash = 0; if (vm) { for (const k in vm.act) vm.act[k].stop(); vm.seq = null; if (vm.act.equip) play(vm, 'equip', vm.act.equip.getClip().duration / Math.max(.2, P.switchDur || .45)); if (vm.gid === 'plane') planeShow(vm); } }
-    if (!vm) return;
+    if (!vm) { aimDot(null); return; }
     const k = 1 - P.ads;
     vm.pose.rotation.set(vm.hipRot[0] * k, vm.hipRot[1] * k, vm.hipRot[2] * k);
     if (vm.act.inspect && vm.act.inspect.isRunning() && (P.ads > .05 || P.reload > 0 || mouseDown)) vm.act.inspect.stop();
@@ -3335,7 +3962,18 @@ const PVM = (() => {
     if (vm.seq) { vm.seq.t -= dt; if (vm.seq.t <= 0) nextSeq(vm); }
     if (vm.gid === 'plane') planeVM(vm, dt);
     if (PLANES.S.steering) vm.group.visible = false;   // flying the plane: your view is the chase camera
+    aimDot(vm);
     vm.mixer.update(dt);
+  }
+  // the ADS aim point: ONLY on a gun with a digital / reflex optic (data/paper_weapons.json "optic": "reflex"). Iron / paper sights get
+  // no dot: their real sight parts line up with screen centre. The sniper keeps its scope. Fades in over P.ads .7 -> .95.
+  let dotEl = null, dotOp = -1, dotCls = null;
+  const hasDot = w => !!w && w.optic === 'reflex' && !w.scope;
+  function aimDot(vm) {
+    if (!dotEl) dotEl = document.getElementById('pvmDot'); if (!dotEl) return;
+    const w = W(), on = vm && vm.gid !== 'plane' && hasDot(w) && state === 'play' && !PLANES.S.steering;
+    const op = on ? Math.round(clamp((P.ads - .7) / .25, 0, 1) * 20) / 20 : 0, cls = vm && vm.gid === 'shotgun' ? 'ring' : '';
+    if (op !== dotOp) { dotOp = op; dotEl.style.opacity = op; } if (cls !== dotCls) { dotCls = cls; dotEl.className = cls; }
   }
   /* ---- the plane slot (ref3: pinched in the hand, nose to the right-forward) ---- */
   const PL = { throwT: 0, pending: false, tipShown: false };
@@ -3403,7 +4041,7 @@ const PVM = (() => {
     ok('paper viewmodels loaded', S.ready && ['carbine', 'breacher', 'sniper', 'wasp', 'plane'].every(id => WM[id] === S.vm[id]), Object.keys(S.vm).join(','));
     window.__god = true; P.shield = 1e9; const prog0 = renderer.info.programs.length, keys0 = new Set(renderer.info.programs.map(x => x.cacheKey)), seen = new Set(keys0), where = [], chk = lab => { for (const x of renderer.info.programs) if (!seen.has(x.cacheKey)) { seen.add(x.cacheKey); where.push(lab); } }, v = new T.Vector3(), g = new T.Vector3();
     const sockErr = (vm) => { let worst = 0; vm.group.updateMatrixWorld(true);
-      for (const side in vm.hands) { const m = vm.hands[side], c = m.userData.cfg, sk = new T.Vector3(...S.hand.poses.grip_sockets[c.pose]); if (side === 'L') sk.x = -sk.x;
+      for (const side in vm.hands) { const m = vm.hands[side], c = m.userData.cfg, sk = new T.Vector3(...sockOf(c.pose)); if (side === 'L') sk.x = -sk.x;
         m.localToWorld(v.copy(sk)); m.parent.getWorldPosition(g); worst = Math.max(worst, v.distanceTo(g) - new T.Vector3(...(c.off || [0, 0, 0])).length() * vm.sc); } return worst; };
     for (const id of ['carbine', 'breacher', 'sniper', 'wasp']) {
       const vm = S.vm[id]; if (P.weapon !== id) switchWeapon(id); await until(() => P.switchT <= 0, 2000); await wait(150);
@@ -3413,7 +4051,12 @@ const PVM = (() => {
       const fovOk = Math.abs(camera.fov - W().adsFov) < 1.5;
       ok(id + ': ADS zooms (FOV ' + Math.round(camera.fov) + ' of ' + W().adsFov + ') and the sight sits on screen centre', fovOk && Math.abs(v.x) < .02 && Math.abs(v.y) < .02, 'sight at ' + v.x.toFixed(3) + ', ' + v.y.toFixed(3) + ' (screen -1..1)');
       if (W().scope) ok(id + ': scope view (paper tube overlay on, gun hidden)', getComputedStyle(document.getElementById('scope')).opacity === '1' && !vm.group.visible);
-      adsHeld = false; await until(() => P.ads < .01, 2000);
+      { const el = W().scope ? document.querySelector('#scope .dot') : document.getElementById('pvmDot'), r = el.getBoundingClientRect(), cv = renderer.domElement.getBoundingClientRect();
+        const cx = r.left + r.width / 2 - (cv.left + cv.width / 2), cy = r.top + r.height / 2 - (cv.top + cv.height / 2), vis = +getComputedStyle(W().scope ? document.getElementById('scope') : el).opacity;
+        if (W().scope || hasDot(W())) ok(id + ': aim dot visible at the exact screen centre while aiming' + (W().scope ? ' (scope dot + pencil crosshair)' : ' (reflex optic)'), vis > .95 && Math.abs(cx) <= 1 && Math.abs(cy) <= 1, 'opacity ' + vis + ', off centre ' + cx.toFixed(1) + ', ' + cy.toFixed(1) + ' px');
+        else ok(id + ': iron/paper sights: NO aim dot while aiming (the sight itself is on centre)', vis === 0, 'dot opacity ' + vis); }
+      adsHeld = false; await until(() => P.ads < .01, 2000); await wait(50);
+      ok(id + ': aim dot gone at the hip (hip crosshair as before)', +getComputedStyle(document.getElementById('pvmDot')).opacity === 0 && getComputedStyle(document.getElementById('xh')).opacity === '1');
       // reload: the left hand follows grip_l to the mag / shell port and stays attached
       const gl = vm.paper.getObjectByName('grip_l'), gl0 = gl.position.clone(); P.ammo = 1; P.reserve = Math.max(P.reserve, 10); startReload();
       let moved = 0, err = 0; const t0 = performance.now(); while (P.reload > 0 && performance.now() - t0 < 4000) { moved = Math.max(moved, gl.position.distanceTo(gl0)); err = Math.max(err, sockErr(vm)); await wait(40); }
@@ -3465,12 +4108,31 @@ const PVM = (() => {
     dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyF' })); dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyF' })); await wait(60);
     ok('catch: F catches it, short slow motion, you steer it back (RETURN TO SENDER)', cp.owner === PLAYER_ENT && PLANES.S.steering === cp && (window.SLOWMO || 0) > 0, 'slowmo ' + (window.SLOWMO || 0).toFixed(2));
     PLANES.pop(cp, true); await wait(200); chk('catch');
-    const newP = renderer.info.programs.filter(x => !keys0.has(x.cacheKey)).map(x => x.name + (x.cacheKey || '').slice(0, 40));
-    ok('no shader compiled by equip / ADS / scope / bolt / plane / catch', newP.length === 0, prog0 + ' -> ' + renderer.info.programs.length + ' programs, new in: ' + where.join(', ') + ' ' + newP.join(' | '));
+    // only programs that the first-person view (guns, hands, flash, arc) or the planes use count: bots' fights elsewhere on the map may
+    // legitimately change world shaders (lights) and are the world's own test
+    const mine = new Set(); const addM = o => { for (const m of [].concat(o.material || [])) { const pr = renderer.properties.get(m).currentProgram; if (pr) mine.add(pr); } };
+    gunScene.traverse(addM); for (const q of PLANES.list) if (q.m) addM(q.m);
+    const newAll = renderer.info.programs.filter(x => !keys0.has(x.cacheKey)), newP = newAll.filter(x => mine.has(x)).map(x => x.name + (x.cacheKey || '').slice(0, 40));
+    ok('no shader compiled by equip / ADS / scope / bolt / plane / catch', newP.length === 0, (newAll.length - newP.length ? (newAll.length - newP.length) + ' world program(s) changed meanwhile (not weapons); ' : '') + prog0 + ' -> ' + renderer.info.programs.length + ' programs, new in: ' + where.join(', ') + ' ' + newP.join(' | '));
     window.__god = false; PLANES.reset(); if (P.weapon === 'plane') switchWeapon(SLOTS()[0]);
     return { checks: C };
   }
-  return { S, PL, load, update, warm, inspect, selfTest, apply, applyAll, planeThrow, planeKey, flightOver, handGeo, placeHand, get icons() { return S.icons; } };
+  // team colour of a viewmodel ('atk' blue = the GLB as loaded, 'def' red = textures from art.glbRed). Only texture maps change, so no
+  // shader compile. The red set loads once in the background (teamPrep); until it is in, the gun stays blue. Used by the killcam
+  // (a red killer's eyes show a red paper gun).
+  function teamPrep() {
+    if (S.redP) return S.redP; const L = new T.GLTFLoader();
+    if (S.hand.mat && !S.hand.red) new T.TextureLoader().load('assets/paper/hands/paper_hand_red.png', t => { const b = S.hand.mat.map; if (b) { t.flipY = b.flipY; t.encoding = b.encoding; t.wrapS = b.wrapS; t.wrapT = b.wrapT; } S.hand.red = t; S.hand.blue = b; });
+    return S.redP = (async () => { for (const vm of Object.values(S.vm)) { const u = vm.art && vm.art.glbRed; if (!u || vm.redMaps) continue;
+      try { const g = await L.loadAsync(u), red = {}; g.scene.traverse(o => { if (o.isMesh && o.material && o.material.map) red[o.name] = o.material.map; });   // pair by mesh name (hands / flash are not in the GLB)
+        const out = []; vm.paper.traverse(o => { if (o.isMesh && o.material && o.material.map && red[o.name]) out.push([o, o.material.map, red[o.name]]); }); if (out.length) vm.redMaps = out; } catch (e) { console.warn('red gun', vm.gid, e); } } })();
+  }
+  function team(vm, t) {
+    if (!vm || !vm.redMaps || (vm.team || 'atk') === t) return; vm.team = t;
+    if (S.hand.mat && S.hand.red) { const hm = t === 'def' ? S.hand.red : S.hand.blue; if (S.hand.mat.map !== hm) S.hand.mat.map = hm; }   // the hands too (one shared material)
+    for (const [m, blue, red] of vm.redMaps) { const map = t === 'def' ? red : blue; if (map && m.material.map !== map) m.material.map = map; }
+  }
+  return { S, PL, load, update, warm, inspect, selfTest, apply, applyAll, planeThrow, planeKey, flightOver, handGeo, placeHand, teamPrep, team, get icons() { return S.icons; } };
 })();
 /* ================= players: armoured soldiers driven by AI ================= */
 // Soldier model (three.js example asset) + Quaternius Universal Animation Library moves (CC0), retargeted offline into anims.json
@@ -3653,13 +4315,14 @@ const walkableAt = (x, z) => NAV.ok[cellOf(x, z)] === 1;
 function blocked(px, pz, feet, r, h) {
   for (const b of world.colliders) {
     if (b.max.y <= feet + STEP || b.min.y >= feet + h) continue;
+    if (b.tearFloor !== undefined) continue;   // a thin floor panel never blocks sideways
     if (px + r > b.min.x && px - r < b.max.x && pz + r > b.min.z && pz - r < b.max.z) return true;
   }
   return false;
 }
 function groundAt(px, pz, feet, r) {
   let g = 0; const q = r * .7;
-  for (const b of world.colliders) if (px + q > b.min.x && px - q < b.max.x && pz + q > b.min.z && pz - q < b.max.z && b.max.y <= feet + STEP) g = Math.max(g, b.max.y);
+  for (const b of world.colliders) if (px + q > b.min.x && px - q < b.max.x && pz + q > b.min.z && pz - q < b.max.z && b.max.y <= feet + STEP && b.max.y > g) { if (b.tearFloor !== undefined && TEAR.floorOpen(b.tearFloor, px, b.max.y, pz, r)) continue; g = b.max.y; }   // (a torn-open cardboard floor: you drop through)
   return g;
 }
 /* ================= solid characters (CS2 / Valorant style) ================= */
@@ -3974,7 +4637,7 @@ function newRoster() {
   while (robots.length) removeRobot(robots[0]);
   const names = BOT_NAMES.slice().sort(() => Math.random() - .5), cols = BOT_COLORS.slice().sort(() => Math.random() - .5);
   for (let i = 0; i < BOT_COUNT; i++) {
-    const r = buildBot({ name: names[i], color: cols[i], weapon: ['sniper', 'wasp', 'carbine', 'breacher', 'triad', 'judge', 'titan'][i], skill: i < 2 ? rand(.85, 1) : rand(.55, .92) });
+    const r = buildBot({ name: names[i], color: cols[i], weapon: ['sniper', 'wasp', 'carbine', 'breacher', 'carbine', 'wasp', 'breacher'][i], skill: i < 2 ? rand(.85, 1) : rand(.55, .92) });
     respawnBot(r, true);
   }
 }
@@ -5252,14 +5915,14 @@ const TEAR = (() => {
     const ctx = cv.getContext('2d'), tx = new THREE.CanvasTexture(cv); tx.minFilter = THREE.LinearFilter; tx.generateMipmaps = false;
     const [m, dm] = tearMaterials(o.mat, tx);
     const mesh = new THREE.Mesh(panelGeo(w, h, t, o.mat.userData.tile), m); mesh.customDepthMaterial = dm;
-    mesh.position.set(o.x, o.y + h / 2, o.z); mesh.rotation.y = o.rot || 0; mesh.castShadow = mesh.receiveShadow = true;
+    if (o.floor) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(-Math.PI / 2, o.rot || 0, 0, 'YXZ'); } else { mesh.position.set(o.x, o.y + h / 2, o.z); mesh.rotation.y = o.rot || 0; } mesh.castShadow = mesh.receiveShadow = true;
     mesh.userData.surface = 'paper'; mesh.userData.dyn = true; mesh.userData.tear = id;
     scene.add(mesh); mesh.updateMatrixWorld(); world.meshes.push(mesh);
-    const bx = new THREE.Box3().setFromObject(mesh); world.colliders.push(bx);
+    const bx = new THREE.Box3().setFromObject(mesh); if (o.floor) { bx.walk = true; bx.tearFloor = id; } world.colliders.push(bx);
     const P_ = { id, mesh, w, h, t, cv, ctx, tx, cuts: o.cuts || [], flap: o.flap ? Object.assign({ open: false, k: 0, side: 1, segs: null, len: 0, mesh: null }, o.flap) : null, holes: [], slits: [], hits: [], mat: o.mat };
     if (P_.flap) { const L = tearLine(P_.flap); P_.flap.lines = L; P_.flap.len = L.reduce((s, l) => s + l.len, 0); P_.flap.segs = new Uint8Array(Math.max(1, Math.ceil(P_.flap.len / R.crSeg))); }
     mesh.raycast = function (rc, out) { _tmp.length = 0; THREE.Mesh.prototype.raycast.call(this, rc, _tmp); for (const hh of _tmp) if (!openAtWorld(P_, hh.point)) out.push(hh); };
-    panels.push(P_); redraw(P_);
+    P_.floor = !!o.floor; panels.push(P_); redraw(P_);
     return P_;
   }
   // the crease = the flap's edges except its hinge, as line pieces in panel metres
@@ -5314,6 +5977,7 @@ const TEAR = (() => {
     P_.knife.push({ pts: pts.map(p => [p[0], p[1]]), closed }); P_.hits.push(['cut', pts.length, closed]); return { len, closed, area: Math.abs(area / 2) };
   }
   function cut(mesh, pts) { const P_ = panels[mesh.userData.tear]; if (!P_) return null; const r = cutApply(P_, pts); redraw(P_);
+    if (r) { const a = pts[pts.length - 1]; tearEvent(new THREE.Vector3(a[0] - P_.w / 2, a[1] - P_.h / 2, 0).applyMatrix4(P_.mesh.matrixWorld), 'knife', r.closed ? 'cut-open' : 'cut'); }
     if (r && r.closed) hangPiece(P_, pts);
     if (r && r.closed) { const c = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]); const w = new THREE.Vector3(c[0] - P_.w / 2, c[1] - P_.h / 2, 0).applyMatrix4(P_.mesh.matrixWorld); PFX.burst(w, { n: 18, cols: [P_.mat.color, PFX.TEAMC.cream], speed: 1.5, up: .5, size: [.05, .12] }); }
     return r; }
@@ -5338,7 +6002,7 @@ const TEAR = (() => {
     // paper chips from both faces
     if (typeof PFX !== 'undefined') { const n = new THREE.Vector3(0, 0, side).transformDirection(P_.mesh.matrixWorld); PFX.chips(point, n, P_.mat.color, P_.mat.userData.paper, res === 'flap' ? 40 : 7); }
     if (res === 'flap') { try { sfx.impact(point, false); } catch (e) {} TEAR.stats.flaps++; }
-    TEAR.stats.holes++;
+    TEAR.stats.holes++; tearEvent(point, weapon, res);
     return res;
   }
   // mask: white = open. Ragged star holes, jagged slits, the open flap and the pre-cut windows.
@@ -5385,11 +6049,14 @@ const TEAR = (() => {
     for (const P_ of panels) { if (!P_.mesh.parent) continue; const [u, v, z] = toLocal(P_, pt); if (Math.abs(z) > reach || u < -.3 || v < -.3 || u > P_.w + .3 || v > P_.h + .3) continue;
       const r = .22 + .3 * (1 - Math.abs(z) / reach); const res = apply(P_, clamp(u, 0, P_.w), clamp(v, 0, P_.h), z > 0 ? 1 : -1, r); redraw(P_); if (res === 'flap') openFlap(P_); TEAR.stats.holes++; }
   }
+  function floorOpen(id, x, y, z, r) { const P_ = panels[id]; if (!P_ || !P_.floor) return false; _lp.set(x, y, z); const [u, v] = toLocal(P_, _lp);
+    for (const [du, dv] of [[0, 0], [r * .6, 0], [-r * .6, 0], [0, r * .6], [0, -r * .6]]) if (!openAt(P_, u + du, v + dv)) return false; return true; }
+  function tearEvent(p, weapon, kind) { try { dispatchEvent(new CustomEvent('foldiers:tear', { detail: { x: p.x, y: p.y, z: p.z, weapon, kind } })); } catch (e) {} }
   function clear() { panels.length = 0; }   // map unloaded (clearMap disposes the meshes)
   // replay a hit list on a fresh copy of a panel's state (determinism check; also how an online client rebuilds a panel)
   function replay(id, hits) { const P_ = panels[id]; const S = { id, w: P_.w, h: P_.h, cuts: P_.cuts, holes: [], slits: [], hits: [], flap: P_.flap ? Object.assign({}, P_.flap, { open: false, segs: new Uint8Array(P_.flap.segs.length) }) : null };
     for (const h of hits) apply(S, h[0], h[1], h[2], h[3]); return { holes: S.holes.map(q => [q.u, q.v, q.r]), slits: S.slits.length, flap: S.flap ? S.flap.open : null }; }
-  return { R, panels, add, hit, blast, apply, cut, cutApply, uvOf, redraw, openAt, openAtWorld, update, reset, clear, replay, stats: { holes: 0, flaps: 0 } };
+  return { R, panels, add, hit, blast, apply, cut, cutApply, uvOf, redraw, floorOpen, openAt, openAtWorld, update, reset, clear, replay, stats: { holes: 0, flaps: 0 } };
 })();
 /* ================= deaths that match what killed you ================= */
 const DEATH_OF = { nova: 'blast', seeker: 'blast', nade: 'blast', breacher: 'blast', judge: 'blast', cryo: 'freeze', inferno: 'burn', arc: 'shock', helix: 'vapor', void: 'vapor',
@@ -6039,7 +6706,8 @@ const PLANES = (() => {
     ok('steering takes the mouse (chase camera + hint on)', S.steering === p1 && CH.on && camera.position.distanceTo(p1.pos) < 6 && document.getElementById('wxFly').classList.contains('on'), 'cam-to-plane ' + camera.position.distanceTo(p1.pos).toFixed(2) + ' m');
     const y0 = Math.atan2(-p1.dir.x, -p1.dir.z); const yawP = P.yaw; steerLook(-120, 0); await wait(250);
     ok('steer with the mouse turns the plane, not the view', Math.abs(Math.atan2(-p1.dir.x, -p1.dir.z) - y0) > .05 && Math.abs(P.yaw - yawP) < 1e-6, `plane yaw ${(Math.atan2(-p1.dir.x, -p1.dir.z) - y0).toFixed(2)} rad`);
-    // aim it back at the target and let it hit
+    // aim it back at the target and let it hit (clear the steering input the check above left over: it would keep turning the plane)
+    p1.inYaw = p1.inPitch = 0;
     p1.dir.subVectors(entChest(T, _c), p1.pos).normalize(); const hp0 = T.hp;
     for (let i = 0; i < 40 && !p1.dead; i++) { p1.dir.subVectors(entChest(T, _c), p1.pos).normalize(); await wait(50); }
     ok('hits and explodes (blast damage)', p1.dead && (T.dead || T.hp < hp0), `target hp ${Math.round(T.hp)} dead=${T.dead} plane at ${p1.pos.toArray().map(v => v.toFixed(1))} target at ${T.root.position.toArray().map(v => v.toFixed(1))} shield=${T.shield}`);
@@ -6812,6 +7480,7 @@ function startDeathcam() {
   if (!DC.body) {
     const m = THREE.SkeletonUtils.clone(ASSET.soldier.scene); m.rotation.y = Math.PI;
     m.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.frustumCulled = false; o.castShadow = false; if (/Visor/i.test(o.material.name)) { o.material.emissive = new THREE.Color(1, .55, .2); o.material.emissiveIntensity = 2.5; } else o.material.color = new THREE.Color(1, .9, .8); } });
+    if (window.PAPER_UI && PAPER_UI.dressSelf) PAPER_UI.dressSelf(m, 'atk');   // your paper character, not a Sector Nine soldier
     const g = new THREE.Group(); g.add(m); scene.add(g); DC.body = g; DC.model = m; DC.mixer = new THREE.AnimationMixer(m);
     DC.act = DC.mixer.clipAction(CLIPS.Death01.full); DC.act.setLoop(THREE.LoopOnce); DC.act.clampWhenFinished = true; DC.rhand = m.getObjectByName('mixamorigRightHand');
   }
@@ -6857,6 +7526,7 @@ function startKillcam(killer) {
   if (!REC.avatar && ASSET.soldier) {
     const m = THREE.SkeletonUtils.clone(ASSET.soldier.scene); m.rotation.y = Math.PI;
     m.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.frustumCulled = false; if (/Visor/i.test(o.material.name)) { o.material.emissive = new THREE.Color(1, .55, .2); o.material.emissiveIntensity = 2.5; } else o.material.color = new THREE.Color(1, .9, .8); } });
+    if (window.PAPER_UI && PAPER_UI.dressSelf) PAPER_UI.dressSelf(m, 'atk');
     const g = new THREE.Group(); g.add(m); scene.add(g); g.visible = false;
     const mx = new THREE.AnimationMixer(m), L = {}; for (const [k2, c] of [['idle', 'Pistol_Idle_Loop'], ['walk', 'Walk_Loop'], ['jog', 'Jog_Fwd_Loop'], ['sprint', 'Sprint_Loop'], ['cidle', 'Crouch_Idle_Loop'], ['cwalk', 'Crouch_Fwd_Loop'], ['air', 'Jump_Loop']]) { const x = mx.clipAction(CLIPS[c].lower); x.play(); x.setEffectiveWeight(k2 === 'idle' ? 1 : 0); x.w = k2 === 'idle' ? 1 : 0; L[k2] = x; }
     mx.clipAction(CLIPS.Pistol_Aim_Neutral.upper).play(); mx.update(.1);
@@ -6908,7 +7578,7 @@ function applyReplay() {
     if (!A) { r.root.visible = false; r.gun.visible = false; return; }
     const x = lerpRec(A, Bf, k, 0), y = lerpRec(A, Bf, k, 1), z = lerpRec(A, Bf, k, 2), by = lerpAng(A[3], Bf[3], k), ay = lerpAng(A[4], Bf[4], k), ap = lerpRec(A, Bf, k, 5);
     r.root.position.set(x, y, z); r.root.rotation.set(0, by, 0); r.root.visible = j !== REC.ki; // hide the killer's own body: we are looking through its eyes
-    if (r.dead) { r.body.opacity = r.visor.opacity = 1; if (r.bodyCol) r.body.color.copy(r.bodyCol); r.body.emissive.setRGB(0, 0, 0); }   // alive in the replay, whatever happened since
+    if (r.dead) { for (const m of [r.body, r.visor]) if (m) { m.opacity = 1; if (m.transparent) { m.transparent = false; m.depthWrite = true; m.needsUpdate = true; } } if (r.bodyCol) r.body.color.copy(r.bodyCol); r.body.emissive.setRGB(0, 0, 0); }   // alive in the replay, whatever happened since
     if (r.root.visible) replayPose(r, F, rt, j, by, ay, ap, lerpRec(A, Bf, k, 6), adt);
     r.gun.visible = j !== REC.ki && r.netW !== 'knife';
     r.root.updateMatrixWorld(true);
@@ -7093,7 +7763,7 @@ function updatePlayer(dt, rdt) {
   mapTriggers(PLAYER_ENT, dt); statusTick(PLAYER_ENT, dt);
   // footsteps
   const hs = Math.hypot(P.vel.x, P.vel.z);
-  if (P.onGround && hs > 1 && P.slideT <= 0 && !P.walk) { P.stepAcc += hs * dt; const stride = sprint ? 2.5 : 1.9; if (P.stepAcc > stride) { P.stepAcc = 0; sfx.step(sprint, false, P.crouch > .5); } }
+  if (P.onGround && hs > 1 && P.slideT <= 0 && !P.walk && P.crouch < .5) { P.stepAcc += hs * dt; const stride = sprint ? 2.5 : 1.9; if (P.stepAcc > stride) { P.stepAcc = 0; sfx.step(sprint, false, P.crouch > .5); } }   // (silent: walking on Alt, crouch-walking)
   // regen + heartbeat
   // (the HUD redraw - standings sort, DOM, online a localStorage write - only when the shown whole number changes, not every step)
   if (G.time - P.lastHurt > MOVE.regenDelay && P.hp < 100) { const h0 = Math.ceil(P.hp); P.hp = Math.min(100, P.hp + MOVE.regenRate * dt); if (Math.ceil(P.hp) !== h0) updateHud(); }
@@ -7629,7 +8299,7 @@ function syncAudio() {
 }
 document.addEventListener('visibilitychange', syncAudio);
 function setState(s) {
-  state = s;
+  state = s; if (s === 'menu' || s === 'paused' || s === 'matchend') kbUnlock();
   // paused = total silence (wind, ambience, echoes, everything); sound fades back in when you resume
   syncAudio();
   $('menu').hidden = s !== 'menu'; $('pause').hidden = s !== 'paused'; $('btnLobby').hidden = !(NET.on && NET.room && NET.inMatch); $('mend').hidden = s !== 'matchend';
@@ -7638,7 +8308,24 @@ function setState(s) {
   if (s !== 'play') { mouseDown = false; adsHeld = false; for (const k in keys) keys[k] = false; }
   gunVisible = s === 'play' || s === 'paused';
 }
+// INPUT ROBUSTNESS (owner 2026-11-12): every game key and combination is the game's while playing. Full screen + the Keyboard Lock
+// API (Chrome) on Play let Tab, Alt, Ctrl+W/T/N and the F-keys reach the game too; Alt+Tab and the Windows key belong to the OS
+// (no browser game can take them). Held keys are cleared on blur / tab switch so nothing stays stuck.
+const KBL = { want: true, locked: false };
+function kbLock() {
+  try {
+    if (KBL.want && !document.fullscreenElement && document.documentElement.requestFullscreen && !navigator.webdriver) document.documentElement.requestFullscreen({ navigationUI: 'hide' }).then(kbLock).catch(() => {});
+    if (navigator.keyboard && navigator.keyboard.lock && document.fullscreenElement && !KBL.locked) navigator.keyboard.lock().then(() => { KBL.locked = true; }).catch(() => {});
+  } catch (e) {}
+}
+function kbUnlock() { try { if (navigator.keyboard && navigator.keyboard.unlock) navigator.keyboard.unlock(); } catch (e) {} KBL.locked = false; }
+const GAME_STATES = { play: 1, dead: 1 };
+const PASS_KEYS = new Set(['F5', 'F11', 'F12']);   // reload, full screen, dev tools stay the browser's
+function gameKey(e) { if (GAME_STATES[state] && !PASS_KEYS.has(e.code) && !(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))) { if (e.code !== 'Escape') e.preventDefault(); return true; } return false; }
+addEventListener('keydown', gameKey, true); addEventListener('keyup', gameKey, true);
+document.addEventListener('visibilitychange', () => { if (document.hidden) { for (const k in HELD) HELD[k] = false; for (const k in keys) keys[k] = false; mouseDown = false; adsHeld = false; } });
 function lock() {
+  kbLock();
   const el = renderer.domElement; noLock = false;
   if (!el.requestPointerLock) { noLock = true; return; }
   try {
@@ -7823,6 +8510,7 @@ addEventListener('mouseup', e => { if (e.button === 0) { mouseDown = false; look
 // and swallow every other Ctrl shortcut while playing (Ctrl+W/R/T can't be blocked by a page, the leave prompt catches those)
 addEventListener('beforeunload', e => { if (navigator.webdriver) return; if (state === 'play' || state === 'dead' || state === 'paused') { e.preventDefault(); e.returnValue = ''; return ''; } });
 addEventListener('keydown', e => {
+  if ((e.code === 'AltLeft' || e.code === 'AltRight') && state !== 'menu') e.preventDefault();   // Alt = silent walk: never the browser menu
   HELD[e.code] = true;
   if ((e.ctrlKey || e.metaKey) && (state === 'play' || state === 'dead')) e.preventDefault();
   if (e.code === 'Tab' && (state === 'play' || state === 'dead')) { e.preventDefault(); $('board').innerHTML = boardHTML(); $('board').hidden = false; }
@@ -7842,10 +8530,10 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyV') switchWeapon('knife');
   if (e.code === 'KeyQ') { const S = SLOTS(), L = P.lastW; switchWeapon(L && L !== P.weapon && (S.includes(L) || L === 'knife') ? L : P.weapon === S[0] ? S[1] : S[0]); }   // (Q: last weapon)   // last weapon (CS)
   if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
-  if (e.code === 'Escape' && (noLock || !document.pointerLockElement)) { if (state === 'play') setState('paused'); else if (state === 'dead') P.pauseOnRespawn = true; }
+  if (e.code === 'Escape' && (noLock || !document.pointerLockElement || KBL.locked)) { if (KBL.locked && document.exitPointerLock) document.exitPointerLock(); if (state === 'play') setState('paused'); else if (state === 'dead') P.pauseOnRespawn = true; }   // (Keyboard Lock: Escape comes to us, so we pause ourselves)
 });
 addEventListener('wheel', e => { if (state !== 'play') return; const cyc = SLOTS().slice(), n = cyc.length, i = Math.max(0, cyc.indexOf(P.weapon)); switchWeapon(cyc[(i + (e.deltaY > 0 ? 1 : n - 1)) % n], true); }, { passive: true });
-addEventListener('keyup', e => { keys[e.code] = false; HELD[e.code] = false; if (e.code === 'Tab') $('board').hidden = true; });
+addEventListener('keyup', e => { if ((e.code === 'AltLeft' || e.code === 'AltRight') && state !== 'menu') e.preventDefault(); keys[e.code] = false; HELD[e.code] = false; if (e.code === 'Tab') $('board').hidden = true; });
 addEventListener('blur', () => { for (const k in HELD) HELD[k] = false; if (state === 'play') { for (const k in keys) keys[k] = false; mouseDown = false; adsHeld = false; if (noLock) setState('paused'); } });
 addEventListener('contextmenu', e => { if (state === 'play' || e.target === renderer.domElement) e.preventDefault(); });
 
@@ -7990,7 +8678,7 @@ function frame(now) {
     else if (REC.on) {}
     else if (P.dieT < 1.2 || !kl) { camera.position.y = damp(camera.position.y, P.pos.y + .4, 4, rdt); camera.rotation.z = damp(camera.rotation.z, .7, 3, rdt); camera.rotation.x = damp(camera.rotation.x, -.25, 3, rdt); }
     else { camera.position.lerp(_v1.set(P.pos.x, P.pos.y + 2.4, P.pos.z), .08); camera.lookAt(kl.x, kl.y + 1.3, kl.z); if (camera.fov !== 45) { camera.fov = 45; camera.updateProjectionMatrix(); } }
-    grade.uniforms.uDying.value = P.dieT < DC.T ? Math.min(.3, P.dieT * .4) : REC.on ? .12 : Math.min(1, P.dieT / 1.2) * .55;
+    grade.uniforms.uDying.value = P.dieT < DC.T ? Math.min(.18, P.dieT * .3) : REC.on ? .06 : Math.min(1, P.dieT / 1.2) * .22;   // Foldiers: a light touch (the death cam must still look like the bright paper town)
     const RS = REC.on ? 5.5 : 4.7;   // a killcam gets time to show you fall
     setText('deathT', `Respawning in ${Math.max(1, Math.ceil(RS - P.dieT))}`);
     if (P.dieT > RS) respawnPlayer();

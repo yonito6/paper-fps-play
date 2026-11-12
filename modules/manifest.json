@@ -5,13 +5,15 @@
     "graphics",
     "gfxplus",
     "gfxmat",
+    "paperpost",
     "footsteps",
     "killcam",
     "modes",
     "roundfx",
     "botmodes",
     "hitfx",
-    "paper"
+    "paper",
+    "paperui"
   ],
   "notes": "Paper FPS add-ons in load order. Sector Nine add-ons that v1 does not use (shop, skins, gunskins, account, session, friends, badges, news, profile, menu, ...) stay in modules/ but are not loaded; online code paths in the core stay dormant."
 }

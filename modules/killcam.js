@@ -353,6 +353,7 @@ function makeGhost(ent) {
   const n0 = robots.length, g = buildBot({ name: isMe ? 'You' : ent.name, color: col, weapon: BOTW[w] ? w : 'carbine', skill: 1 });
   const i = robots.indexOf(g); if (i >= 0) robots.splice(i, 1); if (robots.length !== n0) console.warn('[killcam] robots changed');
   ghostLook(g, ent, isMe);
+  try { const BM = window.S9BotModes, t = isMe ? BM && BM.myTeam : ent.mxTeam; if (t) { g.mxTeam = t; if (window.PAPER_UI && PAPER_UI.paperTeam) PAPER_UI.paperTeam(g, true); } } catch (e) {}   // replay actors wear their real team colour (paper.js paperTeam)
   targetsDirty = true; g.tag.remove(); g.kcGhost = true; g.kcEnt = ent; g.root.visible = false; g.gun.visible = false; g.guns = { [g.weapon]: g.gunInner }; g.curW = g.weapon;
   g.kcScene = scene; GH.set(ent, g); dressGhost(g, ent); return g;
 }
@@ -656,7 +657,9 @@ stopKillcam = function () {
   vmRestore(); restoreHands();
 };
 // the killer's finish on the first-person gun during the replay; your own finishes come back afterwards
+const kcTeam = e => { try { const BM = window.S9BotModes; return (e === PLAYER_ENT ? BM && BM.myTeam : e && e.mxTeam) === 'def' ? 'def' : 'atk'; } catch (x) { return 'atk'; } };
 function vmFinish(vm, kw, c) {
+  try { if (typeof PVM !== 'undefined' && PVM.team && c) { PVM.team(vm, kcTeam(c.killer)); (KC.vmTeam || (KC.vmTeam = new Set())).add(vm); } } catch (e) { warnOnce(e); }   // killer's paper gun in their team colour
   const gs = GS(); if (!gs || !vm || !vm.group) return; const want = (c.fin && c.fin[kw]) || 'factory', g = vm.group;
   if ((g.userData.gsSkin || 'factory') === want && g.userData.gsTemp) return;
   if ((g.userData.gsSkin || 'factory') === want && !KC.vmTouched) return;
@@ -684,6 +687,7 @@ function prewarm(c) {
   KC.warmMs = performance.now() - t0;
 }
 function vmRestore() {
+  if (KC.vmTeam) { const t = 'atk'; for (const vm of KC.vmTeam) try { PVM.team(vm, t); } catch (e) {} KC.vmTeam = null; }
   if (!KC.vmTouched) return; const S = KC.vmTouched; KC.vmTouched = null;
   for (const w of S) { const g = WM[w] && WM[w].group; if (g) g.userData.gsTemp = false; }
   try { const gs = GS(); if (gs && gs._refresh) gs._refresh(); } catch (e) { warnOnce(e); }

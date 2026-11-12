@@ -16,7 +16,7 @@ const DEFAULTS = {
     adsMode: 'hold',
     binds: {
       forward: ['KeyW', ''], back: ['KeyS', ''], left: ['KeyA', ''], right: ['KeyD', ''],
-      jump: ['Space', ''], crouch: ['KeyC', ''], crouchHold: ['ControlLeft', 'ControlRight'], sprint: ['ShiftLeft', 'ShiftRight'], walk: ['KeyZ', ''], dash: ['KeyE', ''],
+      jump: ['Space', ''], crouch: ['KeyC', ''], crouchHold: ['ControlLeft', 'ControlRight'], sprint: ['ShiftLeft', 'ShiftRight'], walk: ['AltLeft', 'AltRight'],   /* Foldiers: hold Alt = silent walk (owner 2026-11-12) */ dash: ['KeyE', ''],
       fire: ['Mouse0', ''], ads: ['Mouse2', ''], reload: ['KeyR', ''], grenade: ['KeyG', ''], overdrive: ['KeyF', ''],
       primary: ['Digit1', ''], secondary: ['Digit2', ''], knife: ['Digit3', ''], weapon4: ['Digit4', ''], swap: ['KeyQ', ''], dropBomb: ['KeyB', ''],
       interact: ['KeyX', ''], scoreboard: ['Tab', ''], pause: ['Escape', ''], ptt: ['KeyV', '']
@@ -40,7 +40,7 @@ const ENUM = {
   'controls.adsMode': ['hold', 'toggle'], 'crosshair.style': ['cross', 'dot', 'circle', 'tshape', 'crossdot', 'chevron'],
   'video.quality': ['low', 'medium', 'high', 'ultra', 'auto'], 'video.autoRes': ['auto', 'always', 'off'], 'video.fpsMode': ['off', 'simple', 'detailed'], 'video.fpsCap': ['off', '30', '60', '120', '144', '240'], 'video.viewBob': ['full', 'subtle', 'off']
 };
-const LS_KEY = 'sector9-settings';
+const LS_KEY = 'foldiers-settings';   // (new name: Foldiers starts from its own defaults, never Sector Nine's saved binds)
 // frame rate limit: the game's whole frame (and every wrapper around it) runs only when its slot is due. vs = the screen's
 // refresh step (smallest gap seen); a frame up to half a step early still counts and the slot clock advances by exactly one
 // interval, so 60 on a 144 Hz screen averages 60.
@@ -54,7 +54,7 @@ function capSkip(t) {
 /* ============ actions (what the game does) -> the key code index.html listens for ============ */
 const ACTIONS = [
   ['Movement', 'forward', 'Move forward', 'KeyW'], ['Movement', 'back', 'Move back', 'KeyS'], ['Movement', 'left', 'Strafe left', 'KeyA'], ['Movement', 'right', 'Strafe right', 'KeyD'],
-  ['Movement', 'jump', 'Jump (twice = double jump)', 'Space'], ['Movement', 'sprint', 'Sprint (hold)', 'ShiftLeft'], ['Movement', 'walk', 'Walk quietly (hold): enemies cannot hear your steps', 'KeyZ'], ['Movement', 'crouch', 'Crouch toggle / slide while sprinting', 'KeyC'],
+  ['Movement', 'jump', 'Jump (twice = double jump)', 'Space'], ['Movement', 'sprint', 'Sprint (hold, loud steps)', 'ShiftLeft'], ['Movement', 'walk', 'Walk silently (hold): no footstep sounds', 'KeyZ'], ['Movement', 'crouch', 'Crouch toggle / slide while sprinting', 'KeyC'],
   ['Movement', 'crouchHold', 'Crouch (hold)', 'ControlLeft'], ['Movement', 'dash', 'Dash · Use / Plant / Defuse', 'KeyE'],
   ['Combat', 'fire', 'Fire', 'Mouse0'], ['Combat', 'ads', 'Aim down sights', 'Mouse2'], ['Combat', 'reload', 'Reload', 'KeyR'], ['Combat', 'grenade', 'Plasma grenade (hold = throw far)', 'KeyG'], ['Combat', 'overdrive', 'Overdrive', 'KeyF'],
   ['Weapons', 'primary', 'Weapon 1 (primary)', 'Digit1'], ['Weapons', 'secondary', 'Weapon 2 (secondary)', 'Digit2'], ['Weapons', 'knife', 'Weapon 3 (knife)', 'Digit3'],

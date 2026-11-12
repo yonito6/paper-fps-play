@@ -203,7 +203,7 @@
     $('mendKicker').textContent = w === 'draw' ? `${MODE_NAME[mode()]} · draw ${sc.atk} : ${sc.def}` : `${TEAM[w].name} win ${sc[w]} : ${sc[w === 'atk' ? 'def' : 'atk']} · ${MODE_NAME[mode()]}`;
     $('mendTitle').innerHTML = res === 'win' ? 'Victory' : res === 'draw' ? 'Draw' : 'Defeat';
     $('mendBoard').innerHTML = teamBoard();
-    $('mendStats').textContent = `${PLAYER_ENT.kills} kills · ${PLAYER_ENT.deaths} deaths · ${PLAYER_ENT.heads} headshots · accuracy ${G.fired ? Math.round(G.hits / G.fired * 100) : 0}% · bot matches don't earn XP or Shards`;
+    $('mendStats').textContent = `${PLAYER_ENT.kills} kills · ${PLAYER_ENT.deaths} deaths · ${PLAYER_ENT.heads} headshots · accuracy ${G.fired ? Math.round(G.hits / G.fired * 100) : 0}%`;
     if (res === 'win') sfx.clear();
     setState('matchend'); if (document.pointerLockElement) document.exitPointerLock();
   }
