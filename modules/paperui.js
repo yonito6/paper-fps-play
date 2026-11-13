@@ -36,6 +36,9 @@
     const kick = () => { if (!raf) raf = requestAnimationFrame(fit); };
     addEventListener('resize', kick);
     new MutationObserver(kick).observe(mend, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class'] });
+    // late webfonts / the XP block / roster text change the card height after the first measure: re-fit when they land
+    try { if (document.fonts) { document.fonts.ready.then(kick); document.fonts.addEventListener('loadingdone', kick); } } catch (e) {}
+    new MutationObserver(() => { if (!mend.hidden) { setTimeout(kick, 350); setTimeout(kick, 1500); } }).observe(mend, { attributes: true, attributeFilter: ['hidden'] });
     if (window.PAPER_UI) window.PAPER_UI.fitEnd = fit;
   }
 

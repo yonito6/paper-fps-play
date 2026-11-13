@@ -327,7 +327,7 @@
   function pickChain(list, now, start) { for (let k = 0; k < list.length; k++) { const ch = list[(start + k) % list.length]; if (ch.busy <= now) return ch; } return null; }
   const R01 = (a, b) => a + Math.random() * (b - a);
   // who: 'me' | 'foe'; mode: walk | sprint | land | crouch; pos (foe only); sid: surface id
-  function play(who, mode, sid, pos, tag, at) {
+  function play(who, mode, sid, pos, tag, at, mate) {   // mate = a teammate (positional like an enemy, but softer and duller: enemies are louder + sharper)
     const s9 = S9() || {}, AU = s9.AU; if (!AU || !AU.ctx || !D || !AU.dry) return false;
     const c = AU.ctx, now = c.currentTime, mx = D.mix;
     // another add-on rendering a game sound offline (killcam v2 pre-renders sfx.step): play our buffer straight into
@@ -349,7 +349,7 @@
     const L = who === 'foe' ? C.foe : C.me, ch = pickChain(L, now, who === 'foe' ? C.nextF : C.next); if (!ch) { FS.stats.skipped++; return false; }
     if (who === 'foe') { C.nextF = (L.indexOf(ch) + 1) % L.length; } else C.next = (L.indexOf(ch) + 1) % L.length;
     const m = mx[who === 'foe' ? 'foe' : 'player'], crouch = mode === 'crouch', base = land ? m.land : mode === 'sprint' ? m.sprint : m.walk;
-    const vol = base * (crouch ? m.crouch : 1) * set.gain * m.gain * (mx.calibration || 1) * R01(mx.random.vol[0], mx.random.vol[1]), rate = (mx.rate[mode] || 1) * R01(mx.random.rate[0], mx.random.rate[1]);
+    const mt = mate && who === 'foe' && mx.mate, vol = base * (crouch ? m.crouch : 1) * set.gain * m.gain * (mt ? mt.gain : 1) * (mx.calibration || 1) * R01(mx.random.vol[0], mx.random.vol[1]), rate = (mx.rate[mode] || 1) * (mt ? mt.rate : 1) * R01(mx.random.rate[0], mx.random.rate[1]);
     const buf = list[v], s = c.createBufferSource(); s.buffer = buf; s.playbackRate.value = rate; s.connect(ch.g);
     let gv = vol, lpf = mx.lp[mode] || 12000;
     if (who === 'foe') {
@@ -362,9 +362,10 @@
         if (s9.occlude) { const o = s9.occlude(pos, _oc, true); if (o.dB < 0) { occl = o.kind; gv *= dBg(o.dB); lpf = Math.min(lpf, o.lp); via = o.via; } }
         else { const los = s9.lineOfSight || (typeof lineOfSight === 'function' ? lineOfSight : null); if (los && dist > 1.5) { _ce.x = pos.x; _ce.y = pos.y + .35; _ce.z = pos.z; occl = !los(cam, _ce); } if (occl) { gv *= dBg(X.occlusion.db); lpf = Math.min(lpf, X.occlusion.lp); } } } catch (e) {}
       ch.vs.gain.setValueAtTime(X.verb.near + (X.verb.far - X.verb.near) * clamp01(dist / X.verb.farAt), now);
-      if (dist < X.duck.range && !(FS.clarityTest && FS.clarityTest.duck === false)) duck(C, X, now);
+      if (dist < X.duck.range && !mt && !(FS.clarityTest && FS.clarityTest.duck === false)) duck(C, X, now);
       freshPanner(C, ch, via || pos); FS.lastFoe = { dist, occl, gain: gv, lp: lpf, via: via ? [via.x, via.y, via.z] : null };
     }
+    if (mt) lpf = Math.min(lpf, mt.lp);
     ch.g.gain.setValueAtTime(gv, now); ch.lp.frequency.setValueAtTime(lpf, now);
     s.start(now); ch.busy = now + buf.duration / rate + .03; AU.count = (AU.count || 0) + 1; FS.stats.plays++;
     FS.counts[name] = (FS.counts[name] || 0) + 1;
@@ -392,9 +393,9 @@
         _mp.x = p.x; _mp.y = p.y; _mp.z = p.z; play('me', land ? 'land' : crouch ? 'crouch' : sprint ? 'sprint' : 'walk', surfaceAt(p.x, p.y, p.z), null, 'me', _mp); }
       catch (e) { FS.errors++; FS.lastError = String(e && e.stack || e); }
     };
-    sfx.foeStep = function (pos, sprint, land, crouch) {
+    sfx.foeStep = function (pos, sprint, land, crouch, mate) {
       try { if (!D || FS.disabled) return oldFoe.apply(this, arguments);
-        play('foe', land ? 'land' : crouch ? 'crouch' : sprint ? 'sprint' : 'walk', surfaceAt(pos.x, pos.y, pos.z), pos, 'foe'); }
+        play('foe', land ? 'land' : crouch ? 'crouch' : sprint ? 'sprint' : 'walk', surfaceAt(pos.x, pos.y, pos.z), pos, mate ? 'mate' : 'foe', null, !!mate); }
       catch (e) { FS.errors++; FS.lastError = String(e && e.stack || e); }
     };
   }

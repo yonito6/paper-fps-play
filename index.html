@@ -769,7 +769,7 @@ body #mend.lose{background:radial-gradient(ellipse at 50% 40%,rgba(177,25,18,.5)
 body #mend.draw{background:linear-gradient(100deg,rgba(1,40,110,.85) 50%,rgba(90,10,6,.85) 50%)!important}
 body #mend #mendBoard .mystats span,#mend .mend-score small,body #mend #mendKicker{font-size:13px!important}
 @media (max-height:800px){body #mend .mend-logo{width:min(220px,50%)!important}body #mend .sheet{gap:6px!important;padding-top:16px!important;padding-bottom:16px!important}body #mend #mendTitle{font-size:clamp(42px,8vh,64px)!important;padding:4px 40px 12px!important}#mend .mend-score{font-size:clamp(34px,6vh,48px)}}
-@media (max-height:720px){body #mend .mend-logo{width:min(180px,44%)!important}body #mend #mendStats{display:none}body #mend .mb1,body #mend .mb2{display:none}}
+@media (max-height:720px){body #mend .mend-logo{width:min(180px,44%)!important}body #mend .mb1,body #mend .mb2{display:none}}
 /* online celebration (roundfx), when it shows: the same logo + paper palette instead of the old dark look */
 body #rfx .rfx-final .cel-bg{background:radial-gradient(ellipse 70% 60% at 50% 42%,var(--glow),rgba(18,9,4,.9) 70%)!important}
 body #rfx .rfx-final.win .cel-bg{background:radial-gradient(ellipse 70% 60% at 50% 42%,rgba(10,78,174,.5),rgba(1,20,60,.92) 72%)!important}
@@ -788,18 +788,49 @@ body #mxHud .mid .rd{font-size:13px!important}
 /* HUD pieces that the 9-slice group made position:relative (they fell into the page flow: the HP card became a strip across the top) */
 body #hud .corner.bl{position:absolute!important}
 /* tutorial hints: a cream tag in the upper-left zone, only while a hint is on, never over the score or the centre */
-body #pHint{position:absolute!important;left:calc(24px + env(safe-area-inset-left,0px));top:calc(24px + env(safe-area-inset-top,0px));max-width:min(440px,calc(50vw - 190px))!important;opacity:0;transform:translateY(-8px) rotate(-.6deg);transition:opacity .25s,transform .25s;pointer-events:none}
+body #pHint{position:absolute!important;left:calc(24px + env(safe-area-inset-left,0px));top:calc(var(--rdr-top,18px) + var(--rdr-size,200px) + var(--rdr-gap,12px) + env(safe-area-inset-top,0px));max-width:min(440px,calc(50vw - 190px))!important;opacity:0;transform:translateY(-8px) rotate(-.6deg);transition:opacity .25s,transform .25s;pointer-events:none}
 body #pHint.on{opacity:1;transform:rotate(-.6deg)}body #pHint:empty{display:none}
 @media (max-width:700px){body #hud .corner.bl{bottom:calc(112px + env(safe-area-inset-bottom,0px))!important;left:16px!important}}
-@media (max-width:700px){body #pHint{top:calc(84px + env(safe-area-inset-top,0px));left:16px;max-width:calc(100vw - 32px)!important;font-size:15px!important}}
+@media (max-width:700px){body #pHint{top:calc(var(--rdr-top,18px) + var(--rdr-size,200px) + var(--rdr-gap,12px) + env(safe-area-inset-top,0px));left:16px;max-width:calc(100vw - 32px)!important;font-size:15px!important}}
 /* ---- UI pass wp-ui: HUD scales with the screen (1440p / 4K), hint never runs under the score, kill-feed rows never touch ---- */
 body #pHint{box-sizing:border-box!important;width:max-content;max-width:min(440px,calc(50vw - 230px))!important}
 #kfeed{gap:10px!important}#kfeed .kf{flex:none}
-@media (min-width:2200px){#mxHud,#hud .corner.bl,#hud .corner.br,#pHint,#hud .corner.tr,#wxPlanes,#pause .sheet,#mend .sheet,#death .huge,#deathBy,#deathT,#kcCard,#kcBan,#kcSkip,#killcam .kc-top{zoom:1.5}#wxPlanes{bottom:98px!important}}
-@media (min-width:3400px){#mxHud,#hud .corner.bl,#hud .corner.br,#pHint,#hud .corner.tr,#wxPlanes,#pause .sheet,#mend .sheet,#death .huge,#deathBy,#deathT,#kcCard,#kcBan,#kcSkip,#killcam .kc-top{zoom:2.2}#wxPlanes{bottom:98px!important}}
+@media (min-width:2200px){body #pHint{top:calc((var(--rdr-top,18px) + var(--rdr-size,200px) + var(--rdr-gap,12px)) / 1.5)}#mxHud,#hud .corner.bl,#hud .corner.br,#pHint,#hud .corner.tr,#wxPlanes,#pause .sheet,#mend .sheet,#death .huge,#deathBy,#deathT,#kcCard,#kcBan,#kcSkip,#killcam .kc-top{zoom:1.5}#wxPlanes{bottom:98px!important}}
+@media (min-width:3400px){body #pHint{top:calc((var(--rdr-top,18px) + var(--rdr-size,200px) + var(--rdr-gap,12px)) / 2.2)}#mxHud,#hud .corner.bl,#hud .corner.br,#pHint,#hud .corner.tr,#wxPlanes,#pause .sheet,#mend .sheet,#death .huge,#deathBy,#deathT,#kcCard,#kcBan,#kcSkip,#killcam .kc-top{zoom:2.2}#wxPlanes{bottom:98px!important}}
 /* wp-endfit: the end card never scrolls; paperui.js scales it to fit (inline zoom). No inner scrollbar, buttons are in the flow. */
 #mend,body #mend{overflow:hidden!important}body #mend .sheet,#mend .sheet{overflow:visible!important;max-height:none!important;scrollbar-width:none}
 body #mend .row,#mend .row{position:static!important;bottom:auto!important;background:none!important;padding:10px 0 4px!important}
+/* wp-endfit2 (R033): ONE layout for every end state. The card is a flex column; every block is a full-width, non-shrinking row that
+   wraps its own text (no per-case nudges). Nothing is hidden at short heights: sizes come from clamp() on viewport height + width,
+   and paperui.js fit() only scales the card down when it is still taller than the screen. */
+body #mend{display:flex!important;align-items:center;justify-content:center;padding:clamp(8px,2vh,24px) clamp(8px,2vw,24px);box-sizing:border-box;overflow:hidden}
+body #mend[hidden]{display:none!important}
+body #mend .sheet{display:flex!important;flex-direction:column;align-items:center;justify-content:flex-start;flex:0 0 auto;max-height:none;overflow:visible;width:min(720px,calc(100vw - 32px))!important;gap:clamp(4px,1.1vh,10px)!important;padding:clamp(12px,2.4vh,24px) clamp(14px,3vw,40px) clamp(14px,2.6vh,26px)!important}
+body #mend .sheet>*{flex:0 0 auto;min-width:0;max-width:100%;box-sizing:border-box}
+body #mend .sheet :is(div,span,b,small,h2,i,td,th,p){min-width:0;overflow-wrap:anywhere;word-break:break-word;hyphens:auto}
+body #mend .sheet>:is(.kicker,h2,.note){width:auto;text-align:center}
+body #mend #mendKicker{line-height:1.3!important;padding:3px 12px}
+body #mend #mendTitle{line-height:1.05!important;margin:clamp(4px,1vh,10px) 0 clamp(4px,1vh,10px)!important;max-width:100%}
+body #mend #mendTitle{font-size:clamp(34px,min(9vw,9vh),96px)!important;padding:.08em .5em .16em!important}
+body #mend .mend-score{flex-wrap:wrap;line-height:1.05}
+body #mend .mend-mvp{max-width:100%;line-height:1.15}
+body #mend .mend-mvp span{max-width:100%;overflow-wrap:anywhere;font-size:clamp(20px,3.4vh,26px);line-height:1.1}
+body #mend .mend-mvp small{line-height:1.2}
+body #mend #mendBoard{width:100%;flex:0 0 auto}
+body #mend #mendBoard .mystats{grid-template-columns:repeat(auto-fit,minmax(min(100%,96px),1fr))}
+body #mend #mendBoard .mystats div{min-width:0;display:grid;gap:3px;align-content:center}
+body #mend #mendBoard .mystats b{font-size:clamp(17px,min(4.4vw,3.4vh),24px)!important;line-height:1.1!important;overflow-wrap:anywhere}
+body #mend #mendBoard .mystats span{line-height:1.2!important;overflow-wrap:anywhere}
+body #mend #mendStats{display:block!important;line-height:1.35!important;max-width:100%}
+body #mend #fpEnd{width:100%;flex:0 0 auto}
+body #mend #fpEnd .top,body #mend #fpEnd .lvl,body #mend #fpEnd .ln,body #mend #fpEnd .tot{flex-wrap:wrap;column-gap:10px}
+body #mend #fpEnd .ln>*,body #mend #fpEnd .tot>*,body #mend #fpEnd .lvl>*{min-width:0;overflow-wrap:anywhere}
+body #mend #fpEnd .cols{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+body #mend #fpEnd .col{min-width:0}
+body #mend .row{width:100%;flex:0 0 auto}
+body #mend .row .go,body #mend .row .ghost{max-width:100%;min-width:min(150px,100%)}
+body #mend #mendT{line-height:1.3}
+@media (max-height:800px){body #mend .sheet{gap:clamp(3px,.8vh,6px)!important}}
 </style>
 
 <div id="game"></div>
@@ -3409,7 +3440,7 @@ function boxRaycast(mesh, rc, out) {
   }
 }
 // real shots (bullets, boomerang) use the precise check; bots' sight checks stay on the boxes (much cheaper)
-function shotHits(objs, rec) { ray.precise = true; try { return ray.intersectObjects(objs, rec); } finally { ray.precise = false; } }
+function shotHits(objs, rec) { ray.precise = true; let r; try { r = ray.intersectObjects(objs, rec); } finally { ray.precise = false; } return objs === _shotT && typeof VIS !== 'undefined' && VIS.ready ? VIS.fix(r, ray) : r; }   // wp-holesnap: SEE == SHOOT (33-vissurf.js)
 function mkPreciseRaycast(owners) {
   return function (rc, out) {
     if (!rc.precise) return boxRaycast(this, rc, out);
@@ -3989,7 +4020,7 @@ function desktownLayout(PM) {
   const box = (x, y, z, w, h, d, m, o) => addBox(x, y, z, w, h, d, m, Object.assign({ surface: 'paper' }, o || {}));
   const deco = (x, y, z, w, h, d, m) => box(x, y, z, w, h, d, m, { collide: false });
   const plane = (x, y, z, w, h, m, rotY = 0) => { const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m); p.position.set(x, y, z); p.rotation.y = rotY; p.receiveShadow = true; scene.add(p); return p; };
-  const crate = (x, z, s, y = 0) => { box(x, y, z, s, s, s, kraft, { surface: 'wood', pen: 'crate' }); for (const f of [-1, 1]) { deco(x, y + s / 2, z + f * (s / 2 + .005), s * .98, .08, .01, corr); deco(x + f * (s / 2 + .005), y + s / 2, z, .01, .08, s * .98, corr); } };
+  const crate = (x, z, s, y = 0) => { box(x, y, z, s, s, s, kraft, { surface: 'card', pen: 'crate' }); for (const f of [-1, 1]) { deco(x, y + s / 2, z + f * (s / 2 + .005), s * .98, .08, .01, corr); deco(x + f * (s / 2 + .005), y + s / 2, z, .01, .08, s * .98, corr); } };
   const steps = (x, z0, w, top, dir) => { const n = Math.ceil(top / .3); for (let k = 1; k <= n; k++) { const off = (n - k + .5) * .55; box(x, 0, z0 + dir * off, w, Math.min(top, k * .3), .55, kraft, { walk: true }); } };
   // boundary: tall corrugated cardboard walls
   const HX = 30.5, HZ = 41.5, WH = 6;
@@ -4531,9 +4562,10 @@ const PAPER_MARKS = (() => {
     const h = hash(p.x, p.y, p.z, 13), h2 = hash(p.x, p.y, p.z, 31), clean = weapon === 'sniper' || weapon === 'obelisk';
     const c = clean ? HOLE.star + ((h2 * 2) | 0) : (h2 * HOLE.star) | 0, cl = cellOf(8 + c), sf_ = surfAt(p, n), tint = sf_ ? tintOf([sf_[4], sf_[5], sf_[6]]) : tintFor(mat);
     const F = frame(p, n, stretchAxis ? null : dir, h, r / cl.coreR, stretchAxis, stretchK), cut = cl.coreMax * 1.02;
-    put(F, .006, [c * .125, HOLE.rowV.entry], tint, cut, tear);
+    const vOk = q => typeof VIS === 'undefined' || !VIS.ready || VIS.near(q, .03) <= .02;   // wp-holesnap: a decal only where a visible surface is (the slab plane can lie off the picture)
+    if (vOk(F.pos)) put(F, .006, [c * .125, HOLE.rowV.entry], tint, cut, tear); else PAPER_MARKS.stats.tearSkip++;
     const front = { pos: F.pos.clone(), cx: F.cx.clone().multiplyScalar(F.mir ? -1 : 1), cy: F.cy.clone(), core: cl.core };   // cell -> card map (mirror included)
-    F.pos.addScaledVector(n, -t); put(F, .006, [c * .125, HOLE.rowV.exit], tint, cut, tear, true);
+    F.pos.addScaledVector(n, -t); if (vOk(F.pos)) put(F, .006, [c * .125, HOLE.rowV.exit], tint, cut, tear, true); else PAPER_MARKS.stats.tearSkip++;
     finish(); return front;
   }
   // hide the marks of a tearable panel where the card is gone (an opened flap, a cut-out piece). gone(u, v) -> bool
@@ -4548,10 +4580,151 @@ const PAPER_MARKS = (() => {
     im.instanceMatrix.needsUpdate = true; cellAttr.needsUpdate = true; im.instanceColor.needsUpdate = true;
     PAPER_MARKS.stats.added++;
   }
+  const _hd = new THREE.Vector3(), _hp = new THREE.Vector3(), _hn = new THREE.Vector3();
   // a bullet / pellet / blade hit on a world object (not a tearable panel). Shotgun pellets: HOLE.gun.breacher (was the x0.8 rule)
-  function hit(obj, p, n, weapon, dir) { const k = kindFor(obj, weapon); add(p, n, k, weapon === 'breacher' && k !== 'card' && k !== 'paper' ? .8 : 1, obj, weapon, dir); }
-  function clear() { try { surfBuild(); } catch (e) { console.warn('marks surf', e); } if (!im) return; o.position.set(0, -50, 0); o.scale.setScalar(0); o.updateMatrix(); for (let i = 0; i < R.max; i++) { im.setMatrixAt(i, o.matrix); base[i] = null; tearOf[i] = null; } idx = 0; count = 0; im.instanceMatrix.needsUpdate = true; }
-  return { R, HOLE, init, add, hit, tearHole, hideTear, kindFor, tintFor, surfAt, surfBuild, clear, stats: { added: 0, hitsLoaded: 0, surfMs: 0, surfCells: 0 }, get count() { return count; } };
+  function hit(obj, p, n, weapon, dir) {
+    if (typeof VIS !== 'undefined' && VIS.ready) { const exit = !!dir && n.dot(dir) > 0; _hd.copy(dir || _hd.copy(n).negate()); const s = VIS.snap(p, _hd.normalize()); if (!s) { PAPER_MARKS.stats.noVis++; return; } p = _hp.copy(s.p); n = _hn.copy(s.n); if (exit) n.negate(); }   // wp-holesnap: the mark goes on the VISIBLE surface along the shot ray; none within the window = no mark
+    const k = kindFor(obj, weapon); add(p, n, k, weapon === 'breacher' && k !== 'card' && k !== 'paper' ? .8 : 1, obj, weapon, dir); }
+  function clear() { try { if (typeof VIS !== 'undefined') VIS.build(); } catch (e) { console.warn('vis build', e); } try { surfBuild(); } catch (e) { console.warn('marks surf', e); } if (!im) return; o.position.set(0, -50, 0); o.scale.setScalar(0); o.updateMatrix(); for (let i = 0; i < R.max; i++) { im.setMatrixAt(i, o.matrix); base[i] = null; tearOf[i] = null; } idx = 0; count = 0; im.instanceMatrix.needsUpdate = true; }
+  return { R, HOLE, init, add, hit, tearHole, hideTear, kindFor, tintFor, surfAt, surfBuild, clear, stats: { noVis: 0, tearSkip: 0, added: 0, hitsLoaded: 0, surfMs: 0, surfCells: 0 }, get count() { return count; } };
+})();
+/* ================= VISIBLE SURFACE index (wp-holesnap, owner 2026-11-13: "holes floating, not on the material") =================
+   Bullets / marks hit INVISIBLE collider boxes (a slanted roof, a cup wall, an arch: the box face lies 0.6-3 m off the picture), so a hole
+   decal was drawn on the box plane = floating in the air, and a shot stopped on air the owner could see through. This index holds the
+   triangles of everything you can SEE (static world meshes, world space, uniform 2 m grid) so that
+     VIS.ray(o, d, tmax, out)  -> first visible surface along a ray (distance, normal) or -1
+     VIS.near(p, r)            -> distance from p to the nearest visible triangle within r (or Infinity)
+     VIS.snap(h, dir)          -> where a shot's mark really belongs: { p, n } on the visible surface along the SHOT RAY (|d - collider hit| <= WIN)
+                                  or null (no visible surface near the hit = NO hole, only a spark)
+   Rule: gameplay penetration stays on the colliders; only the PLACEMENT of marks / holes follows the picture. Built at match start
+   (PAPER_MARKS.clear -> VIS.build), ~0.1-0.3 s; a ray / lookup is a few Map reads. */
+const VIS = (() => {
+  const CS = 2, BIG = 300, WIN = { back: 4, fwd: 4 }, SNAP_OK = .05;   // cell (m); a triangle spanning more than BIG cells goes to the always-tested list; snap window (m)
+  const S = { ready: false, tris: 0, meshes: 0, cells: 0, big: 0, ms: 0, snapped: 0, dropped: 0, kept: 0, slabDrop: 0, moved: 0, added: 0, boxDrop: 0, off: false };
+  let T = new Float32Array(0), cells = new Map(), big = [], stamp = new Int32Array(0), st = 0;
+  const key = (x, y, z) => ((x + 1024) * 2048 + (y + 1024)) * 2048 + (z + 1024);
+  const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _e1 = new THREE.Vector3(), _e2 = new THREE.Vector3(), _pv = new THREE.Vector3(), _qv = new THREE.Vector3(), _tv = new THREE.Vector3();
+  function collect() {
+    const out = [], skip = new Set(world.meshes); for (const r of robots) r.root.traverse(o => skip.add(o)); if (typeof camera !== 'undefined') camera.traverse(o => skip.add(o));
+    scene.traverse(q => {
+      if (!q.isMesh || q.isInstancedMesh || q.isSkinnedMesh || skip.has(q) || q.userData.tear !== undefined || q.userData.noVis || q.userData.tearMerged !== undefined || !q.geometry || !q.geometry.attributes.position) return;
+      for (let p = q; p; p = p.parent) if (!p.visible) return;
+      const mt = Array.isArray(q.material) ? q.material[0] : q.material; if (!mt || mt.visible === false || mt.side === THREE.BackSide || mt.isPointsMaterial || mt.isSpriteMaterial || mt.transparent && mt.opacity < .5 || mt.userData && mt.userData.sky) return;
+      const g = q.geometry; if (!g.boundingSphere) g.computeBoundingSphere(); if (g.boundingSphere.radius * Math.max(q.matrixWorld.getMaxScaleOnAxis(), 1) > 350 && !(g.attributes.position.count > 8)) return;
+      out.push(q);
+    });
+    return out;
+  }
+  function build() {
+    const t0 = performance.now(), meshes = collect(); let n = 0;
+    for (const q of meshes) { const g = q.geometry; n += (g.index ? g.index.count : g.attributes.position.count) / 3; }
+    T = new Float32Array(n * 9); cells = new Map(); big = []; let k = 0;
+    const ins = (kk, i) => { let L = cells.get(kk); if (!L) cells.set(kk, L = []); L.push(i); };
+    for (const q of meshes) {
+      q.updateMatrixWorld(true); const g = q.geometry, P = g.attributes.position, I = g.index, cnt = (I ? I.count : P.count), M = q.matrixWorld;
+      for (let i = 0; i + 2 < cnt; i += 3) {
+        const ia = I ? I.getX(i) : i, ib = I ? I.getX(i + 1) : i + 1, ic = I ? I.getX(i + 2) : i + 2;
+        _a.fromBufferAttribute(P, ia).applyMatrix4(M); _b.fromBufferAttribute(P, ib).applyMatrix4(M); _c.fromBufferAttribute(P, ic).applyMatrix4(M);
+        _e1.subVectors(_b, _a); _e2.subVectors(_c, _a); if (_pv.crossVectors(_e1, _e2).lengthSq() < 1e-12) continue;   // degenerate
+        const id = k / 9; T[k++] = _a.x; T[k++] = _a.y; T[k++] = _a.z; T[k++] = _b.x; T[k++] = _b.y; T[k++] = _b.z; T[k++] = _c.x; T[k++] = _c.y; T[k++] = _c.z;
+        const x0 = Math.floor(Math.min(_a.x, _b.x, _c.x) / CS), x1 = Math.floor(Math.max(_a.x, _b.x, _c.x) / CS), y0 = Math.floor(Math.min(_a.y, _b.y, _c.y) / CS), y1 = Math.floor(Math.max(_a.y, _b.y, _c.y) / CS), z0 = Math.floor(Math.min(_a.z, _b.z, _c.z) / CS), z1 = Math.floor(Math.max(_a.z, _b.z, _c.z) / CS);
+        if ((x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1) > BIG) { big.push(id); continue; }
+        for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) ins(key(x, y, z), id);
+      }
+    }
+    nT = k / 9; stamp = new Int32Array(nT); st = 0;
+    S.tris = nT; S.meshes = meshes.length; S.cells = cells.size; S.big = big.length; S.ms = Math.round(performance.now() - t0); S.ready = nT > 0; return S;
+  }
+  let nT = 0;
+  // Moller-Trumbore, two-sided: distance t along (o, d) or -1
+  function triT(id, o, d, tmax) {
+    const j = id * 9, ax = T[j], ay = T[j + 1], az = T[j + 2], e1x = T[j + 3] - ax, e1y = T[j + 4] - ay, e1z = T[j + 5] - az, e2x = T[j + 6] - ax, e2y = T[j + 7] - ay, e2z = T[j + 8] - az;
+    const px = d.y * e2z - d.z * e2y, py = d.z * e2x - d.x * e2z, pz = d.x * e2y - d.y * e2x, det = e1x * px + e1y * py + e1z * pz; if (Math.abs(det) < 1e-9) return -1;
+    const iv = 1 / det, tx = o.x - ax, ty = o.y - ay, tz = o.z - az, u = (tx * px + ty * py + tz * pz) * iv; if (u < 0 || u > 1) return -1;
+    const qx = ty * e1z - tz * e1y, qy = tz * e1x - tx * e1z, qz = tx * e1y - ty * e1x, v = (d.x * qx + d.y * qy + d.z * qz) * iv; if (v < 0 || u + v > 1) return -1;
+    const t = (e2x * qx + e2y * qy + e2z * qz) * iv; return t > 1e-4 && t <= tmax ? t : -1;
+  }
+  const _o = { x: 0, y: 0, z: 0 };
+  // first visible surface along the ray within [tmin, tmax]: returns t (and out.n = unit normal facing the ray origin, out.id) or -1
+  function ray(o, d, tmax, out, tmin) {
+    if (!S.ready) return -1; tmin = tmin || 0; st++; let best = Infinity, bid = -1;
+    const test = id => { if (stamp[id] === st) return; stamp[id] = st; const t = triT(id, o, d, Math.min(tmax, best)); if (t >= tmin && t < best) { best = t; bid = id; } };
+    for (const id of big) test(id);
+    let cx = Math.floor((o.x + d.x * tmin) / CS), cy = Math.floor((o.y + d.y * tmin) / CS), cz = Math.floor((o.z + d.z * tmin) / CS);
+    const sx = d.x > 0 ? 1 : -1, sy = d.y > 0 ? 1 : -1, sz = d.z > 0 ? 1 : -1, tdx = Math.abs(CS / (d.x || 1e-12)), tdy = Math.abs(CS / (d.y || 1e-12)), tdz = Math.abs(CS / (d.z || 1e-12));
+    const ox = o.x + d.x * tmin, oy = o.y + d.y * tmin, oz = o.z + d.z * tmin;
+    let tx = Math.abs(((d.x > 0 ? cx + 1 : cx) * CS - ox) / (d.x || 1e-12)), ty = Math.abs(((d.y > 0 ? cy + 1 : cy) * CS - oy) / (d.y || 1e-12)), tz = Math.abs(((d.z > 0 ? cz + 1 : cz) * CS - oz) / (d.z || 1e-12)), t = tmin;
+    for (let it = 0; it < 400 && t <= Math.min(tmax, best) + 1e-6; it++) {
+      const L = cells.get(key(cx, cy, cz)); if (L) for (let i = 0; i < L.length; i++) test(L[i]);
+      if (tx < ty && tx < tz) { t = tmin + tx; cx += sx; tx += tdx; } else if (ty < tz) { t = tmin + ty; cy += sy; ty += tdy; } else { t = tmin + tz; cz += sz; tz += tdz; }
+    }
+    if (bid < 0) return -1;
+    if (out) { const j = bid * 9; _e1.set(T[j + 3] - T[j], T[j + 4] - T[j + 1], T[j + 5] - T[j + 2]); _e2.set(T[j + 6] - T[j], T[j + 7] - T[j + 1], T[j + 8] - T[j + 2]); out.n = (out.n || new THREE.Vector3()).crossVectors(_e1, _e2).normalize(); if (out.n.dot(d) > 0) out.n.negate(); out.id = bid; }
+    return best;
+  }
+  // closest point on triangle (Ericson) -> squared distance
+  function triD2(id, p) {
+    const j = id * 9; _a.set(T[j], T[j + 1], T[j + 2]); _b.set(T[j + 3], T[j + 4], T[j + 5]); _c.set(T[j + 6], T[j + 7], T[j + 8]);
+    const ab = _e1.subVectors(_b, _a), ac = _e2.subVectors(_c, _a), ap = _pv.subVectors(p, _a), d1 = ab.dot(ap), d2 = ac.dot(ap);
+    if (d1 <= 0 && d2 <= 0) return ap.lengthSq();
+    const bp = _qv.subVectors(p, _b), d3 = ab.dot(bp), d4 = ac.dot(bp); if (d3 >= 0 && d4 <= d3) return bp.lengthSq();
+    const vc = d1 * d4 - d3 * d2; if (vc <= 0 && d1 >= 0 && d3 <= 0) { const v = d1 / (d1 - d3); return _tv.copy(_a).addScaledVector(ab, v).sub(p).lengthSq(); }
+    const cp = _qv.subVectors(p, _c), d5 = ab.dot(cp), d6 = ac.dot(cp); if (d6 >= 0 && d5 <= d6) return cp.lengthSq();
+    const vb = d5 * d2 - d1 * d6; if (vb <= 0 && d2 >= 0 && d6 <= 0) { const w = d2 / (d2 - d6); return _tv.copy(_a).addScaledVector(ac, w).sub(p).lengthSq(); }
+    const va = d3 * d6 - d5 * d4; if (va <= 0 && d4 - d3 >= 0 && d5 - d6 >= 0) { const w = (d4 - d3) / ((d4 - d3) + (d5 - d6)); return _tv.copy(_b).addScaledVector(_pv.subVectors(_c, _b), w).sub(p).lengthSq(); }
+    const dn = 1 / (va + vb + vc), v = vb * dn, w = vc * dn; return _tv.copy(_a).addScaledVector(ab, v).addScaledVector(ac, w).sub(p).lengthSq();
+  }
+  function near(p, r) {
+    if (!S.ready) return Infinity; st++; let best = r * r;
+    const x0 = Math.floor((p.x - r) / CS), x1 = Math.floor((p.x + r) / CS), y0 = Math.floor((p.y - r) / CS), y1 = Math.floor((p.y + r) / CS), z0 = Math.floor((p.z - r) / CS), z1 = Math.floor((p.z + r) / CS);
+    const test = id => { if (stamp[id] === st) return; stamp[id] = st; const d2 = triD2(id, p); if (d2 < best) best = d2; };
+    for (const id of big) test(id);
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) { const L = cells.get(key(x, y, z)); if (L) for (let i = 0; i < L.length; i++) test(L[i]); }
+    return best < r * r ? Math.sqrt(best) : Infinity;
+  }
+  const _sn = { n: null, id: -1 }, _so = new THREE.Vector3(), _sd = new THREE.Vector3(), SN = { p: new THREE.Vector3(), n: new THREE.Vector3() };
+  /* where a mark for a collider hit (point hp, shot direction dir) really belongs. The mark's surface is the nearest VISIBLE triangle along the shot ray
+     within WIN of the collider hit, measured from OUTSIDE (the first visible surface at or after hp - back). Returns SN {p, n} (shared object) or null:
+     no visible surface in the window = the collider box is air there = no hole (spark only). `moved` = how far it slid along the ray (m). */
+  function snap(hp, dir) {
+    if (!S.ready) { S.kept++; return null; }
+    _so.copy(hp).addScaledVector(dir, -WIN.back); _sd.copy(dir);
+    let t = -1, tm = 0;   // the visible hit NEAREST the collider hit (a ray can cross several surfaces: a card wall it already went through, then this one)
+    for (let i = 0; i < 6; i++) { const q = ray(_so, _sd, WIN.back + WIN.fwd, _sn, tm); if (q < 0) break; if (t < 0 || Math.abs(q - WIN.back) < Math.abs(t - WIN.back)) { t = q; SN.n.copy(_sn.n); } if (q > WIN.back + SNAP_OK) break; tm = q + .003; }
+    if (t < 0) { S.dropped++; return null; }
+    SN.p.copy(_so).addScaledVector(_sd, t); SN.moved = t - WIN.back; if (Math.abs(SN.moved) > SNAP_OK) S.snapped++; else S.kept++; return SN;
+  }
+
+  /* ---- SEE == SHOOT: the shot's hit list follows the picture. Static collider-box hits (the invisible proxies) are re-pinned to the visible surface along the
+     ray; a box with no visible surface within WIN is air (the bullet passes); a visible surface with no collider is solid (dummy hit). Tear panels / slabs keep
+     their own hit (they know their holes) unless a slab face is off the picture. Dynamic things (bots, sheets, planes) are untouched. */
+  const DUMMY = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ visible: false })); DUMMY.userData.surface = 'paper'; DUMMY.userData.visDummy = true; DUMMY.matrixWorld.identity();
+  const _i3 = new THREE.Matrix3(), _vo = new THREE.Vector3(), _vq = {};
+  const isStaticBox = o => o.parent && o.parent.userData.staticHolder && o.userData.tear === undefined;
+  function fix(hits, rc) {
+    if (!S.ready || S.off || !hits) return hits; const far = Math.min(rc.far, 400); if (!(far > 0)) return hits;
+    const out = [], boxes = [], d = rc.ray.direction, o = rc.ray.origin;
+    for (const h of hits) {
+      const ob = h.object;
+      if (ob.userData.tear !== undefined) { const P_ = TEAR.panels[ob.userData.tear]; if (P_ && P_.slab && near(h.point, .06) > .03) { S.slabDrop++; continue; } out.push(h); }
+      else if (isStaticBox(ob)) boxes.push(h);
+      else out.push(h);
+    }
+    const V = []; let tm = 0;
+    for (let i = 0; i < 6; i++) { const q = {}; const t = ray(o, d, far, q, tm); if (t < 0) break; q.t = t; V.push(q); tm = t + .004; }
+    const keepT = out.filter(h => h.object.userData.tear !== undefined).map(h => h.distance);
+    for (const q of V) {
+      if (keepT.some(t => Math.abs(t - q.t) <= .35) || TEAR.passed.some(t => Math.abs(t - q.t) <= .35)) continue;
+      let src = null, bd = WIN.back; for (const h of boxes) { const dd = Math.abs(h.distance - q.t); if (dd < bd) { bd = dd; src = h; } }
+      const ob = src ? src.object : DUMMY, p = _vo.copy(o).addScaledVector(d, q.t).clone(), nl = q.n.clone();
+      if (src) { _i3.setFromMatrix4(ob.matrixWorld).invert(); nl.applyMatrix3(_i3); }   // face.normal is transformDirection'd by callers: hand it the LOCAL normal that maps back to the visible one
+      out.push({ distance: q.t, point: p, object: ob, face: { a: 0, b: 0, c: 0, normal: nl, materialIndex: 0 }, faceIndex: src ? src.faceIndex : 0, mkWhy: src ? src.mkWhy : 'vis', visN: q.n.clone(), visSnap: src ? Math.round((q.t - src.distance) * 100) / 100 : null });
+      if (src) S.moved++; else S.added++;
+    }
+    S.boxDrop += boxes.filter(h => !V.some(q => Math.abs(h.distance - q.t) <= WIN.back)).length;
+    return out.sort((a, b) => a.distance - b.distance);
+  }
+  return { S, build, ray, near, snap, fix, WIN, SNAP_OK, get ready() { return S.ready && !S.off; } };
 })();
 /* ================= audio (Foldiers: paper + cardboard sound set, 2026-11-12) ================= */
 // Every sound is an original paper/cardboard recipe (tools/audio/recipes.js), rendered offline at consistent loudness into ONE sprite
@@ -4745,7 +4918,7 @@ const sfx = {
     psnd(id, { pos, ref: 3, roll: 1, vol: .9 }); },
   hurt() { const C = AU.hurtCtx || {}; AU.hurtCtx = null; psnd(C.crit ? 'hurt_head' : 'hurt', { vol: 1 }); },
   step(sprint, land, crouch) { psnd(land ? 'imp_card_thick' : 'imp_mat', { vol: (land ? .5 : sprint ? .35 : .25) * (crouch ? .4 : 1) }); },   // (fallback: modules/footsteps.js plays the real surface steps)
-  foeStep(pos, sprint, land, crouch) { if (!voice('foestep', pos)) return; psnd(land ? 'imp_card_thick' : 'imp_mat', { pos, hrtf: true, occl: true, feet: true, ref: 3, roll: 1.25, vol: (land ? 1.2 : sprint ? 1 : .7) * (crouch ? .3 : 1) }); },
+  foeStep(pos, sprint, land, crouch, mate) { if (!voice('foestep', pos)) return; psnd(land ? 'imp_card_thick' : 'imp_mat', { pos, hrtf: true, occl: true, feet: true, ref: 3, roll: 1.25, vol: (land ? 1.2 : sprint ? 1 : .7) * (crouch ? .3 : 1) * (mate ? .6 : 1) }); },
   equip() { if (planeCaughtNow()) return planeCatchSnd(); const w = wclass(curW());
     if (w === 'plane') return psnd('plane_unfold'); psnd('equip', { rate: { rifle: 1, smg: 1.1, shotgun: .9, sniper: .86, boomerang: 1.05, knife: 1.2 }[w] || 1 });
     if (w === 'knife') psnd('knife_swing', { vol: .35, rate: 1.3, delay: .08 }); },
@@ -4757,9 +4930,11 @@ const sfx = {
   botShot(pos, kind) { gunVoice('shot', pos, .8); },
   botStep(pos) { if (!voice('step', pos)) return; psnd('imp_mat', { pos, ref: 2.5, vol: .5 }); },
   thrust() { psnd('paper_flap'); },
-  // slide sound follows the surface (data/move.json slide.surfaces[].sound): felt = silent; ids map onto existing paper sounds until WP-G2's set lands
-  slide(id, loud) { const M = { slide_swish: ['paper_flap', .7, 1.2], slide_sticky: ['imp_card_thick', .6, 1.3], slide_clack: ['imp_mat', 1.5, 1], slide_scrape: ['crouch', .8, 1.4] }[id]; if (M) psnd(M[0], { rate: M[1], vol: M[2] * Math.min(1, .5 + (loud || 0) * .5) }); },
-  mantle() { psnd('paper_flap', { rate: .9, vol: .8 }); },
+  // slide sound follows the surface (data/move.json slide.surfaces[].sound): felt = silent; own paper sounds (WP sounds v2)
+  slide(id, loud) { if (/^slide_(swish|sticky|clack|scrape)$/.test(id)) psnd(id, { vol: Math.min(1, .5 + (loud || 0) * .5) * 1.2 }); },
+  mantle() { psnd('mantle', { vol: .9 }); },
+  lean() { psnd('lean', { vol: .8 }); },
+  levelUp() { if (!PSND || !PSND.ready) return false; psnd('level_up', { ui: true }); return true; },
   nadeThrow(pos) { const me = nearMe(pos, 1.6); psnd('plane_throw', me ? {} : { pos, hrtf: true, occl: true, ref: 3 }); },
   nadeBounce(pos) { if (!voice('misc', pos)) return; psnd('imp_card_thick', { pos, hrtf: true, occl: true, ref: 3, vol: .7, rate: 1.15 }); },   // (a dropped gun bouncing on card)
   explode(pos) { psnd('plane_pop', { pos, ref: 8, roll: 1, verb: .2, echo: .08 }); if (pos) psnd('debris', { pos, ref: 4, delay: .7, vol: .8 }); },
@@ -7157,7 +7332,7 @@ const PEN_LOSS = { sniper: .55, obelisk: .4, helix: .45, titan: 1.2, triad: 1.1,
 // bullet holes on both faces of a wall the shot went through + a spark burst where it comes out
 function penMarks(h, dir, th) {
   const n = h.face ? _v2.copy(h.face.normal).transformDirection(h.object.matrixWorld) : _v2.set(0, 1, 0);
-  const ex = _pv.copy(h.point).addScaledVector(dir, th); PAPER_MARKS.hit(h.object, h.point, n, P.weapon, dir); PAPER_MARKS.hit(h.object, ex.clone(), dir.clone(), P.weapon);   // entry + exit marks
+  const ex = _pv.copy(h.point).addScaledVector(dir, th); PAPER_MARKS.hit(h.object, h.point, n, P.weapon, dir); PAPER_MARKS.hit(h.object, ex.clone(), dir.clone(), P.weapon, dir);   // entry + exit marks
   PFX.chips(ex, dir, h.object.material && h.object.material.color, h.object.material && h.object.material.userData && h.object.material.userData.paper, 6);
 }
 function fireShot() {
@@ -9786,6 +9961,7 @@ function updatePlayer(dt, rdt) {
   if (P.mantle) mantleTick(dt);
   mapTriggers(PLAYER_ENT, dt); statusTick(PLAYER_ENT, dt);
   interactTick(dt); P.lean = damp(P.lean || 0, MOVEC.leanInput(keys, { sprint: P.sprint, sliding: !!P.sl, mantling: !!P.mantle, interactPrompt: (!!P.interact && P.interact.ok) || !!(window.MODE && MODE.canUse && MODE.canUse()) }) , 1 / MOVEC.M.leanTime, dt);
+  { const lo = Math.abs(P.lean || 0) > .6; if (lo && !P.leanSnd) { try { sfx.lean && sfx.lean(); } catch (e) {} } P.leanSnd = lo ? 1 : (Math.abs(P.lean || 0) < .3 ? 0 : P.leanSnd); }   // paper rustle once per lean
   // footsteps
   const hs = Math.hypot(P.vel.x, P.vel.z);
   if (MOVEC.stepLoud({ onGround: P.onGround, speed: hs, sliding: !!P.sl, slideLoud: P.sl ? P.sl.loud : 0, walk: P.walk, crouch: P.crouch, sprint }) > 0 && !P.sl && !P.mantle) { P.stepAcc += hs * dt; const stride = sprint ? 2.5 : 1.9; if (P.stepAcc > stride) { P.stepAcc = 0; sfx.step(sprint, false, P.crouch > .5); } }   // (silent: walking on Alt, crouch-walking)
@@ -10315,10 +10491,12 @@ function updateRobots(dt, menu) {
   if (!menu && !kcLive()) for (const r of robots) if (!(SIM.inStep && r.remote)) foeSteps(r, dt);
 }
 // enemy footsteps: one step per stride while they move on the ground, a heavier thump when they land from a jump
+// a teammate (team modes): its footsteps are positional like an enemy's but softer + duller so you can tell friend from foe by ear
+function isMateBot(r) { try { if (r.mxBot && window.S9BotModes && S9BotModes.on) return !!r.mxTeam && r.mxTeam === S9BotModes.myTeam; return !!(r.remote && window.MODE && MODE.teamMode && MODE.teamMode() && MODE.myTeam() && MODE.teamOf(r.netId) === MODE.myTeam()); } catch (e) { return false; } }
 function foeSteps(r, dt) {
   if (r.dead) { r.fsAcc = 0; return; }
   const p = r.root.position, hs = Math.hypot(r.vel.x, r.vel.z), ground = r.onGround !== false;
-  if (ground && r.fsAir && (r.fsVy || 0) < -4) sfx.foeStep(p, false, true, false);
+  if (ground && r.fsAir && (r.fsVy || 0) < -4) sfx.foeStep(p, false, true, false, isMateBot(r));
   r.fsAir = !ground; r.fsVy = r.remote ? ((p.y - (r.fsY ?? p.y)) / Math.max(dt, 1e-3)) : r.vy; r.fsY = p.y;
   if (!ground || hs < 1.2 || r.dashT > 0) return;
   // a walking player (silent walk key) makes no step sound; the speed check means a client that claims walking while running is still heard
@@ -10327,10 +10505,29 @@ function foeSteps(r, dt) {
   if (r.remote && r.netWalk) r.walkT = G.time;
   if ((r.remote ? r.netWalk || G.time - (r.walkT ?? -9) < .5 : r.walk) && hs < MOVE.run * MOVE.walk * 1.2 + .3) { r.fsAcc = 0; return; }
   const sprint = hs > 5, stride = sprint ? 2.4 : 1.85;
-  r.fsAcc = (r.fsAcc || 0) + hs * dt; if (r.fsAcc > stride) { r.fsAcc = 0; sfx.foeStep(p, sprint, false, (r.crouch || 0) > .5); }
+  r.fsAcc = (r.fsAcc || 0) + hs * dt; if (r.fsAcc > stride) { r.fsAcc = 0; sfx.foeStep(p, sprint, false, (r.crouch || 0) > .5, isMateBot(r)); }
 }
 // floating name tags + health for players you can see
+// name tag position, clamped so the whole tag (name + HP bar) stays on screen
+let _tagF = 0;
+function tagPlace(t, x, y, sc) {
+  const hw = Math.max(32, (t._w || 80) / 2) * sc + 4, th = 34 * sc + 4;
+  x = Math.min(Math.max(x, hw), VW - hw); y = Math.min(Math.max(y, th), VH - 4);
+  t._f = _tagF; t._px = x; t._py = y; t._tsc = sc; tagMove(t, x, y, sc);
+}
+function tagMove(t, x, y, sc) { setStyle(t, 'transform', `translate(${x.toFixed(0)}px,${y.toFixed(0)}px) translate(-50%,-100%) scale(${sc.toFixed(2)})`); }
+// tags that would sit on top of each other (teammates close together) are stacked upward
+function tagSpread() {
+  const L = []; for (const r of robots) { const t = r.tag; if (t && t._f === _tagF) L.push(t); }
+  if (L.length < 2) return; L.sort((a, b) => b._py - a._py); const P = [];
+  for (const t of L) {
+    const hw = Math.max(32, (t._w || 80) / 2) * t._tsc, h = 34 * t._tsc + 2; let y = t._py;
+    for (let k = 0; k < 8; k++) { const o = P.find(q => Math.abs(q.x - t._px) < hw + q.hw && y > q.y - q.h && y - h < q.y); if (!o) break; y = o.y - o.h - 2; }
+    y = Math.max(y, h); if (y !== t._py) tagMove(t, t._px, y, t._tsc); P.push({ x: t._px, y, hw, h });
+  }
+}
 function updateTags() {
+  _tagF++;
   for (const r of robots) {
     const t = r.tag; let show = false;
     // name + HP only over TEAMMATES (like Valorant/CS): enemies (bots, free-for-all players, the other team) show nothing
@@ -10340,13 +10537,14 @@ function updateTags() {
       const d = camera.position.distanceTo(_proj); _proj.project(camera);
       if (_proj.z < 1 && Math.abs(_proj.x) < 1.1 && Math.abs(_proj.y) < 1.1 && d < 55) {
         show = true; const x = (_proj.x * .5 + .5) * VW, y = (-_proj.y * .5 + .5) * VH;
-        setStyle(t, 'transform', `translate(${x.toFixed(0)}px,${y.toFixed(0)}px) translate(-50%,-100%) scale(${clamp(14 / d, .6, 1).toFixed(2)})`);
-        if (t._n !== r.name) { t._n = r.name; t.firstChild.textContent = r.name; t.firstChild.style.color = r.cssCol; }
+        tagPlace(t, x, y, clamp(14 / d, .6, 1));
+        if (t._n !== r.name) { t._n = r.name; t.firstChild.textContent = r.name; t.firstChild.style.color = r.cssCol; t._w = t.offsetWidth; }
         const hp = Math.max(0, Math.round(r.hp)); if (t._hp !== hp) { t._hp = hp; t.querySelector('s').style.transform = `scaleX(${hp / 100})`; }
       }
     }
     setStyle(t, 'opacity', show ? '1' : '0');
   }
+  tagSpread();
 }
 
 function updateDebris(dt) {

@@ -347,11 +347,12 @@
       const dd = camera.position.distanceTo(_tp); _tp.project(camera);
       if (!(_tp.z < 1 && Math.abs(_tp.x) < 1.1 && Math.abs(_tp.y) < 1.1 && dd < 55)) continue;
       const t = r.tag, x = (_tp.x * .5 + .5) * VW, y = (-_tp.y * .5 + .5) * VH;
-      setStyle(t, 'transform', `translate(${x.toFixed(0)}px,${y.toFixed(0)}px) translate(-50%,-100%) scale(${clamp(14 / dd, .6, 1).toFixed(2)})`);
-      if (t._n !== r.name) { t._n = r.name; t.firstChild.textContent = r.name; t.firstChild.style.color = r.cssCol; }
+      tagPlace(t, x, y, clamp(14 / dd, .6, 1));
+      if (t._n !== r.name) { t._n = r.name; t.firstChild.textContent = r.name; t.firstChild.style.color = r.cssCol; t._w = t.offsetWidth; }
       const hp = Math.max(0, Math.round(r.hp)); if (t._hp !== hp) { t._hp = hp; t.querySelector('s').style.transform = `scaleX(${hp / 100})`; }
       setStyle(t, 'opacity', '1');
     }
+    tagSpread();
   };
   const _tp = new THREE.Vector3();
   // scoreboard (Tab): two teams, like CS / Valorant
