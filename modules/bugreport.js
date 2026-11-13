@@ -403,7 +403,7 @@ function buildUI() {
     el('p', { class: 's9b-note', text: 'We read every report and check it ourselves before anything in the game is changed. Please do not write passwords or private details.' }),
   ]);
   UI.root = el('div', { id: 's9bug', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 's9bugH', hidden: true }, [
-    el('div', { class: 's9b-sheet' }, [el('div', { class: 's9b-kicker', text: 'Bug report · goes to the Sector Nine team' }), el('h2', { id: 's9bugH', text: 'Report a bug' }), UI.body, UI.done])]);
+    el('div', { class: 's9b-sheet' }, [el('div', { class: 's9b-kicker', text: 'Bug report · goes to the Foldiers team' }), el('h2', { id: 's9bugH', text: 'Report a bug' }), UI.body, UI.done])]);
   UI.hint = el('div', { class: 's9b-hint', role: 'status' }); UI.aimN = el('div', { class: 's9b-pinN' });
   UI.aim = el('div', { id: 's9bug-aim', hidden: true }, [UI.hint, UI.aimN, el('div', { class: 's9b-cross' })]);
   UI.toast = el('div', { id: 's9bug-toast', role: 'status', hidden: true });

@@ -303,7 +303,7 @@ void main(){
   const RIMS = new Set(), _rv = new T.Vector3(), _rf = new T.Vector3();
   // rim base colour: cool sky blue by default; a map look can set its own (yard: port glow) via S9GFXM.setRimBase([r,g,b] | null)
   const RIM0 = new T.Color(.55, .72, 1), RIMB = RIM0.clone();
-  const rimCol = (r, out) => out.copy(RIMB).lerp(r.color || new T.Color(1, 1, 1), .5).multiplyScalar(1.15);
+  const rimCol = (r, out) => out.copy(RIMB).lerp(r.color || new T.Color(1, 1, 1), .9);   // team colour, not sky-white: a blue soldier's rim must not read lavender
   // The overlay lives at the scene root (NOT inside the bot's model): other modules (skins, killcam, spectate) walk the model looking for
   // "the" skinned mesh, and must never find ours. It copies the body's world matrix right before it is drawn, so it never lags a frame.
   function attachRim(r) {

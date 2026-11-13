@@ -10,7 +10,10 @@
   const REASON = { eliminated: 'Enemy team eliminated', defused: 'Charge defused', exploded: 'Charge detonated', time: 'Time ran out' };
   const MX = { v: null, teams: new Map(), off: 0, freezeEnd: 0, roundEnd: 0, carrier: null, kits: new Set(), bomb: null, act: null, holdE: false, pickT: 0, beepT: 0, layout: null, siteObjs: [], bombObj: null, carryObj: null, spec: null, allowRespawn: false, lastRound: 0, over: false };
   let LAYOUTS = null;
-  fetch('data/demo_layouts.json').then(r => r.json()).then(j => { LAYOUTS = j; }).catch(() => {});
+  // team bases published by the map (window.TEAM_BASES, src/game/26-desktown.js) always win over the grey-box points in demo_layouts.json,
+  // whichever of the two arrives first; a failed/slow fetch must never leave a team mode without bases (= everyone spawns in the FFA spread)
+  const applyBases = () => { const B = window.TEAM_BASES; if (!B) return; LAYOUTS = LAYOUTS || {}; for (const id in B) LAYOUTS[id] = Object.assign({}, LAYOUTS[id] || {}, B[id]); };
+  fetch('data/demo_layouts.json').then(r => r.json()).then(j => { LAYOUTS = j; }).catch(() => {}).then(applyBases);
 
   // the match source: the online server room, or a LOCAL room (offline vs-bots Team deathmatch / Demolition, run in this
   // browser by modules/botmodes.js with the same rules code as the server). With no local room every line below behaves

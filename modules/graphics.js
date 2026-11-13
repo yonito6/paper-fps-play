@@ -360,9 +360,11 @@ void main(){
   grade.material.uniforms = GU; grade.material.fragmentShader = GRADE_FRAG; grade.material.needsUpdate = true;
 
   /* ---------- AO volume per map ---------- */
+  const AO_BAKED = new Set();   // map ids that have assets/tex/hd/ao_<id>.json + .png (none yet)
   function loadAO(id) {
     if (!WEBGL2) return Promise.resolve(null);
     if (S.aoMaps[id] !== undefined) return Promise.resolve(S.aoMaps[id]);
+    if (!AO_BAKED.has(id)) return Promise.resolve(S.aoMaps[id] = null);   // no baked AO volume shipped for this map: do not request it (it 404'd every load)
     if (S.aoLoaded[id]) return S.aoLoaded[id];
     return (S.aoLoaded[id] = (async () => {
       try {
