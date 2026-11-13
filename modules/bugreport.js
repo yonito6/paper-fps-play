@@ -14,7 +14,7 @@
 'use strict';
 if (window.S9Bug) return;
 
-const DEFAULT_SRV = 'https://foldiers-server-production.up.railway.app';
+const DEFAULT_SRV = 'https://eu.foldiers.com';
 const MAX_SHOT = 150 * 1024, MAX_PIN_SHOT = 80 * 1024, MAX_PINS = 3, QUEUE_KEY = 'sector9-bugq', QUEUE_MAX = 3;
 const CATS = [['gameplay', 'Gameplay'], ['map', 'Map bug - point at it'], ['graphics', 'Graphics'], ['sound', 'Sound'], ['online', 'Online / connection'], ['controls', 'Controls'], ['ui', 'Menus / UI'], ['cheating', 'Cheating / player report'], ['other', 'Something else']];
 const FREQS = [['once', 'It happened once'], ['sometimes', 'Sometimes'], ['always', 'Every time']];

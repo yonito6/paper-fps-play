@@ -625,11 +625,13 @@ body:has(#mend:not([hidden])) #rfx,body:has(#mend:not([hidden])) #hud{visibility
 #pboot .s::before,#pwipe .s::before{background:var(--fk)!important}
 #pboot .pb-c{gap:18px}
 .pb-logo{width:min(820px,88vw,calc(46vh * 2.56))!important}
-.pb-bar{width:min(560px,80vw)!important;height:34px!important;margin-top:10px!important;border-radius:0!important;background:none!important;box-shadow:none!important;isolation:isolate}
+.pb-bar{width:min(560px,80vw)!important;height:44px!important;margin-top:10px!important;border-radius:0!important;background:none!important;box-shadow:none!important;isolation:isolate}
 .pb-bar::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(rgba(40,20,4,.38),rgba(40,20,4,.2)),var(--corr);clip-path:var(--tearTab)}
 .pb-bar::after{content:'';position:absolute;inset:-6px -8px;z-index:-2;background:var(--fk-light);clip-path:var(--tearB)}
 .pb-bar i{inset:6px!important;background:var(--fb)!important;clip-path:polygon(0 0,97% 6%,100% 30%,97.5% 52%,100% 76%,96.5% 100%,0 100%)!important}
-.pb-plane{top:-22px!important;left:calc(6px + var(--p,0) * (100% - 12px) - 19px)!important}   /* plane centre = the fill's leading edge (fill is inset 6px, plane 38px wide) */
+.pb-plane{top:calc(50% - 12px)!important;width:40px!important;height:24px!important;left:calc(6px + var(--p,0) * (100% - 12px) - 20px)!important;transform:none;animation:pbBob 1.1s ease-in-out infinite;filter:drop-shadow(0 1px 0 rgba(40,20,4,.35));z-index:2}   /* inside the track, nose right; centre = the fill's leading edge (fill inset 6px, plane 40px wide) */
+@keyframes pbBob{50%{transform:translateY(-1.5px)}}
+@media (prefers-reduced-motion:reduce){.pb-plane{animation:none!important}}
 #pboot.full .pb-bar i{clip-path:none!important}
 #pboot #loading,#pbLoad{font:400 22px/1 var(--display)!important;font-style:italic;letter-spacing:.04em!important;color:var(--k-ink)!important;text-shadow:0 1px 0 rgba(255,236,200,.55)}
 .pb-tip{position:relative;isolation:isolate;padding:10px 20px 11px;font:700 17px/1.35 var(--mono)!important;color:var(--k-ink)!important;min-height:0!important}
@@ -968,7 +970,7 @@ body #pHint{box-sizing:border-box!important;width:max-content;max-width:min(440p
   <div class="s l"></div><div class="s r"></div>
   <div class="pb-c">
     <img class="pb-logo" src="assets/brand/foldiers_logo_1024.webp" srcset="assets/brand/foldiers_logo_1024.webp 1024w, assets/brand/foldiers_logo_2048.webp 1890w" sizes="(max-width:700px) 88vw, 820px" width="1024" height="349" alt="Foldiers">
-    <div class="pb-bar"><i id="pbFill"></i><img class="pb-plane" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 22'%3E%3Cpath d='M1 11 L39 1 L22 21 L18 13Z' fill='%23fff7ea'/%3E%3Cpath d='M18 13 L39 1' stroke='%23c8372a' stroke-width='1.6'/%3E%3C/svg%3E" alt=""></div>
+    <div class="pb-bar"><i id="pbFill"></i><img class="pb-plane" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M1 3 L39 12 L1 21 L9 12Z' fill='%23fff7ea' stroke='%23b9a98c' stroke-width='.8' stroke-linejoin='round'/%3E%3Cpath d='M9 12 L39 12' stroke='%23c8372a' stroke-width='1.6'/%3E%3Cpath d='M9 12 L1 21' stroke='%23d8cdb4' stroke-width='1'/%3E%3C/svg%3E" alt=""></div>
     <div id="loading">Loading 0%</div>
     <div class="pb-tip" id="pbTip">Shoot thin cardboard to tear holes you can see and shoot through.</div>
   </div>
@@ -5395,10 +5397,19 @@ const PVM = (() => {
   let dotEl = null, dotOp = -1, dotCls = null;
   // iron-sight gun whose model has no card tip yet (shotgun until its tip lands): a small ink ring + dot stands in, so every gun shows an aim reference when zoomed
   const noTip = (vm, w) => !!w && w.optic === 'iron' && !!vm && !!vm.paper && !vm.paper.getObjectByName('tip');
-  const hasDot = (w, vm) => !!w && !w.scope && (w.optic === 'reflex' || noTip(vm || S.vm[P.weapon], w));
+  // reflex guns: the dot is ON the acetate of the model (atlas 'dot' face), so NO screen dot for them (that was the second red dot). Only a tip-less iron gun gets the ring stand-in.
+  const hasDot = (w, vm) => !!w && !w.scope && noTip(vm || S.vm[P.weapon], w);
+  const modelDot = (w, vm) => !!w && w.optic === 'reflex' && !!vm && vm.gid !== 'plane';
   // scope-in motion: restart the CSS animation each time the tube comes up (class .in), never per frame
   let scopeOn = false;
   function scopeIn() { const el = document.getElementById('scope'); if (!el) return; const on = !!W().scope && P.ads > .85 && state === 'play'; if (on === scopeOn) return; scopeOn = on; el.classList.remove('in'); if (on) { void el.offsetWidth; el.classList.add('in'); } }
+  // census of visible red aim dots right now (the 'ONE aim reference per gun' rule): screen ring-dot + scope ink dot + the acetate dot on each visible reflex gun model
+  function redDots() {
+    const op = e => { if (!e) return 0; const c = getComputedStyle(e); return c.display === 'none' ? 0 : +c.opacity; };
+    const d = { screen: op(document.getElementById('pvmDot')) > .05 ? 1 : 0, scope: op(document.getElementById('scope')) > .05 && op(document.querySelector('#scope .dot')) > .05 ? 1 : 0, model: 0, names: [] };
+    for (const id in S.vm) { const v = S.vm[id], w = WEAPONS[id]; if (v.group.visible && v.group.parent && modelDot(w, v)) { d.model++; d.names.push(id); } }
+    d.total = d.screen + d.scope + d.model; return d;
+  }
   function aimDot(vm) {
     if (!dotEl) dotEl = document.getElementById('pvmDot'); if (!dotEl) return;
     const w = W(), on = vm && vm.gid !== 'plane' && hasDot(w, vm) && state === 'play' && !PLANES.S.steering;
@@ -5484,10 +5495,10 @@ const PVM = (() => {
       if (W().scope) ok(id + ': scope view (paper tube overlay on, gun hidden)', getComputedStyle(document.getElementById('scope')).opacity === '1' && !vm.group.visible);
       { const el = W().scope ? document.querySelector('#scope .dot') : document.getElementById('pvmDot'), r = el.getBoundingClientRect(), cv = renderer.domElement.getBoundingClientRect();
         const cx = r.left + r.width / 2 - (cv.left + cv.width / 2), cy = r.top + r.height / 2 - (cv.top + cv.height / 2), vis = +getComputedStyle(W().scope ? document.getElementById('scope') : el).opacity;
-        if (W().scope || hasDot(W())) ok(id + ': aim dot visible at the exact screen centre while aiming' + (W().scope ? ' (scope dot + pencil crosshair)' : ' (reflex optic)'), vis > .95 && Math.abs(cx) <= 1 && Math.abs(cy) <= 1, 'opacity ' + vis + ', off centre ' + cx.toFixed(1) + ', ' + cy.toFixed(1) + ' px');
+        if (W().scope || hasDot(W())) ok(id + ': aim dot visible at the exact screen centre while aiming' + (W().scope ? ' (scope dot + pencil crosshair)' : ' (tip-less iron ring)'), vis > .95 && Math.abs(cx) <= 1 && Math.abs(cy) <= 1, 'opacity ' + vis + ', off centre ' + cx.toFixed(1) + ', ' + cy.toFixed(1) + ' px');
         else ok(id + ': iron/paper sights: NO aim dot while aiming (the sight itself is on centre)', vis === 0, 'dot opacity ' + vis); }
       { // ONE aiming reference per gun (owner 2026-11-12, GUN_KIT.md SIGHTS): dot (reflex) XOR card tip (node 'tip', iron) XOR scope
-        const tip = vm.paper.getObjectByName('tip'), kind = W().scope ? 'scope' : hasDot(W()) ? 'dot' : 'tip', n = (W().scope ? 1 : 0) + (hasDot(W()) ? 1 : 0) + (tip ? 1 : 0);
+        const tip = vm.paper.getObjectByName('tip'), kind = W().scope ? 'scope' : modelDot(W(), vm) ? 'dot' : 'tip', n = (W().scope ? 1 : 0) + (modelDot(W(), vm) ? 1 : 0) + (hasDot(W()) ? 1 : 0) + (tip ? 1 : 0);
         let px = -1; if (tip) { vm.group.updateMatrixWorld(true); tip.getWorldPosition(v); v.project(gunCam); const cv = renderer.domElement.getBoundingClientRect(); px = Math.hypot(v.x * cv.width / 2, v.y * cv.height / 2); }
         ok(id + ': exactly ONE aiming reference (' + kind + '), a tip sits on screen centre at ADS', n === 1 && (kind !== 'tip' || (!!tip && px <= 2)), 'refs ' + n + ', tip alignment error ' + (tip ? px.toFixed(1) + ' px' : 'n/a')); }
       adsHeld = false; await until(() => P.ads < .01, 2000); await wait(50);
@@ -5567,7 +5578,7 @@ const PVM = (() => {
     if (S.hand.mat && S.hand.red) { const hm = t === 'def' ? S.hand.red : S.hand.blue; if (S.hand.mat.map !== hm) S.hand.mat.map = hm; }   // the hands too (one shared material)
     for (const [m, blue, red] of vm.redMaps) { const map = t === 'def' ? red : blue; if (map && m.material.map !== map) m.material.map = map; }
   }
-  return { S, PL, load, update, warm, inspect, selfTest, apply, applyAll, planeThrow, planeKey, flightOver, handGeo, placeHand, teamPrep, team, get icons() { return S.icons; } };
+  return { S, PL, redDots, load, update, warm, inspect, selfTest, apply, applyAll, planeThrow, planeKey, flightOver, handGeo, placeHand, teamPrep, team, get icons() { return S.icons; } };
 })();
 /* ================= players: armoured soldiers driven by AI ================= */
 // Soldier model (three.js example asset) + Quaternius Universal Animation Library moves (CC0), retargeted offline into anims.json
@@ -8934,7 +8945,7 @@ function roomTransport(code, create) {
    The main route for online play. Nobody needs a direct link to anyone else, so it works on any home, office or
    mobile network and for any number of players. If the server can't be reached, the old peer-to-peer + bus route
    below is used instead. */
-const SRV = { url: new URLSearchParams(location.search).get('srv') || 'wss://foldiers-server-production.up.railway.app', ws: null, ready: null, on: new Set(), rtt: null, jit: 0, nd: false, listing: false, pingT: null };
+const SRV = { url: new URLSearchParams(location.search).get('srv') || 'wss://eu.foldiers.com', ws: null, ready: null, on: new Set(), rtt: null, jit: 0, nd: false, listing: false, pingT: null };
 function srvInit() {
   if (SRV.ws && SRV.ws.readyState === 1) return Promise.resolve(true);
   if (SRV.ready) return SRV.ready;

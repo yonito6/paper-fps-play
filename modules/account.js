@@ -11,11 +11,11 @@
   if (window.S9Account) return;
 
   // ---------------------------------------------------------------- API base: same host as the game WebSocket server
-  const DEFAULT_SRV = (typeof SRV !== 'undefined' && SRV && SRV.url) || 'wss://foldiers-server-production.up.railway.app';   // follows the game's own server setting (?srv= too)
+  const DEFAULT_SRV = (typeof SRV !== 'undefined' && SRV && SRV.url) || 'wss://eu.foldiers.com';   // follows the game's own server setting (?srv= too)
   function apiBase() {
     let s = null; try { s = new URLSearchParams(location.search).get('srv'); } catch (e) {}
     s = s || DEFAULT_SRV;
-    try { const u = new URL(s); u.protocol = u.protocol === 'wss:' ? 'https:' : u.protocol === 'ws:' ? 'http:' : u.protocol; return u.origin; } catch (e) { return 'https://foldiers-server-production.up.railway.app'; }
+    try { const u = new URL(s); u.protocol = u.protocol === 'wss:' ? 'https:' : u.protocol === 'ws:' ? 'http:' : u.protocol; return u.origin; } catch (e) { return 'https://eu.foldiers.com'; }
   }
   const BASE = apiBase();
   const KEY = 'foldiers-account';
