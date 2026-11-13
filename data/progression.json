@@ -1,0 +1,1058 @@
+{
+ "maxLevel": 100,
+ "maxPrestige": 10,
+ "prestigeXp": 39100,
+ "xp": {
+  "kill": 20,
+  "headshot": 10,
+  "assist": 10,
+  "win": 250,
+  "loss": 80,
+  "draw": 120,
+  "objective": 40,
+  "mvp": 80,
+  "doubleKill": 15,
+  "tripleKill": 30,
+  "quadKill": 50,
+  "streak": 5,
+  "firstWinOfDay": 400,
+  "challenge": 150
+ },
+ "clips": {
+  "play": 10,
+  "win": 15,
+  "killEvery": 2,
+  "killCap": 30,
+  "levelUp": 25,
+  "levelUpPer2": 1,
+  "prestige": 100,
+  "firstWinOfDay": 20,
+  "challenge": 20,
+  "mvp": 5
+ },
+ "limits": {
+  "matchXpCap": 1800,
+  "matchClipsCap": 120,
+  "minSeconds": 45,
+  "maxSeconds": 3600,
+  "maxKills": 60,
+  "maxStreakBonusKills": 10
+ },
+ "ribbons": [
+  "Plain",
+  "Kraft",
+  "Blue",
+  "Red",
+  "Green",
+  "Yellow",
+  "Lined",
+  "Graph",
+  "Foil",
+  "Gold"
+ ],
+ "unlocks": [
+  {
+   "lv": 1,
+   "kind": "title",
+   "id": "rookie",
+   "name": "Rookie Folder"
+  },
+  {
+   "lv": 1,
+   "kind": "banner",
+   "id": "plain",
+   "name": "Plain Sheet"
+  },
+  {
+   "lv": 1,
+   "kind": "crosshair",
+   "id": "dot",
+   "name": "Pin Dot"
+  },
+  {
+   "lv": 1,
+   "kind": "flair",
+   "id": "ribbon_plain",
+   "name": "Plain Ribbon"
+  },
+  {
+   "lv": 1,
+   "kind": "card",
+   "id": "blank_card",
+   "name": "Blank Card"
+  },
+  {
+   "lv": 3,
+   "kind": "crosshair",
+   "id": "cross",
+   "name": "Pencil Cross"
+  },
+  {
+   "lv": 4,
+   "kind": "card",
+   "id": "kraft_card",
+   "name": "Kraft Card"
+  },
+  {
+   "lv": 5,
+   "kind": "title",
+   "id": "crease",
+   "name": "Crease Maker"
+  },
+  {
+   "lv": 6,
+   "kind": "banner",
+   "id": "graph",
+   "name": "Graph Paper Banner"
+  },
+  {
+   "lv": 8,
+   "kind": "crosshair",
+   "id": "ring",
+   "name": "Hole-Punch Ring"
+  },
+  {
+   "lv": 10,
+   "kind": "title",
+   "id": "sharp",
+   "name": "Sharp Edge"
+  },
+  {
+   "lv": 10,
+   "kind": "flair",
+   "id": "ribbon_kraft",
+   "name": "Kraft Ribbon"
+  },
+  {
+   "lv": 12,
+   "kind": "card",
+   "id": "sticky",
+   "name": "Sticky Note Card"
+  },
+  {
+   "lv": 15,
+   "kind": "banner",
+   "id": "lined",
+   "name": "Lined Paper Banner"
+  },
+  {
+   "lv": 18,
+   "kind": "crosshair",
+   "id": "brackets",
+   "name": "Tape Brackets"
+  },
+  {
+   "lv": 20,
+   "kind": "title",
+   "id": "origami",
+   "name": "Origami Hand"
+  },
+  {
+   "lv": 20,
+   "kind": "flair",
+   "id": "ribbon_blue",
+   "name": "Blue Ribbon"
+  },
+  {
+   "lv": 25,
+   "kind": "card",
+   "id": "doodle",
+   "name": "Doodle Card"
+  },
+  {
+   "lv": 28,
+   "kind": "banner",
+   "id": "torn",
+   "name": "Torn Edge Banner"
+  },
+  {
+   "lv": 30,
+   "kind": "title",
+   "id": "scissor",
+   "name": "Scissor Hand"
+  },
+  {
+   "lv": 30,
+   "kind": "flair",
+   "id": "ribbon_red",
+   "name": "Red Ribbon"
+  },
+  {
+   "lv": 35,
+   "kind": "crosshair",
+   "id": "chevron",
+   "name": "Staple Chevron"
+  },
+  {
+   "lv": 40,
+   "kind": "title",
+   "id": "paper_trail",
+   "name": "Paper Trail"
+  },
+  {
+   "lv": 40,
+   "kind": "flair",
+   "id": "ribbon_green",
+   "name": "Green Ribbon"
+  },
+  {
+   "lv": 45,
+   "kind": "card",
+   "id": "stamp",
+   "name": "Rubber Stamp Card"
+  },
+  {
+   "lv": 50,
+   "kind": "title",
+   "id": "veteran",
+   "name": "Desk Veteran"
+  },
+  {
+   "lv": 50,
+   "kind": "banner",
+   "id": "blueprint",
+   "name": "Blueprint Banner"
+  },
+  {
+   "lv": 55,
+   "kind": "crosshair",
+   "id": "tick",
+   "name": "Tally Tick"
+  },
+  {
+   "lv": 60,
+   "kind": "flair",
+   "id": "ribbon_yellow",
+   "name": "Yellow Ribbon"
+  },
+  {
+   "lv": 65,
+   "kind": "card",
+   "id": "crane",
+   "name": "Paper Crane Card"
+  },
+  {
+   "lv": 70,
+   "kind": "title",
+   "id": "master",
+   "name": "Master Folder"
+  },
+  {
+   "lv": 75,
+   "kind": "banner",
+   "id": "postal",
+   "name": "Postal Banner"
+  },
+  {
+   "lv": 80,
+   "kind": "flair",
+   "id": "ribbon_lined",
+   "name": "Lined Ribbon"
+  },
+  {
+   "lv": 85,
+   "kind": "crosshair",
+   "id": "star",
+   "name": "Paper Star"
+  },
+  {
+   "lv": 90,
+   "kind": "title",
+   "id": "legend",
+   "name": "Desk Legend"
+  },
+  {
+   "lv": 90,
+   "kind": "card",
+   "id": "foil",
+   "name": "Foil Card"
+  },
+  {
+   "lv": 95,
+   "kind": "banner",
+   "id": "gilded",
+   "name": "Gilded Banner"
+  },
+  {
+   "lv": 100,
+   "kind": "title",
+   "id": "origami_master",
+   "name": "Grand Origami Master"
+  },
+  {
+   "lv": 100,
+   "kind": "flair",
+   "id": "ribbon_gold",
+   "name": "Gold Ribbon"
+  }
+ ],
+ "levels": [
+  {
+   "level": 1,
+   "xpToNext": 275,
+   "totalXp": 0,
+   "ribbon": "Plain",
+   "unlocks": [
+    "Rookie Folder",
+    "Plain Sheet",
+    "Pin Dot",
+    "Plain Ribbon",
+    "Blank Card"
+   ]
+  },
+  {
+   "level": 2,
+   "xpToNext": 295,
+   "totalXp": 275,
+   "ribbon": "Plain",
+   "unlocks": []
+  },
+  {
+   "level": 3,
+   "xpToNext": 320,
+   "totalXp": 570,
+   "ribbon": "Plain",
+   "unlocks": [
+    "Pencil Cross"
+   ]
+  },
+  {
+   "level": 4,
+   "xpToNext": 345,
+   "totalXp": 890,
+   "ribbon": "Plain",
+   "unlocks": [
+    "Kraft Card"
+   ]
+  },
+  {
+   "level": 5,
+   "xpToNext": 375,
+   "totalXp": 1235,
+   "ribbon": "Plain",
+   "unlocks": [
+    "Crease Maker"
+   ]
+  },
+  {
+   "level": 6,
+   "xpToNext": 400,
+   "totalXp": 1610,
+   "ribbon": "Plain",
+   "unlocks": [
+    "Graph Paper Banner"
+   ]
+  },
+  {
+   "level": 7,
+   "xpToNext": 430,
+   "totalXp": 2010,
+   "ribbon": "Plain",
+   "unlocks": []
+  },
+  {
+   "level": 8,
+   "xpToNext": 460,
+   "totalXp": 2440,
+   "ribbon": "Plain",
+   "unlocks": [
+    "Hole-Punch Ring"
+   ]
+  },
+  {
+   "level": 9,
+   "xpToNext": 495,
+   "totalXp": 2900,
+   "ribbon": "Plain",
+   "unlocks": []
+  },
+  {
+   "level": 10,
+   "xpToNext": 525,
+   "totalXp": 3395,
+   "ribbon": "Plain",
+   "unlocks": [
+    "Sharp Edge",
+    "Kraft Ribbon"
+   ]
+  },
+  {
+   "level": 11,
+   "xpToNext": 560,
+   "totalXp": 3920,
+   "ribbon": "Kraft",
+   "unlocks": []
+  },
+  {
+   "level": 12,
+   "xpToNext": 595,
+   "totalXp": 4480,
+   "ribbon": "Kraft",
+   "unlocks": [
+    "Sticky Note Card"
+   ]
+  },
+  {
+   "level": 13,
+   "xpToNext": 630,
+   "totalXp": 5075,
+   "ribbon": "Kraft",
+   "unlocks": []
+  },
+  {
+   "level": 14,
+   "xpToNext": 665,
+   "totalXp": 5705,
+   "ribbon": "Kraft",
+   "unlocks": []
+  },
+  {
+   "level": 15,
+   "xpToNext": 705,
+   "totalXp": 6370,
+   "ribbon": "Kraft",
+   "unlocks": [
+    "Lined Paper Banner"
+   ]
+  },
+  {
+   "level": 16,
+   "xpToNext": 745,
+   "totalXp": 7075,
+   "ribbon": "Kraft",
+   "unlocks": []
+  },
+  {
+   "level": 17,
+   "xpToNext": 785,
+   "totalXp": 7820,
+   "ribbon": "Kraft",
+   "unlocks": []
+  },
+  {
+   "level": 18,
+   "xpToNext": 825,
+   "totalXp": 8605,
+   "ribbon": "Kraft",
+   "unlocks": [
+    "Tape Brackets"
+   ]
+  },
+  {
+   "level": 19,
+   "xpToNext": 865,
+   "totalXp": 9430,
+   "ribbon": "Kraft",
+   "unlocks": []
+  },
+  {
+   "level": 20,
+   "xpToNext": 910,
+   "totalXp": 10295,
+   "ribbon": "Kraft",
+   "unlocks": [
+    "Origami Hand",
+    "Blue Ribbon"
+   ]
+  },
+  {
+   "level": 21,
+   "xpToNext": 955,
+   "totalXp": 11205,
+   "ribbon": "Blue",
+   "unlocks": []
+  },
+  {
+   "level": 22,
+   "xpToNext": 1000,
+   "totalXp": 12160,
+   "ribbon": "Blue",
+   "unlocks": []
+  },
+  {
+   "level": 23,
+   "xpToNext": 1045,
+   "totalXp": 13160,
+   "ribbon": "Blue",
+   "unlocks": []
+  },
+  {
+   "level": 24,
+   "xpToNext": 1095,
+   "totalXp": 14205,
+   "ribbon": "Blue",
+   "unlocks": []
+  },
+  {
+   "level": 25,
+   "xpToNext": 1145,
+   "totalXp": 15300,
+   "ribbon": "Blue",
+   "unlocks": [
+    "Doodle Card"
+   ]
+  },
+  {
+   "level": 26,
+   "xpToNext": 1195,
+   "totalXp": 16445,
+   "ribbon": "Blue",
+   "unlocks": []
+  },
+  {
+   "level": 27,
+   "xpToNext": 1245,
+   "totalXp": 17640,
+   "ribbon": "Blue",
+   "unlocks": []
+  },
+  {
+   "level": 28,
+   "xpToNext": 1295,
+   "totalXp": 18885,
+   "ribbon": "Blue",
+   "unlocks": [
+    "Torn Edge Banner"
+   ]
+  },
+  {
+   "level": 29,
+   "xpToNext": 1350,
+   "totalXp": 20180,
+   "ribbon": "Blue",
+   "unlocks": []
+  },
+  {
+   "level": 30,
+   "xpToNext": 1405,
+   "totalXp": 21530,
+   "ribbon": "Blue",
+   "unlocks": [
+    "Scissor Hand",
+    "Red Ribbon"
+   ]
+  },
+  {
+   "level": 31,
+   "xpToNext": 1460,
+   "totalXp": 22935,
+   "ribbon": "Red",
+   "unlocks": []
+  },
+  {
+   "level": 32,
+   "xpToNext": 1515,
+   "totalXp": 24395,
+   "ribbon": "Red",
+   "unlocks": []
+  },
+  {
+   "level": 33,
+   "xpToNext": 1575,
+   "totalXp": 25910,
+   "ribbon": "Red",
+   "unlocks": []
+  },
+  {
+   "level": 34,
+   "xpToNext": 1635,
+   "totalXp": 27485,
+   "ribbon": "Red",
+   "unlocks": []
+  },
+  {
+   "level": 35,
+   "xpToNext": 1695,
+   "totalXp": 29120,
+   "ribbon": "Red",
+   "unlocks": [
+    "Staple Chevron"
+   ]
+  },
+  {
+   "level": 36,
+   "xpToNext": 1755,
+   "totalXp": 30815,
+   "ribbon": "Red",
+   "unlocks": []
+  },
+  {
+   "level": 37,
+   "xpToNext": 1815,
+   "totalXp": 32570,
+   "ribbon": "Red",
+   "unlocks": []
+  },
+  {
+   "level": 38,
+   "xpToNext": 1880,
+   "totalXp": 34385,
+   "ribbon": "Red",
+   "unlocks": []
+  },
+  {
+   "level": 39,
+   "xpToNext": 1945,
+   "totalXp": 36265,
+   "ribbon": "Red",
+   "unlocks": []
+  },
+  {
+   "level": 40,
+   "xpToNext": 2010,
+   "totalXp": 38210,
+   "ribbon": "Red",
+   "unlocks": [
+    "Paper Trail",
+    "Green Ribbon"
+   ]
+  },
+  {
+   "level": 41,
+   "xpToNext": 2075,
+   "totalXp": 40220,
+   "ribbon": "Green",
+   "unlocks": []
+  },
+  {
+   "level": 42,
+   "xpToNext": 2145,
+   "totalXp": 42295,
+   "ribbon": "Green",
+   "unlocks": []
+  },
+  {
+   "level": 43,
+   "xpToNext": 2215,
+   "totalXp": 44440,
+   "ribbon": "Green",
+   "unlocks": []
+  },
+  {
+   "level": 44,
+   "xpToNext": 2285,
+   "totalXp": 46655,
+   "ribbon": "Green",
+   "unlocks": []
+  },
+  {
+   "level": 45,
+   "xpToNext": 2355,
+   "totalXp": 48940,
+   "ribbon": "Green",
+   "unlocks": [
+    "Rubber Stamp Card"
+   ]
+  },
+  {
+   "level": 46,
+   "xpToNext": 2425,
+   "totalXp": 51295,
+   "ribbon": "Green",
+   "unlocks": []
+  },
+  {
+   "level": 47,
+   "xpToNext": 2500,
+   "totalXp": 53720,
+   "ribbon": "Green",
+   "unlocks": []
+  },
+  {
+   "level": 48,
+   "xpToNext": 2575,
+   "totalXp": 56220,
+   "ribbon": "Green",
+   "unlocks": []
+  },
+  {
+   "level": 49,
+   "xpToNext": 2650,
+   "totalXp": 58795,
+   "ribbon": "Green",
+   "unlocks": []
+  },
+  {
+   "level": 50,
+   "xpToNext": 2725,
+   "totalXp": 61445,
+   "ribbon": "Green",
+   "unlocks": [
+    "Desk Veteran",
+    "Blueprint Banner"
+   ]
+  },
+  {
+   "level": 51,
+   "xpToNext": 2805,
+   "totalXp": 64170,
+   "ribbon": "Yellow",
+   "unlocks": []
+  },
+  {
+   "level": 52,
+   "xpToNext": 2880,
+   "totalXp": 66975,
+   "ribbon": "Yellow",
+   "unlocks": []
+  },
+  {
+   "level": 53,
+   "xpToNext": 2960,
+   "totalXp": 69855,
+   "ribbon": "Yellow",
+   "unlocks": []
+  },
+  {
+   "level": 54,
+   "xpToNext": 3040,
+   "totalXp": 72815,
+   "ribbon": "Yellow",
+   "unlocks": []
+  },
+  {
+   "level": 55,
+   "xpToNext": 3125,
+   "totalXp": 75855,
+   "ribbon": "Yellow",
+   "unlocks": [
+    "Tally Tick"
+   ]
+  },
+  {
+   "level": 56,
+   "xpToNext": 3205,
+   "totalXp": 78980,
+   "ribbon": "Yellow",
+   "unlocks": []
+  },
+  {
+   "level": 57,
+   "xpToNext": 3290,
+   "totalXp": 82185,
+   "ribbon": "Yellow",
+   "unlocks": []
+  },
+  {
+   "level": 58,
+   "xpToNext": 3375,
+   "totalXp": 85475,
+   "ribbon": "Yellow",
+   "unlocks": []
+  },
+  {
+   "level": 59,
+   "xpToNext": 3465,
+   "totalXp": 88850,
+   "ribbon": "Yellow",
+   "unlocks": []
+  },
+  {
+   "level": 60,
+   "xpToNext": 3550,
+   "totalXp": 92315,
+   "ribbon": "Yellow",
+   "unlocks": [
+    "Yellow Ribbon"
+   ]
+  },
+  {
+   "level": 61,
+   "xpToNext": 3640,
+   "totalXp": 95865,
+   "ribbon": "Lined",
+   "unlocks": []
+  },
+  {
+   "level": 62,
+   "xpToNext": 3730,
+   "totalXp": 99505,
+   "ribbon": "Lined",
+   "unlocks": []
+  },
+  {
+   "level": 63,
+   "xpToNext": 3820,
+   "totalXp": 103235,
+   "ribbon": "Lined",
+   "unlocks": []
+  },
+  {
+   "level": 64,
+   "xpToNext": 3910,
+   "totalXp": 107055,
+   "ribbon": "Lined",
+   "unlocks": []
+  },
+  {
+   "level": 65,
+   "xpToNext": 4005,
+   "totalXp": 110965,
+   "ribbon": "Lined",
+   "unlocks": [
+    "Paper Crane Card"
+   ]
+  },
+  {
+   "level": 66,
+   "xpToNext": 4100,
+   "totalXp": 114970,
+   "ribbon": "Lined",
+   "unlocks": []
+  },
+  {
+   "level": 67,
+   "xpToNext": 4195,
+   "totalXp": 119070,
+   "ribbon": "Lined",
+   "unlocks": []
+  },
+  {
+   "level": 68,
+   "xpToNext": 4290,
+   "totalXp": 123265,
+   "ribbon": "Lined",
+   "unlocks": []
+  },
+  {
+   "level": 69,
+   "xpToNext": 4385,
+   "totalXp": 127555,
+   "ribbon": "Lined",
+   "unlocks": []
+  },
+  {
+   "level": 70,
+   "xpToNext": 4485,
+   "totalXp": 131940,
+   "ribbon": "Lined",
+   "unlocks": [
+    "Master Folder"
+   ]
+  },
+  {
+   "level": 71,
+   "xpToNext": 4585,
+   "totalXp": 136425,
+   "ribbon": "Graph",
+   "unlocks": []
+  },
+  {
+   "level": 72,
+   "xpToNext": 4685,
+   "totalXp": 141010,
+   "ribbon": "Graph",
+   "unlocks": []
+  },
+  {
+   "level": 73,
+   "xpToNext": 4785,
+   "totalXp": 145695,
+   "ribbon": "Graph",
+   "unlocks": []
+  },
+  {
+   "level": 74,
+   "xpToNext": 4890,
+   "totalXp": 150480,
+   "ribbon": "Graph",
+   "unlocks": []
+  },
+  {
+   "level": 75,
+   "xpToNext": 4995,
+   "totalXp": 155370,
+   "ribbon": "Graph",
+   "unlocks": [
+    "Postal Banner"
+   ]
+  },
+  {
+   "level": 76,
+   "xpToNext": 5100,
+   "totalXp": 160365,
+   "ribbon": "Graph",
+   "unlocks": []
+  },
+  {
+   "level": 77,
+   "xpToNext": 5205,
+   "totalXp": 165465,
+   "ribbon": "Graph",
+   "unlocks": []
+  },
+  {
+   "level": 78,
+   "xpToNext": 5310,
+   "totalXp": 170670,
+   "ribbon": "Graph",
+   "unlocks": []
+  },
+  {
+   "level": 79,
+   "xpToNext": 5420,
+   "totalXp": 175980,
+   "ribbon": "Graph",
+   "unlocks": []
+  },
+  {
+   "level": 80,
+   "xpToNext": 5530,
+   "totalXp": 181400,
+   "ribbon": "Graph",
+   "unlocks": [
+    "Lined Ribbon"
+   ]
+  },
+  {
+   "level": 81,
+   "xpToNext": 5640,
+   "totalXp": 186930,
+   "ribbon": "Foil",
+   "unlocks": []
+  },
+  {
+   "level": 82,
+   "xpToNext": 5750,
+   "totalXp": 192570,
+   "ribbon": "Foil",
+   "unlocks": []
+  },
+  {
+   "level": 83,
+   "xpToNext": 5865,
+   "totalXp": 198320,
+   "ribbon": "Foil",
+   "unlocks": []
+  },
+  {
+   "level": 84,
+   "xpToNext": 5980,
+   "totalXp": 204185,
+   "ribbon": "Foil",
+   "unlocks": []
+  },
+  {
+   "level": 85,
+   "xpToNext": 6095,
+   "totalXp": 210165,
+   "ribbon": "Foil",
+   "unlocks": [
+    "Paper Star"
+   ]
+  },
+  {
+   "level": 86,
+   "xpToNext": 6210,
+   "totalXp": 216260,
+   "ribbon": "Foil",
+   "unlocks": []
+  },
+  {
+   "level": 87,
+   "xpToNext": 6325,
+   "totalXp": 222470,
+   "ribbon": "Foil",
+   "unlocks": []
+  },
+  {
+   "level": 88,
+   "xpToNext": 6445,
+   "totalXp": 228795,
+   "ribbon": "Foil",
+   "unlocks": []
+  },
+  {
+   "level": 89,
+   "xpToNext": 6565,
+   "totalXp": 235240,
+   "ribbon": "Foil",
+   "unlocks": []
+  },
+  {
+   "level": 90,
+   "xpToNext": 6685,
+   "totalXp": 241805,
+   "ribbon": "Foil",
+   "unlocks": [
+    "Desk Legend",
+    "Foil Card"
+   ]
+  },
+  {
+   "level": 91,
+   "xpToNext": 6805,
+   "totalXp": 248490,
+   "ribbon": "Gold",
+   "unlocks": []
+  },
+  {
+   "level": 92,
+   "xpToNext": 6930,
+   "totalXp": 255295,
+   "ribbon": "Gold",
+   "unlocks": []
+  },
+  {
+   "level": 93,
+   "xpToNext": 7055,
+   "totalXp": 262225,
+   "ribbon": "Gold",
+   "unlocks": []
+  },
+  {
+   "level": 94,
+   "xpToNext": 7180,
+   "totalXp": 269280,
+   "ribbon": "Gold",
+   "unlocks": []
+  },
+  {
+   "level": 95,
+   "xpToNext": 7305,
+   "totalXp": 276460,
+   "ribbon": "Gold",
+   "unlocks": [
+    "Gilded Banner"
+   ]
+  },
+  {
+   "level": 96,
+   "xpToNext": 7430,
+   "totalXp": 283765,
+   "ribbon": "Gold",
+   "unlocks": []
+  },
+  {
+   "level": 97,
+   "xpToNext": 7560,
+   "totalXp": 291195,
+   "ribbon": "Gold",
+   "unlocks": []
+  },
+  {
+   "level": 98,
+   "xpToNext": 7690,
+   "totalXp": 298755,
+   "ribbon": "Gold",
+   "unlocks": []
+  },
+  {
+   "level": 99,
+   "xpToNext": 7820,
+   "totalXp": 306445,
+   "ribbon": "Gold",
+   "unlocks": []
+  },
+  {
+   "level": 100,
+   "xpToNext": 39100,
+   "totalXp": 314265,
+   "ribbon": "Gold",
+   "unlocks": [
+    "Grand Origami Master",
+    "Gold Ribbon"
+   ]
+  }
+ ]
+}

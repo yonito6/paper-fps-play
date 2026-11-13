@@ -1,0 +1,12 @@
+{
+ "note": "What's New entries (modules/news.js reads this). Newest first is sorted by the module. Written by whoever ships a feature.",
+ "entries": [
+  { "id": "2026-11-13-progress", "date": "2026-11-13", "version": "p1.1", "big": true, "title": "Levels, Clips and accounts",
+    "items": ["Level up from 1 to 100: every match gives XP for kills, headshots, wins, the first win of the day and daily challenges.",
+              "New paper-clip currency: Clips. Earn them from matches, wins, level-ups and challenges (a shop is coming).",
+              "Pick a username and create a free account to keep your level and Clips on every device.",
+              "Unlock titles, paper banners, crosshair styles, calling cards and ribbon flair. Nothing changes how you play."] },
+  { "id": "2026-11-12-launch", "date": "2026-11-12", "version": "p1.0", "title": "Foldiers: first playable",
+    "items": ["Team Deathmatch on Desk Town, 4 vs 4 against bots.", "Shoot thin cardboard to tear holes, cut peek holes with the knife, throw and catch paper planes."] }
+ ]
+}
