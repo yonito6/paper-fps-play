@@ -4789,18 +4789,66 @@ const PVM = (() => {
   }
   // the sniper scope = a rolled-paper tube: smooth FOV zoom (the sniper's adsFov) + this CSS overlay on #scope (no second render):
   // a round lens, the paper tube's rolled layers around it, a thin pencil crosshair with a small red dot
+  // ---- the scope tube, drawn ONCE (at load + on resize, never per frame): the gun's own carton tube seen end-on = kraft liner, corrugated
+  // flute, inner liner, a rolled seam, paper fibre and a fuzzy torn lens edge; the reticle is pen ink with a wobble (nothing is a CSS line)
+  let scopeSz = '';
+  function scopeDraw() {
+    const host = document.getElementById('scope'); if (!host) return;
+    let cv = document.getElementById('pvmScopeCv'); if (!cv) { cv = document.createElement('canvas'); cv.id = 'pvmScopeCv'; host.insertBefore(cv, host.firstChild); }
+    const W_ = Math.min(innerWidth, 1920), H_ = Math.round(W_ * innerHeight / innerWidth), key = W_ + 'x' + H_; if (key === scopeSz) return; scopeSz = key;
+    cv.width = W_; cv.height = H_; const c = cv.getContext('2d'), vm = Math.min(W_, H_) / 100, cx = W_ / 2, cy = H_ / 2;
+    let sd = 7; const rnd = () => (sd = (sd * 1664525 + 1013904223) >>> 0) / 4294967296;
+    const R0 = 35.5 * vm, R1 = 38.6 * vm, R2 = 41.2 * vm;   // lens edge, flute outer, tube outer
+    const fibre = (r0, r1, n, a0, a1, col) => { for (let i = 0; i < n; i++) { const a = rnd() * 6.2832, r = r0 + rnd() * (r1 - r0), l = (1 + rnd() * 5) * vm * .12, t = a + (rnd() - .5) * .3; c.strokeStyle = col(rnd()); c.lineWidth = Math.max(1, vm * .05 * (.4 + rnd())); c.globalAlpha = a0 + rnd() * (a1 - a0); c.beginPath(); c.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); c.lineTo(cx + Math.cos(a) * r + Math.cos(t + 1.57) * l, cy + Math.sin(a) * r + Math.sin(t + 1.57) * l); c.stroke(); } c.globalAlpha = 1; };
+    // 1) outside the tube: dark card seen in shadow
+    const g = c.createRadialGradient(cx, cy, R2, cx, cy, Math.hypot(cx, cy)); g.addColorStop(0, '#2a1d11'); g.addColorStop(.35, '#1a120b'); g.addColorStop(1, '#0c0805'); c.fillStyle = g; c.fillRect(0, 0, W_, H_);
+    c.fillStyle = '#000'; c.globalAlpha = .5; c.beginPath(); c.arc(cx, cy, R2 + 1.6 * vm, 0, 6.2832); c.fill(); c.globalAlpha = 1;   // contact shadow of the tube
+    fibre(R2, Math.hypot(cx, cy), 900, .05, .16, f => f < .5 ? '#5a4128' : '#0a0603');
+    // 2) the cut end of the tube: outer liner, corrugated flute (a sine wave drawn round the ring), inner liner
+    const ring = (ra, rb, col) => { c.fillStyle = col; c.beginPath(); c.arc(cx, cy, rb, 0, 6.2832); c.arc(cx, cy, ra, 0, 6.2832, true); c.fill('evenodd'); };
+    ring(R1 - .1 * vm, R2, '#a97d4b');
+    ring(R0, R1, '#7d5a33');
+    c.strokeStyle = '#c59a62'; c.lineWidth = .55 * vm; c.beginPath();
+    const mid = (R0 + R1) / 2, amp = (R1 - R0) * .36, flutes = 168;
+    for (let i = 0; i <= 1440; i++) { const a = i / 1440 * 6.2832, r = mid + Math.sin(a * flutes) * amp; (i ? c.lineTo : c.moveTo).call(c, cx + Math.cos(a) * r, cy + Math.sin(a) * r); } c.closePath(); c.stroke();
+    c.strokeStyle = 'rgba(40,24,10,.55)'; c.lineWidth = .18 * vm; c.stroke();
+    ring(R0, R0 + .55 * vm, '#b78a55');
+    ring(R1 - .1 * vm, R1 + .35 * vm, '#8e6a40');
+    { const gl = c.createLinearGradient(cx - R2, cy - R2, cx + R2, cy + R2); gl.addColorStop(0, 'rgba(255,230,180,.28)'); gl.addColorStop(.5, 'rgba(0,0,0,0)'); gl.addColorStop(1, 'rgba(15,8,2,.42)'); c.fillStyle = gl; c.beginPath(); c.arc(cx, cy, R2, 0, 6.2832); c.arc(cx, cy, R0, 0, 6.2832, true); c.fill('evenodd'); }
+    fibre(R0, R2, 1400, .12, .4, f => f < .4 ? '#e0bd86' : f < .75 ? '#6b4a28' : '#3a2410');
+    // the rolled seam: one radial join where the card was wrapped, and a glue highlight
+    { const a = -2.2; c.strokeStyle = 'rgba(30,16,6,.7)'; c.lineWidth = .22 * vm; c.beginPath(); c.moveTo(cx + Math.cos(a) * R0, cy + Math.sin(a) * R0); c.lineTo(cx + Math.cos(a + .006) * R2, cy + Math.sin(a + .006) * R2); c.stroke();
+      c.strokeStyle = 'rgba(255,236,190,.45)'; c.lineWidth = .12 * vm; c.beginPath(); c.moveTo(cx + Math.cos(a + .012) * R0, cy + Math.sin(a + .012) * R0); c.lineTo(cx + Math.cos(a + .018) * R2, cy + Math.sin(a + .018) * R2); c.stroke(); }
+    // printed ink ticks round the outer rim
+    c.strokeStyle = 'rgba(30,20,12,.55)'; c.lineWidth = .16 * vm; for (let i = 0; i < 60; i++) { const a = i / 60 * 6.2832, d = (i % 5 ? 1.7 : 2.2) * vm; c.beginPath(); c.moveTo(cx + Math.cos(a) * (R2 - 1.3 * vm), cy + Math.sin(a) * (R2 - 1.3 * vm)); c.lineTo(cx + Math.cos(a) * (R2 - d), cy + Math.sin(a) * (R2 - d)); c.stroke(); }
+    // 3) cut the lens (see-through) with a slightly torn, fibre-fuzzy edge
+    c.globalCompositeOperation = 'destination-out'; c.fillStyle = '#000'; c.beginPath(); for (let i = 0; i <= 720; i++) { const a = i / 720 * 6.2832, r = R0 - .5 * vm * (.5 + .5 * Math.sin(a * 37 + 1) * (.6 + .4 * Math.sin(a * 11))) - rnd() * .12 * vm; (i ? c.lineTo : c.moveTo).call(c, cx + Math.cos(a) * r, cy + Math.sin(a) * r); } c.closePath(); c.fill();
+    c.globalCompositeOperation = 'source-over';
+    { const gi = c.createRadialGradient(cx, cy, R0 * .8, cx, cy, R0); gi.addColorStop(0, 'rgba(20,10,2,0)'); gi.addColorStop(1, 'rgba(20,10,2,.5)'); c.fillStyle = gi; c.beginPath(); c.arc(cx, cy, R0, 0, 6.2832); c.fill(); }
+    // 4) the reticle: pen INK, each line = 3 slightly different strokes (wobble + bleed), thick posts, gap in the middle, mil ticks
+    const ink = (x0, y0, x1, y1, w) => { for (let k = 0; k < 3; k++) { const j = (rnd() - .5) * .13 * vm, mx = (x0 + x1) / 2 + (rnd() - .5) * .2 * vm, my = (y0 + y1) / 2 + (rnd() - .5) * .2 * vm; c.strokeStyle = k ? 'rgba(24,18,16,.55)' : 'rgba(18,13,12,.92)'; c.lineWidth = w * (k ? 1.5 : 1) * (.9 + rnd() * .2); c.lineCap = 'round'; c.beginPath(); c.moveTo(x0 + j, y0 + j); c.quadraticCurveTo(mx, my, x1 - j, y1 - j); c.stroke(); } };
+    const gap = 1.6 * vm, thin = Math.max(1.3, .09 * vm), post = Math.max(3, .42 * vm), post0 = 8 * vm, RR = R0 - .6 * vm;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { ink(cx + dx * gap, cy + dy * gap, cx + dx * post0, cy + dy * post0, thin); ink(cx + dx * post0, cy + dy * post0, cx + dx * RR, cy + dy * RR, post); }
+    for (let i = 1; i <= 4; i++) for (const sg of [-1, 1]) { const d = (i * 2.2 + 1) * vm * sg, t = (i % 2 ? .55 : .4) * vm; ink(cx + d, cy - t, cx + d, cy + t, thin * 1.1); ink(cx - t, cy + d, cx + t, cy + d, thin * 1.1); }
+    c.strokeStyle = 'rgba(18,13,12,.7)'; c.lineWidth = thin * .8; c.beginPath(); for (let i = 0; i <= 90; i++) { const a = i / 90 * 6.2832, r = 5.2 * vm + (rnd() - .5) * .08 * vm; (i ? c.lineTo : c.moveTo).call(c, cx + Math.cos(a) * r, cy + Math.sin(a) * r); } c.stroke();
+  }
   function scopeCss() {
     if (document.getElementById('pvmScopeCss')) return; const st = document.createElement('style'); st.id = 'pvmScopeCss';
-    st.textContent = ['#scope{background:radial-gradient(circle at center,transparent 0 35vmin,rgba(40,26,12,.35) 36.4vmin,#8a6237 36.6vmin,#b48a58 37.4vmin,#6d4b29 38vmin,#a77f4f 38.7vmin,#5a3d21 39.4vmin,#94703f 40.1vmin,#3c2814 41vmin,#20150b 44vmin,#140d07 100vmax)!important;transition:opacity .08s}',
-      "#scope::before{content:'';position:absolute;left:50%;top:50%;width:72vmin;height:72vmin;transform:translate(-50%,-50%);border-radius:50%;box-shadow:inset 0 0 6vmin 1vmin rgba(30,18,6,.55)}",
-      '#scope i{background:#2b2420!important;box-shadow:none!important}#scope .h{height:2px!important;margin-top:-1px}#scope .v{width:2px!important;margin-left:-1px}',
-      '#scope .h,#scope .v{-webkit-mask:radial-gradient(circle at center,transparent 0 1.6vmin,#000 1.7vmin 36vmin,transparent 36.1vmin);mask:radial-gradient(circle at center,transparent 0 1.6vmin,#000 1.7vmin 36vmin,transparent 36.1vmin)}',
-      '#scope .tl,#scope .tr,#scope .tb{display:none!important}#scope .dot{width:7px!important;height:7px!important;margin:-3.5px 0 0 -3.5px!important;background:#e0392b!important;box-shadow:0 0 0 1.5px #fff,0 0 0 2.5px rgba(30,20,10,.85)!important;z-index:2}',
+    st.textContent = ['#scope{background:none!important;overflow:hidden}',
+      '#scope #pvmScopeCv{position:absolute;inset:0;width:100%;height:100%;transform-origin:50% 50%;will-change:transform,opacity}',
+      // scope-in: the card tube slams up to the eye (comes from big and close to its place) and settles
+      '#scope.in #pvmScopeCv{animation:pvmScopeIn .2s cubic-bezier(.2,.8,.25,1) both}#scope.in .dot{animation:pvmDotIn .26s ease-out both}',
+      '@keyframes pvmScopeIn{0%{transform:scale(1.7) rotate(-1.5deg);opacity:.1}45%{opacity:1}75%{transform:scale(.985)}100%{transform:scale(1) rotate(0)}}',
+      '@keyframes pvmDotIn{0%,55%{opacity:0;transform:scale(2.4)}100%{opacity:1;transform:scale(1)}}',
+      '@media (prefers-reduced-motion:reduce){#scope.in #pvmScopeCv,#scope.in .dot{animation:none}}',
+      // the reticle is INK on the card (drawn on the canvas); only the red ink dot stays a DOM node (the exact screen centre; the tests read it)
+      '#scope i.h,#scope i.v,#scope i.tl,#scope i.tr,#scope i.tb{display:none!important}',
+      '#scope .dot{width:6px!important;height:6px!important;margin:-3px 0 0 -3px!important;background:#d8281c!important;box-shadow:0 0 0 1px rgba(255,238,210,.9),0 0 0 2px rgba(25,15,8,.8)!important;z-index:2}',
       // aim point while aiming down sights (not the sniper: its scope has its own): exactly the screen centre = where the shot goes
       '#pvmDot{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none;opacity:0;z-index:5}',
       "#pvmDot::before{content:'';position:absolute;left:-3.5px;top:-3.5px;width:7px;height:7px;border-radius:50%;background:#e0392b;box-shadow:0 0 0 1.5px #fff,0 0 0 2.5px rgba(30,20,10,.85)}",
       "#pvmDot.ring::before{left:-2.5px;top:-2.5px;width:5px;height:5px}#pvmDot.ring::after{content:'';position:absolute;left:-13px;top:-13px;width:22px;height:22px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(30,20,10,.8),inset 0 0 0 1px rgba(30,20,10,.8)}"].join('\n');
-    document.head.appendChild(st);
+    document.head.appendChild(st); scopeDraw(); addEventListener('resize', () => { scopeSz = ''; scopeDraw(); });
     if (!document.getElementById('pvmDot')) { const d = document.createElement('div'); d.id = 'pvmDot'; (document.getElementById('hud') || document.body).appendChild(d); }
   }
   // compile every paper program now (both render targets), never on the first equip / ADS / throw
@@ -4843,17 +4891,22 @@ const PVM = (() => {
     if (vm.seq) { vm.seq.t -= dt; if (vm.seq.t <= 0) nextSeq(vm); }
     if (vm.gid === 'plane') planeVM(vm, dt);
     if (PLANES.S.steering) vm.group.visible = false;   // flying the plane: your view is the chase camera
-    aimDot(vm);
+    aimDot(vm); scopeIn();
     vm.mixer.update(dt);
   }
   // the ADS aim point: ONLY on a gun with a digital / reflex optic (data/paper_weapons.json "optic": "reflex"). Iron / paper sights get
   // no dot: their real sight parts line up with screen centre. The sniper keeps its scope. Fades in over P.ads .7 -> .95.
   let dotEl = null, dotOp = -1, dotCls = null;
-  const hasDot = w => !!w && w.optic === 'reflex' && !w.scope;
+  // iron-sight gun whose model has no card tip yet (shotgun until its tip lands): a small ink ring + dot stands in, so every gun shows an aim reference when zoomed
+  const noTip = (vm, w) => !!w && w.optic === 'iron' && !!vm && !!vm.paper && !vm.paper.getObjectByName('tip');
+  const hasDot = (w, vm) => !!w && !w.scope && (w.optic === 'reflex' || noTip(vm || S.vm[P.weapon], w));
+  // scope-in motion: restart the CSS animation each time the tube comes up (class .in), never per frame
+  let scopeOn = false;
+  function scopeIn() { const el = document.getElementById('scope'); if (!el) return; const on = !!W().scope && P.ads > .85 && state === 'play'; if (on === scopeOn) return; scopeOn = on; el.classList.remove('in'); if (on) { void el.offsetWidth; el.classList.add('in'); } }
   function aimDot(vm) {
     if (!dotEl) dotEl = document.getElementById('pvmDot'); if (!dotEl) return;
-    const w = W(), on = vm && vm.gid !== 'plane' && hasDot(w) && state === 'play' && !PLANES.S.steering;
-    const op = on ? Math.round(clamp((P.ads - .7) / .25, 0, 1) * 20) / 20 : 0, cls = vm && vm.gid === 'shotgun' ? 'ring' : '';
+    const w = W(), on = vm && vm.gid !== 'plane' && hasDot(w, vm) && state === 'play' && !PLANES.S.steering;
+    const op = on ? Math.round(clamp((P.ads - .7) / .25, 0, 1) * 20) / 20 : 0, cls = vm && w && w.optic === 'iron' ? 'ring' : '';
     if (op !== dotOp) { dotOp = op; dotEl.style.opacity = op; } if (cls !== dotCls) { dotCls = cls; dotEl.className = cls; }
   }
   /* ---- the plane slot (ref3: pinched in the hand, nose to the right-forward) ---- */
