@@ -228,14 +228,41 @@
      0
     ]
    }
+  },
+  "boomerang": {
+   "R": {
+    "pose": "boomerang_hold",
+    "open": "boomerang_release",
+    "at": [
+     0.004,
+     -0.012,
+     0.062
+    ],
+    "srot": [
+     0,
+     0,
+     -90
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "off": [
+     0,
+     0,
+     0
+    ],
+    "_note": "WP-boomplane: shared paper hand on the boomerang (modules/paper.js paperBoomHand), socket in the engine boom hand group; srot picked from the qa/paper/boomhand.js sweep (candidate 7)"
+   }
   }
  },
  "plane": {
-  "_readme": "the held plane (ref3): hold = the plane root's rotation at the hip (degrees XYZ: nose to the right-forward, a little up); keys = the keys that pick the plane slot; returnToGun = after a throw's flight ends you get your last gun back.",
+  "_readme": "the held plane (ref3): hold = the plane root's rotation at the hip (degrees XYZ, fitted to her ref3 by tools/boomplane/planefit.py: thumb + index pinch the NOSE, the dart reaches up-right; the GLB grip_r is counter-rotated so the hand pose never changes); keys = the keys that pick the plane slot; returnToGun = after a throw's flight ends you get your last gun back.",
   "hold": [
-   0,
-   -85,
-   -5
+   48.28,
+   89.82,
+   29.57
   ],
   "keys": [
    "KeyG",

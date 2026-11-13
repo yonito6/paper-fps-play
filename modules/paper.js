@@ -172,10 +172,32 @@
     try { if (typeof WM !== 'undefined' && WM.boomerang && typeof buildBoomVM === 'function') { const old = WM.boomerang; if (old.group && old.group.parent) old.group.parent.remove(old.group); WM.boomerang = buildBoomVM(); if (P.weapon === 'boomerang' && typeof setModel === 'function') setModel('boomerang'); } } catch (e) { console.warn('paper boomerang vm', e); }
     U.paperBoom = true;
   }
+  // WP-boomplane: the boomerang's hand = the shared origami paper hand (PVM rig, pose boomerang_hold / boomerang_release while the
+  // fingers let go) instead of the Sector Nine capsule glove (55-weapons.js) / S9Hands glove: a socket group in the boomerang hand group
+  // (data/paper/viewmodel.json hands.boomerang.R: pose, rot, off + at = socket spot, srot = socket rotation deg), siblings hidden.
+  function paperBoomHand(c) {
+    const B = typeof WM !== 'undefined' && WM.boomerang && WM.boomerang.boom; if (!B || typeof PVM === 'undefined' || !PVM.handGeo || !PVM.S.hand.mat) return false;
+    c = c || (PVM.S.data && PVM.S.data.hands && PVM.S.data.hands.boomerang && PVM.S.data.hands.boomerang.R); if (!c) return false;
+    const D = Math.PI / 180, hold = PVM.handGeo(c.pose || 'boomerang_hold', 'R', c.bones), open = PVM.handGeo(c.open || 'boomerang_release', 'R', c.bones);
+    let s = B.paperSock;
+    if (!s) {
+      s = B.paperSock = new THREE.Group(); s.name = 'paperBoomSock'; B.hand.add(s);
+      const m = B.paperHandM = new THREE.Mesh(hold, PVM.S.hand.mat); m.name = 'paperHand_R'; m.frustumCulled = false; m.castShadow = m.receiveShadow = false; m.userData.noProbe = true; s.add(m);
+      m.onBeforeRender = () => { for (const o of B.hand.children) if (o !== s && o !== B.holder && o.visible) o.visible = false;
+        const f = B.fingers && B.fingers[0], g = f && Math.abs(f.rotation.y) > .2 ? B.paperOpen : B.paperHold; if (g && m.geometry !== g) m.geometry = g; };
+    }
+    B.paperHold = hold; B.paperOpen = open; B.paperHandM.geometry = hold;
+    PVM.placeHand(B.paperHandM, 'R', Object.assign({ pose: 'boomerang_hold' }, c));
+    const a = c.at || [0, 0, 0], r = c.srot || [0, 0, 0]; s.position.set(a[0], a[1], a[2]); s.rotation.set(r[0] * D, r[1] * D, r[2] * D);
+    for (const o of B.hand.children) if (o !== s && o !== B.holder) o.visible = false;
+    return true;
+  }
+  U.boomHand = paperBoomHand;
   async function loadGuns() {
     paperBoomerang();
     // WEAPONS agent: the core's PVM (src/game/40-viewmodel.js) builds the paper guns + origami hands + the plane slot (exact ADS)
     if (typeof PVM !== 'undefined') { await PVM.load(); U.gunIcons = Object.assign({}, PVM.icons); try { const hm = PVM.S.hand.mat, B = WM.boomerang; if (hm && B && B.group && U.paperBoom) B.group.traverse(o => { if (o.isMesh && o.material && !o.material.isMeshBasicMaterial && !(o.parent && o.parent.userData.paperBoom)) o.material = hm; }); } catch (e) {}   // boomerang hand = the paper hands' material
+    try { paperBoomHand(); } catch (e) { console.warn('paper boomerang hand', e); }
     { const G = await getJSON('data/paper/guns.json'), bi = G && G.guns && G.guns.boomerang && G.guns.boomerang.art && G.guns.boomerang.art.hudIcon; if (bi && !U.gunIcons.boomerang) U.gunIcons.boomerang = bi; } lastW = null; try { updateHud(true); } catch (e) {} return; }
     const G = await getJSON('data/paper/guns.json'); if (!G || !G.guns) return;
     U.gunIcons = {}; const L = new THREE.GLTFLoader();

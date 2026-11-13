@@ -475,7 +475,7 @@
      -0.52
     ],
     "eye": null,
-    "tris": 404,
+    "tris": 856,
     "clips": {
      "equip": 0.467,
      "idle": 2,
@@ -546,7 +546,7 @@
     -0.42
    ],
    "eye": null,
-   "tris": 192,
+   "tris": 64,
    "clips": {
     "equip": 0.667,
     "idle": 2,
@@ -556,45 +556,45 @@
    },
    "attach": {
     "plane": [
-     0,
-     0.023,
-     -0.04
+     0.0561,
+     0.02,
+     0.1577
     ],
     "wing_l": [
-     0,
-     0.045,
-     -0.06
+     0.0561,
+     0.02,
+     0.1577
     ],
     "wing_r": [
-     0,
-     0.045,
-     -0.06
+     0.0561,
+     0.02,
+     0.1577
     ],
     "grip_r": [
-     0,
-     0,
-     0
-    ],
-    "muzzle": [
-     0,
-     0.045,
-     -0.21
-    ],
-    "sight": [
-     0,
-     0.065,
-     -0.04
+     0.0561,
+     0.012,
+     0.0199
     ],
     "grip_l": [
-     -0.06,
-     -0.015,
-     0.06
+     -0.0039,
+     -0.048,
+     0.1399
+    ],
+    "muzzle": [
+     0.0561,
+     0.02,
+     -0.0021
+    ],
+    "sight": [
+     0.0561,
+     0.04,
+     0.0778
     ]
    },
    "flightGlb": "assets/paper/guns/plane_flight.glb",
    "damagedGlb": "assets/paper/guns/plane_damaged.glb",
-   "flightTris": 416,
-   "damagedTris": 428
+   "flightTris": 64,
+   "damagedTris": 64
   }
  },
  "fx": {

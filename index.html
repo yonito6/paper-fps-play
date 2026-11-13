@@ -8337,7 +8337,24 @@ const PLANES = (() => {
   const teamOf = e => { if (!e) return null; if (e === PLAYER_ENT || e.isPlayer) return window.S9BotModes && S9BotModes.on ? S9BotModes.myTeam : 'me'; return e.mxTeam || (e.netId || e.name); };
   const enemies = (a, b) => a && b && a !== b && teamOf(a) !== teamOf(b);
   // a folded paper plane: two wings + a keel, flat-shaded, nose toward -Z
+  // the flight model (WP-boomplane): the folded dart of assets/paper/guns/plane_flight.glb (same model as the held plane, her ref3),
+  // merged into ONE geometry (position/normal/uv) and fitted to the old 3-triangle dart's size (nose z -.62 .. tail .34) -> same look
+  // scale, same team paper material (no new shader), hit radius untouched. Until it loads (or if it fails) the 3-triangle dart flies.
+  let glbGeo = null, glbAsked = false;
+  function loadModel() {
+    if (glbAsked || !THREE.GLTFLoader) return; glbAsked = true;
+    new THREE.GLTFLoader().load('assets/paper/guns/plane_flight.glb', gl => { try {
+      gl.scene.updateMatrixWorld(true); const P = [], N = [], U = [], v = new THREE.Vector3(), n3 = new THREE.Matrix3();
+      gl.scene.traverse(o => { if (!o.isMesh) return; const g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry, pa = g.attributes.position, na = g.attributes.normal, ua = g.attributes.uv; n3.getNormalMatrix(o.matrixWorld);
+        for (let i = 0; i < pa.count; i++) { v.fromBufferAttribute(pa, i).applyMatrix4(o.matrixWorld); P.push(v.x, v.y, v.z); if (na) { v.fromBufferAttribute(na, i).applyMatrix3(n3).normalize(); N.push(v.x, v.y, v.z); } else N.push(0, 1, 0); U.push(ua ? ua.getX(i) : 0, ua ? ua.getY(i) : 0); } });
+      if (!P.length) return; const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(U, 2));
+      g.computeBoundingBox(); const b = g.boundingBox, k = .96 / Math.max(1e-3, b.max.z - b.min.z);
+      g.translate(-(b.min.x + b.max.x) / 2, -(b.min.y + b.max.y) / 2, -b.min.z); g.scale(k, k, k); g.translate(0, 0, -.62); g.computeBoundingSphere();
+      glbGeo = g; for (const p of list) p.m.geometry = g;
+    } catch (e) { console.warn('plane flight model', e); } }, undefined, e => console.warn('plane flight model', e));
+  }
   function planeGeo() {
+    if (glbGeo) return glbGeo;
     if (geo) return geo;
     const v = [0, 0, -.62, -.42, .02, .34, 0, .02, .3, 0, 0, -.62, 0, .02, .3, .42, .02, .34, 0, 0, -.62, 0, -.13, .3, 0, .02, .3];
     geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); geo.computeVertexNormals(); return geo;
@@ -8345,7 +8362,7 @@ const PLANES = (() => {
   const matFor = team => { const k = team === 'def' ? 'red' : team === 'atk' ? 'blue' : 'white'; return mats[k] || (mats[k] = PAPER.mat(k, { side: THREE.DoubleSide, tile: 0 })); };
   function makeMesh(team) { const m = new THREE.Mesh(planeGeo(), matFor(team)); m.castShadow = false; m.userData.noProbe = true; m.rotation.order = 'YXZ'; return m; }
   // compiled at load (warmShaders runs after the map is built): one hidden plane of each colour stays in the scene
-  function warm() { for (const t of ['atk', 'def', null]) { const m = makeMesh(t); m.position.set(0, -50, 0); m.frustumCulled = false; scene.add(m); } if (!pipCam) pipCam = new THREE.PerspectiveCamera(70, 16 / 9, .05, 400); }
+  function warm() { loadModel(); for (const t of ['atk', 'def', null]) { const m = makeMesh(t); m.position.set(0, -50, 0); m.frustumCulled = false; scene.add(m); } if (!pipCam) pipCam = new THREE.PerspectiveCamera(70, 16 / 9, .05, 400); }
 
   function spawn(owner, from, dir, steer, yaw0) {
     const p = { id: ++seq, owner, orig: owner, steer: steer || owner, pos: from.clone(), dir: dir.clone().normalize(), speed: R.speed, life: R.life, hp: R.hp, age: 0, caught: 0, launch: from.clone(), m: makeMesh(teamOf(owner)), roll: 0, dead: false, catchTried: new Set(), botTarget: null };
