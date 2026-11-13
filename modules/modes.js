@@ -54,17 +54,12 @@
 
   /* ---------- hooks into the game ---------- */
   // team spawns
-  const _pickSpawn = pickSpawn;
-  pickSpawn = function (forEnt) {
-    const L = layout(), t = myTeam();
-    if (forEnt === PLAYER_ENT && teamMode() && L && t && L[t]) {
-      // my team's base only; safest point (no enemy near / in sight), see pickSafeSpawn in 50-state-hud-match.js
-      const tOf = e => e === PLAYER_ENT ? t : MX.teams.get(e.netId) || null;
-      const v = pickSafeSpawn(forEnt, L[t], e => tOf(e) !== t); if (v) return v;
-    }
-    return _pickSpawn.apply(this, arguments);
-  };
-  // no respawn inside a demolition round (the next round brings everyone back)
+  // (the spawn decision itself is teamBaseSpawn in 50-state-hud-match.js: base-only, with in-base fallbacks)
+  SPAWN_TEAM.push(forEnt => {
+    const t = myTeam(); if (forEnt !== PLAYER_ENT || !teamMode() || !t) return null;
+    const L = (window.TEAM_BASES && window.TEAM_BASES[CUR_MAP]) || layout();
+    return L && L[t] ? { pts: L[t], isFoe: e => (e === PLAYER_ENT ? t : MX.teams.get(e.netId) || null) !== t } : null;
+  });
   const _respawn = respawnPlayer;
   respawnPlayer = function () { if (demo() && !MX.allowRespawn) return; return _respawn.apply(this, arguments); };
   // face the enemy side after a team spawn
@@ -100,11 +95,13 @@
     hud(true);
   }
   function applyView(v) {
-    MX.v = v; MX.teams.clear(); MX.kits.clear();
+    const prevT = myTeam(); MX.v = v; MX.teams.clear(); MX.kits.clear();
     for (const [id, team, , , , kit] of v.pl || []) { if (team) MX.teams.set(id, team); if (kit) MX.kits.add(id); }
     MX.bomb = v.bomb; MX.act = v.act;
     if (v.mode === 'demo') { if (v.phase === 'freeze') MX.freezeEnd = v.end; else if (v.phase === 'live') { MX.roundEnd = v.end; if (MX.freezeEnd > sNow()) MX.freezeEnd = 0; } }
     recolorAll(); syncBomb();
+    // team switch while playing: I now belong to the other base, so I start over in it (never stay standing in the old team's base)
+    { const nt = myTeam(); if (prevT && nt && prevT !== nt && teamMode() && inMatch() && state === 'play' && !P.dead) { P.pos.copy(pickSpawn(PLAYER_ENT)); P.vel.set(0, 0, 0); faceForward(); } }
   }
   function event(e) {
     switch (e.k) {

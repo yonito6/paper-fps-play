@@ -95,7 +95,9 @@
   function syncTeams() {
     const M = S.M; const me = M.players.get('me'); S.myTeam = me ? me.team : null;
     if (mode() !== 'ffa' && S.myTeam && PLAYER_ENT.cssCol !== TEAM[S.myTeam].css) PLAYER_ENT.cssCol = TEAM[S.myTeam].css;
-    for (const r of robots) if (r.mxBot) { const p = M.players.get(r.netId); const t = p ? p.team : null; if (t && r.mxTeam !== t) teamLook(r, t); }
+    for (const r of robots) if (r.mxBot) { const p = M.players.get(r.netId); const t = p ? p.team : null; if (t && r.mxTeam !== t) { const was = r.mxTeam; teamLook(r, t); if (was && !r.dead && (state === 'play' || state === 'dead')) respawnBot(r, true); } }   // switched team: start over in the new base
+    if (S.prevMyTeam && S.myTeam && S.prevMyTeam !== S.myTeam && state === 'play' && !P.dead) { P.pos.copy(pickSpawn(PLAYER_ENT)); P.vel.set(0, 0, 0); }
+    S.prevMyTeam = S.myTeam;
   }
   function teamLook(r, t) {
     r.mxTeam = t; const c = TEAM[t].col, k = r.mxShade || 0;
@@ -269,15 +271,11 @@
 
   /* ---------------- game hooks ---------------- */
   // spawns: bots at their side's spawn (the player's own spawn is modes.js's)
-  const _pickSpawn = pickSpawn;
-  pickSpawn = function (forEnt) {
-    const L = layout();
-    if (S.on && forEnt && forEnt.mxBot && forEnt.mxTeam && L && L[forEnt.mxTeam]) {
-      // same rule as the player: own team's base, the safest point (no enemy near / in sight), never inside geometry
-      const t = forEnt.mxTeam, v = pickSafeSpawn(forEnt, L[t], e => teamOf(e) !== t); if (v) return v;
-    }
-    return _pickSpawn.apply(this, arguments);
-  };
+  SPAWN_TEAM.push(forEnt => {
+    if (!S.on || !forEnt || !forEnt.mxBot || !forEnt.mxTeam) return null;
+    const t = forEnt.mxTeam, L = (window.TEAM_BASES && window.TEAM_BASES[CUR_MAP]) || layout();
+    return L && L[t] ? { pts: L[t], isFoe: e => teamOf(e) !== t } : null;
+  });
   // every death goes to the match (the victim's position first, so a dropped charge lands where the carrier fell)
   const _kill = killEntity;
   killEntity = function (v, k) {
@@ -576,6 +574,7 @@ body.s9bm-team #matchbar,body.s9bm-team #hPlace{display:none!important}`;
 
   /* ================= test API ================= */
   S.start = async (o = {}) => { await S.loading; S.passive = null; S.speed = 1; S.startOpts = o; if (o.mode) S.cfg.mode = o.mode; if (o.size) S.cfg.size = o.size; if (o.diff) S.cfg.diff = o.diff; if (o.rules) S.rulesOver = o.rules; initAudio(); await startMatch(o.map); setState('play'); return S.info(); };
+  S.onEvent = onEvent;   // test API: the suite feeds a real round event so the bots take the SAME respawn path as in a match
   S.stop = () => { S.startOpts = null; stopLocal(); };
   S.info = () => { const M = S.M; if (!M) return { on: S.on }; return { on: S.on, robots: robots.length, teamBots: { mine: robots.filter(r => r.mxBot && r.mxTeam === S.myTeam).length, foes: robots.filter(r => r.mxBot && r.mxTeam !== S.myTeam).length }, strays: S.stats.strays || 0, mode: M.mode, map: M.map, phase: M.phase, round: M.round, score: { ...M.score }, swapped: M.swapped, over: M.over, winner: M.winner, myTeam: S.myTeam, bomb: M.bomb && { s: M.bomb.state, c: M.bomb.carrier, site: M.bomb.site }, act: M.act && { kind: M.act.kind, id: M.act.id },
     players: [...M.players.values()].map(p => ({ id: p.id, team: p.team, alive: p.alive, kills: p.kills, deaths: p.deaths, kit: p.kit })),

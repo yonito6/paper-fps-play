@@ -6229,12 +6229,21 @@ function snapSpawn(x, z) {
   const c = nearestOk(cellOf(x, z), SPAWN_RULES.snap); if (c < 0) return null;
   return new THREE.Vector3(cellX(c), NAV.h[c], cellZ(c));
 }
-// pts = [[x,z],...]; isFoe(e) says who counts as an enemy (default: everybody else = free-for-all)
-function pickSafeSpawn(forEnt, pts, isFoe) {
+// THE one spawn decision (WP-spawn2). Team modes: a team ONLY ever spawns inside its own base zone, whatever is blocked.
+// Modules register a resolver with SPAWN_TEAM (ent -> { pts: [[x,z],..] base points, isFoe(e) } or null); nothing else may place a player/bot at a spawn.
+// Order inside the base: (1) safest snapped base point, (2) any walkable cell inside the base zone, (3) the raw base point. Never the FFA spread / map centre.
+const SPAWN_TEAM = [];
+const SPAWN_PAD = 5;   // base zone = bounding box of the team's base points + this margin (m)
+function spawnZone(pts) {
+  let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (const [x, z] of pts) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+  return { x0: x0 - SPAWN_PAD, x1: x1 + SPAWN_PAD, z0: z0 - SPAWN_PAD, z1: z1 + SPAWN_PAD };
+}
+const inSpawnZone = (Z, x, z) => x >= Z.x0 && x <= Z.x1 && z >= Z.z0 && z <= Z.z1;
+// candidates = [Vector3]; isFoe(e) says who counts as an enemy (default: everybody else = free-for-all). Returns the best-scored one (picks among the best 2) or null
+function scoreSpawn(forEnt, cands, isFoe) {
   const foes = entities().filter(e => e !== forEnt && entAlive(e) && (!isFoe || isFoe(e))), mates = entities().filter(e => e !== forEnt && entAlive(e) && isFoe && !isFoe(e));
   const scored = [];
-  for (const [x, z] of pts) {
-    const v = snapSpawn(x, z); if (!v) continue;
+  for (const v of cands) {
     let near = 99, seen = 0;
     for (const e of foes) { const q = entPos(e), d = Math.hypot(q.x - v.x, q.z - v.z); near = Math.min(near, d); if (d < SPAWN_RULES.seeRange) { _spA.set(v.x, v.y + 1.5, v.z); entEye(e, _spB); try { if (lineOfSight(_spA, _spB)) seen++; } catch (er) {} } }
     let mate = 99; for (const e of mates) { const q = entPos(e); mate = Math.min(mate, Math.hypot(q.x - v.x, q.z - v.z)); }
@@ -6244,7 +6253,23 @@ function pickSafeSpawn(forEnt, pts, isFoe) {
   scored.sort((a, b) => b.s - a.s);
   return scored[Math.floor(Math.random() * Math.min(2, scored.length))].v;
 }
+function pickSafeSpawn(forEnt, pts, isFoe) {   // (kept name: free-for-all + old callers)
+  const c = []; for (const [x, z] of pts) { const v = snapSpawn(x, z); if (v) c.push(v); }
+  return scoreSpawn(forEnt, c, isFoe);
+}
+function teamBaseSpawn(forEnt, pts, isFoe) {
+  const Z = spawnZone(pts), c = [];
+  for (const [x, z] of pts) { const v = snapSpawn(x, z); if (v && inSpawnZone(Z, v.x, v.z)) c.push(v); }
+  let v = scoreSpawn(forEnt, c, isFoe);
+  if (!v) {   // base points blocked/unsnappable: any walkable cell inside the base zone (1 m grid), nearest the base points first
+    const w = []; for (let x = Math.ceil(Z.x0); x <= Z.x1; x += 1) for (let z = Math.ceil(Z.z0); z <= Z.z1; z += 1) { const ci = cellOf(x, z); if (NAV.ok[ci]) { const cx = cellX(ci), cz = cellZ(ci); if (inSpawnZone(Z, cx, cz)) w.push(new THREE.Vector3(cx, NAV.h[ci], cz)); } }
+    v = scoreSpawn(forEnt, w, isFoe);
+  }
+  if (!v) { const [x, z] = pts[Math.floor(Math.random() * pts.length)]; v = new THREE.Vector3(x, NAV.h ? NAV.h[cellOf(x, z)] || 0 : 0, z); }   // last resort: the base point itself (still inside the base)
+  return v;
+}
 function pickSpawn(forEnt) {
+  for (const res of SPAWN_TEAM) { let i = null; try { i = res(forEnt); } catch (e) {} if (i && i.pts && i.pts.length) return teamBaseSpawn(forEnt, i.pts, i.isFoe); }
   const v = pickSafeSpawn(forEnt, SPAWNS);
   if (v) return v;
   const c = nearestOk(cellOf(0, 0), 40); return new THREE.Vector3(cellX(c), NAV.h[c], cellZ(c));
