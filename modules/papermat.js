@@ -29,6 +29,13 @@
     ruler: { col: 'ruler_col.jpg', nrm: 'ruler_nrm.jpg', tile: 1, strip: true, normalScale: .7, rough: .6, sheen: .06, macro: .06 },   // (ruler_orm.jpg exists; skipped for GPU budget)
     wear: { col: 'wear_col.png', nrm: 'wear_nrm.jpg', orm: 'wear_orm.jpg', tile: 1, strip: true, normalScale: 1.0, sheen: .08, macro: 0, decal: true },
     mat: { col: '../../map/tex/mat_diff.jpg', tile: 10, rough: .8, sheen: .02, macro: .06 },   // the MAP agent's cutting mat (optional)
+    // MATERIALS V2 (wp-mats, docs/MATERIALS_V2.md): lazy = not preloaded by load(); fetched the first time makeMaterial asks for them
+    felt_blue: { col: 'felt_blue_col.jpg', nrm: 'felt_blue_nrm.jpg', tile: 15, normalScale: 1.0, rough: .97, sheen: .22, macro: .06, lazy: true },
+    felt_green: { col: 'felt_green_col.jpg', nrm: 'felt_green_nrm.jpg', tile: 10, normalScale: 1.0, rough: .97, sheen: .22, macro: .06, lazy: true },
+    cutmat: { col: 'cutmat_col.jpg', nrm: 'cutmat_nrm.jpg', tile: 8, normalScale: .6, rough: .82, sheen: .02, macro: .04, lazy: true },
+    case_fabric: { col: 'case_fabric_col.jpg', nrm: 'case_fabric_nrm.jpg', tile: 8, normalScale: .9, rough: .95, sheen: .16, macro: .05, lazy: true },
+    zip_teeth: { col: 'zip_teeth_col.jpg', nrm: 'zip_teeth_nrm.jpg', orm: 'zip_teeth_orm.jpg', tile: 1, strip: true, normalScale: 1.0, sheen: .08, macro: .06, lazy: true },   // UV 0..1 per tooth face
+    page_edge: { col: 'page_edge_col.jpg', nrm: 'page_edge_nrm.jpg', orm: 'page_edge_orm.jpg', tile: 3, normalScale: 1.0, sheen: .08, macro: .05, lazy: true },   // U along the edge, V across the stack
   };
   // flute strip: one U repeat = 8 flutes = 8 x the board thickness (pitch == thickness, like real C-flute at thumb scale)
   const FLUTES_PER_REPEAT = 8, RULER_REPEAT_CM = 30;
@@ -60,7 +67,7 @@
     if (o.ktx2 && THREE.KTX2Loader && o.renderer) { try { ktx2 = new THREE.KTX2Loader().setTranscoderPath(o.transcoderPath || 'https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/libs/basis/').detectSupport(o.renderer); } catch (e) { console.warn('[PaperMat] KTX2 unavailable', e); ktx2 = null; } }
     PM.ktx2 = !!ktx2;
     const cellsP = fetch(PM.base + 'wear_atlas.json').then(r => r.json()).then(j => { PM.cells = j.cells; }).catch(() => { PM.cells = {}; });
-    for (const k of Object.keys(LIB)) if (k !== 'mat') { tex(LIB[k].col, true); if (LIB[k].nrm) tex(LIB[k].nrm, false); if (LIB[k].orm) tex(LIB[k].orm, false); }
+    for (const k of Object.keys(LIB)) if (k !== 'mat' && !LIB[k].lazy) { tex(LIB[k].col, true); if (LIB[k].nrm) tex(LIB[k].nrm, false); if (LIB[k].orm) tex(LIB[k].orm, false); }
     tex('macro_var.jpg', false);
     const wait = PM._loads.map(t => new Promise(res => { const c = () => (t.image && t.image.width) ? res() : setTimeout(c, 30); c(); }));
     // never block a boot on textures: after `timeout` ms (default 20 s; a slow CDN transcoder or a stalled download) resolve anyway,

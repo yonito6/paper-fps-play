@@ -18,7 +18,7 @@
   if (typeof grade === 'undefined' || typeof scene === 'undefined' || typeof camera === 'undefined') { console.warn('[papergfx] globals missing, idle'); return; }
   const T = THREE, GU = grade.uniforms;
   const S = { film: 0, zfix: 0, near: 0, chars: 0, notes: [], err: null };
-  const P = { film: 1, gain: [1.08, 1.06, 1.02], lift: [.012, .008, 0], sat: .97, shoulder: .2, skyBlur: .2, sky: null, skyTry: { zen: [.10, .45, 2.4], mid: [.22, .62, 2.6], hor: [.55, .90, 2.4], cloud: [2.2, 2.18, 2.1], cloudAmt: .85, sunGlow: .3 }, near: .1, crease: .35, wrap: .35, bounce: .25 };
+  const P = { film: 1, gain: [1.08, 1.06, 1.02], lift: [.012, .008, 0], sat: .97, shoulder: .2, skyBlur: .2, sky: { zen: [.146, .29, 1.9], mid: [.2, .37, 2.2], hor: [.29, .45, 2.5], low: [.42, .59, 2.37], cloud: [1.81, 1.99, 2.26], cloudAmt: 1, cloudCov: .84, cloudFade: [.02, .30, 0], sunGlow: .15, sunSize: 900 }, skyTry: { zen: [.10, .45, 2.4], mid: [.22, .62, 2.6], hor: [.55, .90, 2.4], cloud: [2.2, 2.18, 2.1], cloudAmt: .85, sunGlow: .3 }, near: .1, crease: .35, wrap: .35, bounce: .25 };
   /* ---------- 1. film grade ---------- */
   GU.uFgK = { value: 1 }; GU.uFgGain = { value: new T.Vector3(1, 1, 1) }; GU.uFgLift = { value: new T.Vector3() }; GU.uFgSat = { value: 1 }; GU.uFgSh = { value: .15 };
   function patchGrade() {

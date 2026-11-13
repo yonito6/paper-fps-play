@@ -2479,8 +2479,8 @@ function artLoadFullLM() {
   if (!ART_LOOK.bakeFull || ART_LM.tex) return;
   if (DESKTOWN_DATA && DESKTOWN_DATA.lmFull && DESKTOWN_DATA.lm) { ART_LM.tex = DESKTOWN_DATA.lm; ART_LM.scale = DESKTOWN_DATA.lmScale; artApplyFullLM(); return; }   // (already loaded by desktownPreload as KTX2)
   const hi = ART.tier === 'high', v = '?v=' + Date.now();
-  const metaP = fetch('render/paper/map/bake_meta.json' + v).then(r => r.ok ? r.json() : null).catch(() => null);
-  new THREE.TextureLoader().load('assets/paper/map/' + (hi ? 'lm_full.png' : 'lm_full_2k.png') + v, async t => {
+  const metaP = fetch('render/paper/map/bake_meta' + (window.DESKTOWN_TAG || '') + '.json' + v).then(r => r.ok ? r.json() : null).catch(() => null);
+  new THREE.TextureLoader().load('assets/paper/map/' + (hi ? 'lm_full' + (window.DESKTOWN_TAG || '') + '.png' : 'lm_full' + (window.DESKTOWN_TAG || '') + '_2k.png') + v, async t => {
     const meta = await metaP; t.flipY = false; t.encoding = THREE.LinearEncoding; t.generateMipmaps = true; t.anisotropy = 4; t.minFilter = THREE.LinearMipmapLinearFilter;   // (low tiers only: High loads lm_full.ktx2 in desktownPreload)
     ART_LM.tex = t; ART_LM.scale = (meta && meta.lm_full && meta.lm_full.scale) || 2.5;
     artApplyFullLM();
@@ -2510,6 +2510,7 @@ function artTearBases() {
   DESKTOWN_DATA.gltf.scene.traverse(o => { if (!o.isMesh || !o.material || o.material.userData.tearBase) return; const n = o.material.name;
     if (n === 'pm_kraft' || n === 'pm_paper') { const m = PaperMat.makeMaterial(n === 'pm_kraft' ? 'kraft' : 'paper', { tile: n === 'pm_kraft' ? .95 / 2 : .8 / 2, envMapIntensity: ART_LOOK.envMap, flat: n === 'pm_kraft' ? .55 : .55, macro: .05, normalScale: .55, color: n === 'pm_kraft' ? 0xffffff : ART_LOOK.paperTint }); m.userData.tile = 2; m.userData.paper = n === 'pm_kraft' ? 'kraft' : 'cream'; o.material.userData.tearBase = m; } });
 }
+const ART_V2MAT = { pm_felt_blue: 'felt_blue', pm_felt_green: 'felt_green', pm_cutmat: 'cutmat', pm_case: 'case_fabric', pm_zip: 'zip_teeth', pm_pages: 'page_edge' };   // docs/MATERIALS_V2.md
 function artMapPass() {
   const DD = DESKTOWN_DATA; if (!DD) return; const root = DD.gltf.scene, L = ART_LOOK;
   if (window.PaperMat) {
@@ -2522,6 +2523,7 @@ function artMapPass() {
         else if (n === 'pm_edge') m = artLibMat('flute', {});                       // edge U = metres / 1.44 m = 8 flutes x 0.18 m board
         else if (n === 'pm_mat') { artCuttingMat(o.material); artBakeOnlyHook(o.material); ART.glbMats.add(o.material); return; }
         else if (n === 'pm_print') { artBakeOnlyHook(o.material); ART.glbMats.add(o.material); return; }   // (keeps its atlas)
+        else if (ART_V2MAT[n] && PaperMat.makeMaterial) m = artLibMat(ART_V2MAT[n], { tile: 1 });   // wp-mats V2 sets (map v2): GLB UV0 is already in repeats (assemble_map remap / build_map auto UVs)
         else return;
         swap[n] = m; ART.mats[n] = m;
       }
@@ -2546,10 +2548,10 @@ function artSkyMaterial(k) {
   return new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
     uniforms: { uZen: { value: C(k.zen) }, uMid: { value: C(k.mid) }, uHor: { value: C(k.hor) }, uLow: { value: C(k.low) }, uSun: { value: V(k.sunDir || [-.5, .2, -.8]).normalize() }, uSunCol: { value: C(k.sunCol || [1, .9, .7]) },
-      uSunSize: { value: k.sunSize || 600 }, uSunGlow: { value: k.sunGlow ?? .5 }, uCloud: { value: C(k.cloud || [1, 1, 1]) }, uCloudAmt: { value: k.cloudAmt || 0 } },
+      uSunSize: { value: k.sunSize || 600 }, uSunGlow: { value: k.sunGlow ?? .5 }, uCloud: { value: C(k.cloud || [1, 1, 1]) }, uCloudAmt: { value: k.cloudAmt || 0 }, uCloudCov: { value: k.cloudCov ?? .50 }, uCloudFade: { value: V(k.cloudFade || [-.02, .12, 0]) } },
     vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position,1.0); gl_Position = p.xyww; }',
     fragmentShader: `
-      uniform vec3 uZen, uMid, uHor, uLow, uSun, uSunCol, uCloud; uniform float uSunSize, uSunGlow, uCloudAmt; varying vec3 vDir;
+      uniform vec3 uZen, uMid, uHor, uLow, uSun, uSunCol, uCloud; uniform float uSunSize, uSunGlow, uCloudAmt, uCloudCov; uniform vec3 uCloudFade; varying vec3 vDir;
       float h21(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
       float vn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f); return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y); }
       float fb(vec2 p){ float s=0., a=.5; for(int i=0;i<5;i++){ s+=a*vn(p); p*=2.03; a*=.5; } return s; }
@@ -2562,11 +2564,11 @@ function artSkyMaterial(k) {
         col += uSunCol*pow(s,8.)*uSunGlow + uSunCol*pow(s,uSunSize)*30.;
         if (uCloudAmt > 0. && h > -.02) {
           vec2 cp = d.xz/(h+.22)*1.1; float c = cloud(cp);
-          float edge = smoothstep(.50,.53,c);                                  // crisp paper edge
-          float under = smoothstep(.50,.62,cloud(cp + vec2(0.,.06)));          // the cloud above this point: this is its underside
+          float edge = smoothstep(uCloudCov,uCloudCov+.03,c);                                  // crisp paper edge
+          float under = smoothstep(uCloudCov,uCloudCov+.12,cloud(cp + vec2(0.,.06)));          // the cloud above this point: this is its underside
           vec3 cc = mix(uCloud, uCloud*vec3(.80,.84,.92), under*.8);           // soft grey-blue underside, bright sunlit top
           cc = mix(cc, uCloud*vec3(1.,.97,.9), pow(s,2.)*.25);                 // warm toward the sun
-          float fade = smoothstep(-.02,.12,h);                                // thin out at the horizon
+          float fade = smoothstep(uCloudFade.x,uCloudFade.y,h);                                // thin out at the horizon
           col = mix(col, cc, edge*fade*uCloudAmt);
         }
         gl_FragColor = vec4(col,1.);
@@ -3751,6 +3753,7 @@ function desktownDef() {
 // look numbers (sun direction = towards the sun, game axes). From look.json: travel (0.3766, 0.8075, -0.454) blender -> game (0.377, -0.454, -0.808)
 const DESKTOWN_LOOK = { sunDir: [-.377, .454, .808], sunCol: [1, .8, .58], sunHex: 0xffdcb4, sun: 2.3, zen: [.08, .3, .9], mid: [.3, .52, .92], hor: [.62, .76, .95], low: [.32, .34, .3],
   fog: [.78, .84, .93], fogD: .0042, hemiSky: 0x8fb0ec, hemiGround: 0x5d5844, hemi: .38, lmScale: 1.1, lmK: 1 / Math.PI, hemiLM: .2 };   // (lmK: three r147 legacy lights multiply a lightmap by PI)
+var DESKTOWN_TAG = /[?&]map=v2(?![0-9a-z])/.test(location.search) ? '_v2' : '';   // ?map=v2 = the assembled Desk Town v2 (render/paper/map/assemble.py): map_desktown_v2.json + desktown_v2_*.glb + lm*_v2
 let DESKTOWN_DATA = null;   // { D: data/paper/map_desktown.json, gltf } from the MAP agent, when both exist
 // loads the MAP agent's Desk Town (assets/paper/map/desktown.glb + data/paper/map_desktown.json) before the build; falls back to the
 // grey-box layout below when they are missing or broken. Also sets the map size, spawns, camps and the team spawn layout.
@@ -3758,18 +3761,18 @@ async function desktownPreload(def) {
   DISTRICT_DATA = await desktownDistrictLoad();
   if (window.__paperGreybox) { DESKTOWN_DATA = null; return; }
   const v = '?v=' + Date.now();
-  const D = await fetch('data/paper/map_desktown.json' + v, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  const D = await fetch('data/paper/map_desktown' + DESKTOWN_TAG + '.json' + v, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   if (!D || !Array.isArray(D.colliders)) { DESKTOWN_DATA = null; return; }
   // WP-S2: High = desktown_ktx2.glb (meshopt + KTX2 textures: 5.8 MB file, ~40 MB GPU); fallback desktown_webp.glb; Performance tiers = the half-size _perf
   const hi0 = !window.S9GFX || /high|ultra/.test(S9GFX.tier || 'high'), kk = !!(window.MeshoptDecoder && s2Ktx2());
-  let gltf = null; for (const f of (hi0 && kk ? ['desktown_ktx2', 'desktown_webp'] : [hi0 ? 'desktown_webp' : 'desktown_perf'])) { gltf = await s2Gltf(f.endsWith('ktx2')).loadAsync('assets/paper/map/' + f + '.glb' + v).catch(e => { console.warn(f, e); return null; }); if (gltf) break; }
+  let gltf = null; for (const f of (hi0 && kk ? ['desktown_ktx2', 'desktown_webp'] : [hi0 ? 'desktown_webp' : 'desktown_perf']).map(f => f.replace('desktown', 'desktown' + DESKTOWN_TAG))) { gltf = await s2Gltf(f.endsWith('ktx2')).loadAsync('assets/paper/map/' + f + '.glb' + v).catch(e => { console.warn(f, e); return null; }); if (gltf) break; }
   if (!gltf) { DESKTOWN_DATA = null; return; }
   // baked light (MAP agent, render/paper/map/bake_meta.json): sky + lamps + sun bounce, used together with the live sun
   const hi = !window.S9GFX || /high|ultra/.test(S9GFX.tier || 'high');
-  const meta = await fetch('render/paper/map/bake_meta.json' + v).then(r => r.ok ? r.json() : null).catch(() => null);
+  const meta = await fetch('render/paper/map/bake_meta' + DESKTOWN_TAG + '.json' + v).then(r => r.ok ? r.json() : null).catch(() => null);
   const full = hi && ART_LOOK.bakeFull && kk && !/s2nolm/.test(location.search);   // High: the full bake straight away as KTX2 (no 16 MB sky-only lm.png first)
-  let lm = full ? await s2LM('lm_full', v, true) : null; const lmFull = !!lm;
-  if (!lm) { lm = await new Promise(res => new THREE.TextureLoader().load('assets/paper/map/' + (hi ? 'lm.png' : 'lm_2k.png') + v, t => res(t), undefined, () => res(null)));
+  let lm = full ? await s2LM('lm_full' + DESKTOWN_TAG, v, true) : null; const lmFull = !!lm;
+  if (!lm) { lm = await new Promise(res => new THREE.TextureLoader().load('assets/paper/map/' + (hi ? 'lm' + DESKTOWN_TAG + '.png' : 'lm' + DESKTOWN_TAG + '_2k.png') + v, t => res(t), undefined, () => res(null)));
     if (lm) { lm.flipY = false; lm.encoding = THREE.LinearEncoding; lm.generateMipmaps = true; lm.anisotropy = 4; } }
   const lmw = lm && (lm.image && lm.image.width || (lm.mipmaps && lm.mipmaps[0] && lm.mipmaps[0].width) || 0);
   DESKTOWN_DATA = { D, gltf, lm: lm && lmw >= 512 ? lm : null, lmFull: lmFull && lmw >= 512, lmScale: lmFull ? ((meta && meta.lm_full && meta.lm_full.scale) || 2.5) : (meta && meta.lm && meta.lm.scale) || DESKTOWN_LOOK.lmScale };
@@ -3783,6 +3786,9 @@ async function desktownPreload(def) {
 // WALLBANG thickness class of a collider (data/penetration.json): thin card (<= 16 cm) = every gun goes through; double card
 // (<= 45 cm) = sniper only; crates = hollow (two skins); wood (ruler, trusses) = wood; pencils / clips / metal / floors / thick = block
 function wallClass(c) {
+  if (DESKTOWN_DATA && DESKTOWN_DATA.D && DESKTOWN_DATA.D.version === 2 && c[8]) {   // v2: the district contract class (_thin / _med / _thick) decides
+    const n0 = String(c[7] || '').toLowerCase(); if (/crate|box/.test(n0) && c[8] === 'thin') return 'crate';
+    return c[8] === 'thin' ? 'card' : c[8] === 'medium' ? 'card2' : null; }
   const n = String(c[7] || '').toLowerCase(), kind = c[6], t = Math.min(c[3] - c[0], c[4] - c[1], c[5] - c[2]);
   if (kind === 'floor' || /pencil|clip|scissor|metal|cup|ground|mat\b/.test(n)) return null;
   if (/crate|box/.test(n)) return 'crate';
@@ -3796,7 +3802,7 @@ function desktownFromData(PM) {
     if (!o.isMesh) return;
     let p = o, tear = false; while (p) { if (/^T_/.test(p.name)) { tear = true; break; } p = p.parent; }
     if (tear) { o.visible = false; return; }
-    o.castShadow = o.receiveShadow = true; o.userData.noProbe = true;
+    o.receiveShadow = true; o.castShadow = !/nocast/.test(o.name + ' ' + ((o.parent && o.parent.name) || '')); o.userData.noProbe = true;   // v2: *_nocast interiors let the sun in
     if (o.material && DESKTOWN_DATA.lm && o.geometry.attributes.uv2) desktownLM(o.material);
     const m = o.material; if (m && window.S9GFX && S9GFX.tier === 'performance' && window.PAPER_UI && PAPER_UI.shrink) for (const k of ['map', 'normalMap', 'lightMap', 'roughnessMap']) if (m[k]) PAPER_UI.shrink(m[k], 1024);
     if (m) { m.envMapIntensity = .35; if (m.map) m.map.anisotropy = 16; if (m.normalMap) m.normalMap.anisotropy = 8; if (!m.onBeforeCompile || m.onBeforeCompile === THREE.Material.prototype.onBeforeCompile) { m.onBeforeCompile = PAPER_EDGE_HOOK; m.customProgramCacheKey = () => 'paperEdgeGl' + (m.vertexColors ? 'v' : '') + (m.lightMap ? 'l' : ''); } }
@@ -3983,7 +3989,7 @@ async function desktownDistrictLoad() {
 function desktownDistrictBuild() {
   const { J, gltf } = DISTRICT_DATA, O = DISTRICT_ORIGIN, root = gltf.scene;
   root.position.set(O[0], O[1], O[2]);
-  root.traverse(o => { if (!o.isMesh) return; o.castShadow = o.receiveShadow = true; o.userData.noProbe = true;
+  root.traverse(o => { if (!o.isMesh) return; o.receiveShadow = true; o.castShadow = !/nocast/.test(o.name + ' ' + ((o.parent && o.parent.name) || '')); o.userData.noProbe = true;   // groups named *_nocast (interior shells) let the sun in
     const mm = o.material; if (mm) { mm.envMapIntensity = .35; if (mm.map) mm.map.anisotropy = 16; } });
   scene.add(root); root.updateMatrixWorld(true);
   for (const c of J.colliders) { const bx = new THREE.Box3(new THREE.Vector3(c[0] + O[0], c[1] + O[1], c[2] + O[2]), new THREE.Vector3(c[3] + O[0], c[4] + O[1], c[5] + O[2])); if (c[6] === 'walk') bx.walk = true; world.colliders.push(bx); }
@@ -7237,6 +7243,7 @@ const TEAR = (() => {
   function alloc(wp, hp, only0) {   // shelf packing; a full page opens the next one (v1 map uses ~17 % of one page). only0 (destructible slabs): page 0 only, null when full
     const S = R.atlas, w = wp + R.pad * 2, h = hp + R.pad * 2;
     if (only0) { const pg = pages[0] || newPage(); pg.slabPx = pg.slabPx || 0; if (pg.slabPx + w * h > .45 * S * S) return null; /* slabs never take more than 45 % of page 0: the real tear panels / flaps must keep a page */ pg.slabPx += w * h; if (pg.x + w > S) { pg.x = 0; pg.y += pg.rowH; pg.rowH = 0; } if (pg.y + h > S) return null; const r = { pg, x: pg.x + R.pad, y: pg.y + R.pad }; pg.x += w; pg.rowH = Math.max(pg.rowH, h); return r; }
+    if (w > S || h > S) throw new Error(`TEAR panel ${wp}x${hp} px is bigger than an atlas page`);   // never recurse forever
     for (const pg of pages) { if (pg.x + w > S) { pg.x = 0; pg.y += pg.rowH; pg.rowH = 0; } if (pg.y + h <= S && pg.x + w <= S) { const r = { pg, x: pg.x + R.pad, y: pg.y + R.pad }; pg.x += w; pg.rowH = Math.max(pg.rowH, h); return r; } }
     const pg = newPage(); return alloc(wp, hp);
   }

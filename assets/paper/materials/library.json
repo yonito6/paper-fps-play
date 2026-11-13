@@ -89,6 +89,79 @@
     256,
     256
    ]
+  },
+  "felt_blue": {
+   "tile_m": 15.0,
+   "from": "render/paper/materials/v2/gen.py (procedural; colour + scale sampled from her set2 plates, tuned by v2/fit.py)",
+   "what": "blue felt (pencil-case floor D5, felt pads): dense fuzzy fibres, soft sheen, speckle",
+   "size": [
+    1024,
+    1024,
+    "nrm 512"
+   ],
+   "rough": 0.97,
+   "sheen": 0.22,
+   "blender": "pm_felt_blue"
+  },
+  "felt_green": {
+   "tile_m": 10.0,
+   "from": "render/paper/materials/v2/gen.py (procedural; colour + scale sampled from her set2 plates, tuned by v2/fit.py)",
+   "what": "green felt (D6 felt road, hedges): long grass-like fibres, sheen",
+   "size": [
+    1024,
+    1024,
+    "nrm 512"
+   ],
+   "rough": 0.97,
+   "sheen": 0.22,
+   "blender": "pm_felt_green"
+  },
+  "cutmat": {
+   "tile_m": 8.0,
+   "from": "render/paper/materials/v2/gen.py (procedural; colour + scale sampled from her set2 plates, tuned by v2/fit.py)",
+   "what": "matte green-grey cutting mat: 8 x 8 printed cells per repeat (solid lines + dashed half-lines), fine grain",
+   "size": [
+    1024,
+    1024,
+    "nrm 512"
+   ],
+   "rough": 0.82,
+   "blender": "pm_cutmat"
+  },
+  "case_fabric": {
+   "tile_m": 8.0,
+   "from": "render/paper/materials/v2/gen.py (procedural; colour + scale sampled from her set2 plates, tuned by v2/fit.py)",
+   "what": "pencil-case OUTER board: dark blue fuzzy fabric over a fine twill",
+   "size": [
+    1024,
+    1024,
+    "nrm 512"
+   ],
+   "rough": 0.95,
+   "sheen": 0.15,
+   "blender": "pm_case"
+  },
+  "zip_teeth": {
+   "tile_m": "UV 0..1 per tooth face",
+   "from": "render/paper/materials/v2/gen.py (procedural; colour + scale sampled from her set2 plates, tuned by v2/fit.py)",
+   "what": "zipper tooth face: light kraft card, darker cut rim with flute hints (orm AO on the rim)",
+   "size": [
+    1024,
+    1024,
+    "nrm/orm 512"
+   ],
+   "blender": "pm_zip"
+  },
+  "page_edge": {
+   "tile_m": 3.0,
+   "from": "render/paper/materials/v2/gen.py (procedural; colour + scale sampled from her set2 plates, tuned by v2/fit.py)",
+   "what": "thick book page-edge bundle: U along the edge, V across the stack (56 pages per repeat), dark gaps + lit page lips",
+   "size": [
+    1024,
+    1024,
+    "nrm/orm 512"
+   ],
+   "blender": "pm_pages"
   }
  },
  "flute_pitch_m": 0.045,

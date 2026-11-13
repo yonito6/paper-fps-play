@@ -1,0 +1,9 @@
+{
+ "_doc": "wp-light map-wide SKY + SUN fit (2026-11-13). Applied: modules/papergfx.js P.sky (background-only paper sky, env/ambient unchanged) + src/game/06-paper-look.js artSkyMaterial cloudCov/cloudFade. Sun/hemi/colour UNCHANGED: no tested sun beat the current one on the mean (district tints were fitted under it). Scores = REF-MATCH formula (tools/look/lightfit_score.py), JPEG q95 lane shots, merged fit tree (main f4ae3c7 + d1-d6 + e1-ref1).",
+ "sky": { "zen": [0.146, 0.29, 1.9], "mid": [0.2, 0.37, 2.2], "hor": [0.29, 0.45, 2.5], "low": [0.42, 0.59, 2.37], "cloud": [1.81, 1.99, 2.26], "cloudAmt": 1, "cloudCov": 0.84, "cloudFade": [0.02, 0.30, 0], "sunGlow": 0.15, "sunSize": 900,
+   "how": "shader colour solved per target by secant iteration through the game's grade on a full-sky frame: zen -> sRGB (105,163,233), hor -> (165,198,235) vs her (105,163,245)/(165,198,252); grade caps blue at ~235" },
+ "sun": { "sunDir": [-0.377, 0.454, 0.808], "az_deg": 205, "elev_deg": 27, "sun": 1.8, "sunHex": "0xffd6a6", "hemi": 0.5, "hemiSky": "0x9cc0f2", "hemiGround": "0xa07a56" },
+ "scores_b3_merged_tree": { "before": { "ref1": 40.9, "d1": 56.7, "d2": 37.7, "d3": 43.2, "d4": 59.7, "d5": 44.9, "d6": 37.6, "mean": 45.81 },
+   "after": { "ref1": 40.3, "d1": 57.4, "d2": 38.5, "d3": 45.8, "d4": 59.6, "d5": 45.6, "d6": 41.4, "mean": 46.94 } },
+ "per_ref_sun_cost": { "_doc": "best single-ref direction in the 20-direction grid (b1+b2) minus the global sun (az205 el27), pre-merge tree", "ref1": ["a180e25", 0.4], "d1": ["a205e35", 0.0], "d2": ["a090e25", 6.0], "d3": ["a270e50", 4.6], "d4": ["a135e50", 3.0], "d5": ["a135e25", 1.2], "d6": ["a205e35", -0.5] }
+}
