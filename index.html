@@ -2641,10 +2641,10 @@ function artGunLights() {
 }
 // sun / shade for every soldier: a ray from the chest toward the sun against the map's collision boxes (350 slab tests, ~0.03 ms); the
 // factor eases over ~0.25 s so a soldier walking into a baked shadow darkens like the world around it, never pops
-const ART_RAY = { o: new THREE.Vector3(), d: new THREE.Vector3(), inv: new THREE.Vector3(), t: 0 };
+const ART_RAY = { o: new THREE.Vector3(), d: new THREE.Vector3(), inv: new THREE.Vector3(), t: 0, c: [] };
 function artSunVisible(p) {
   const o = ART_RAY.o.set(p.x, p.y + 1.1, p.z), d = ART_RAY.d.copy(ART_U.sun.value), inv = ART_RAY.inv.set(1 / d.x, 1 / d.y, 1 / d.z), far = 90;
-  const cols = (typeof world !== 'undefined' && world.colliders) || [];
+  const cols = typeof SPATIAL !== 'undefined' ? SPATIAL.rayCols(o, d, far, ART_RAY.c) : [];   // (wp-spatial: only the boxes under the ray's track)
   for (let i = 0; i < cols.length; i++) { const b = cols[i]; if (b.walk && b.max.y - b.min.y < .35) continue;
     const t1 = (b.min.x - o.x) * inv.x, t2 = (b.max.x - o.x) * inv.x, t3 = (b.min.y - o.y) * inv.y, t4 = (b.max.y - o.y) * inv.y, t5 = (b.min.z - o.z) * inv.z, t6 = (b.max.z - o.z) * inv.z;
     const tmin = Math.max(Math.min(t1, t2), Math.min(t3, t4), Math.min(t5, t6)), tmax = Math.min(Math.max(t1, t2), Math.max(t3, t4), Math.max(t5, t6));
@@ -2977,6 +2977,99 @@ function buildRifleVM(kind) {
 /* ================= world ================= */
 const world = { colliders: [], meshes: [] };
 let HALF = 32; const STEP = .38;
+/* ================= SPATIAL INDEX (wp-spatial, 2026-11-13) =================
+   Map v2 has ~2.3k colliders and ~8k raycast meshes (destructible slabs): every per-frame query (player + bot movement, ground, bullets,
+   grenades, sight lines, sound occlusion, planes) used to scan ALL of them. Two uniform XZ grids (4 m cells) answer the same questions:
+   - SPATIAL.cols(x0, z0, x1, z1)  -> the colliders whose XZ box can touch that rectangle (a superset; callers keep their exact tests)
+   - SPATIAL.rayMeshes(rc)         -> the world.meshes whose world box the ray's XZ track crosses (2D DDA), + the always-tested big ones
+   Both lists keep the ORIGINAL array order (sorted indices), so first-hit / tie-break answers are exactly those of the old linear scans.
+   Rebuilt lazily when the arrays change (length / last element) or SPATIAL.dirty() is called (tear + knife collider splits, map load).
+   Everything is static after load (proxies never move); a moving mesh must not be in world.meshes (none is). */
+const SPATIAL = (() => {
+  const CS = 4, EPS = .02, MAXC = 256;   // cell metres; box expand; grid clamp (cells per axis)
+  const mkGrid = () => ({ arr: null, n: -1, last: null, dirty: true, x0: 0, z0: 0, nx: 1, nz: 1, cells: [], stamp: new Uint32Array(0), run: 0, always: [], builds: 0 });
+  const GC = mkGrid(), GM = mkGrid(); const st = { colQ: 0, colOut: 0, rayQ: 0, rayOut: 0, meshes: 0, colliders: 0, on: true };
+  const _bb = new THREE.Box3();
+  function layout(G, boxes) {
+    let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity;
+    for (const b of boxes) if (b) { if (b.min.x < x0) x0 = b.min.x; if (b.min.z < z0) z0 = b.min.z; if (b.max.x > x1) x1 = b.max.x; if (b.max.z > z1) z1 = b.max.z; }
+    if (!isFinite(x0)) { x0 = z0 = -1; x1 = z1 = 1; }
+    x0 = Math.max(x0, -500) - EPS; z0 = Math.max(z0, -500) - EPS; x1 = Math.min(x1, 500) + EPS; z1 = Math.min(z1, 500) + EPS;
+    G.x0 = x0; G.z0 = z0; G.nx = Math.max(1, Math.min(MAXC, Math.ceil((x1 - x0) / CS))); G.nz = Math.max(1, Math.min(MAXC, Math.ceil((z1 - z0) / CS)));
+    G.cs = Math.max((x1 - x0) / G.nx, (z1 - z0) / G.nz, CS);   // (a huge map: bigger cells, same grid size)
+    G.nx = Math.max(1, Math.ceil((x1 - x0) / G.cs)); G.nz = Math.max(1, Math.ceil((z1 - z0) / G.cs));
+    G.cells = new Array(G.nx * G.nz); for (let i = 0; i < G.cells.length; i++) G.cells[i] = [];
+    if (G.stamp.length < boxes.length) G.stamp = new Uint32Array(boxes.length * 2); G.stamp.fill(0); G.run = 0; G.always = [];
+  }
+  const cx = (G, x) => Math.min(G.nx - 1, Math.max(0, Math.floor((x - G.x0) / G.cs))), cz = (G, z) => Math.min(G.nz - 1, Math.max(0, Math.floor((z - G.z0) / G.cs)));
+  function insert(G, i, b) {
+    const i0 = cx(G, b.min.x - EPS), i1 = cx(G, b.max.x + EPS), j0 = cz(G, b.min.z - EPS), j1 = cz(G, b.max.z + EPS);
+    for (let j = j0; j <= j1; j++) for (let k = i0; k <= i1; k++) G.cells[j * G.nx + k].push(i);
+  }
+  const changed = (G, A) => G.dirty || G.arr !== A || G.n !== A.length || G.last !== A[A.length - 1];
+  const seal = (G, A) => { G.arr = A; G.n = A.length; G.last = A[A.length - 1]; G.dirty = false; G.builds++; };
+  function buildCols() { const A = world.colliders; layout(GC, A); for (let i = 0; i < A.length; i++) insert(GC, i, A[i]); seal(GC, A); st.colliders = A.length; }
+  function buildMeshes() {
+    const A = world.meshes, boxes = new Array(A.length);
+    for (let i = 0; i < A.length; i++) { const m = A[i]; let b = null;
+      if (m && m.isMesh && m.geometry && !m.children.length && (!m.isSkinnedMesh && !m.isInstancedMesh)) { const g = m.geometry; if (!g.boundingBox) g.computeBoundingBox(); m.updateWorldMatrix(true, false); b = _bb.copy(g.boundingBox).applyMatrix4(m.matrixWorld).clone(); }
+      boxes[i] = b && isFinite(b.min.x) && isFinite(b.max.x) && (b.max.x - b.min.x) < 400 && (b.max.z - b.min.z) < 400 ? b : null; }
+    layout(GM, boxes); for (let i = 0; i < A.length; i++) if (boxes[i]) insert(GM, i, boxes[i]); else GM.always.push(i);
+    seal(GM, A); st.meshes = A.length;
+  }
+  const byIdx = (a, b) => a - b;
+  // colliders that may touch the XZ rectangle; out = the caller's own array (reused, never shared between nested calls)
+  function cols(x0, z0, x1, z1, out) {
+    const A = world.colliders; if (changed(GC, A)) buildCols(); out.length = 0; st.colQ++;
+    if (!st.on) { for (let i = 0; i < A.length; i++) out.push(A[i]); return out; }
+    const G = GC, i0 = cx(G, x0), i1 = cx(G, x1), j0 = cz(G, z0), j1 = cz(G, z1);
+    if (i0 === i1 && j0 === j1) { const L = G.cells[j0 * G.nx + i0]; for (let k = 0; k < L.length; k++) out.push(A[L[k]]); st.colOut += out.length; return out; }
+    const idx = _ci; idx.length = 0; if (++G.run >= 0xffffffff) { G.stamp.fill(0); G.run = 1; } const r = G.run, S = G.stamp;
+    for (let j = j0; j <= j1; j++) for (let k = i0; k <= i1; k++) { const L = G.cells[j * G.nx + k]; for (let q = 0; q < L.length; q++) { const i = L[q]; if (S[i] !== r) { S[i] = r; idx.push(i); } } }
+    idx.sort(byIdx); for (let q = 0; q < idx.length; q++) out.push(A[idx[q]]); st.colOut += out.length; return out;
+  }
+  const _ci = [], _mi = [], _cl = [0, 0];
+  function clip(p, v, lo, hi) { if (Math.abs(v) < 1e-12) { if (p < lo || p > hi) _cl[1] = -1; return; } let a = (lo - p) / v, b = (hi - p) / v; if (a > b) { const s = a; a = b; b = s; } if (a > _cl[0]) _cl[0] = a; if (b < _cl[1]) _cl[1] = b; }
+  // colliders containing / near a point (bullets, grenades): the cell of the point
+  const colsAt = (x, z, out) => cols(x, z, x, z, out);
+  // indices of grid G whose cells the XZ track of the ray o + t d (t in near..far) crosses: 2D DDA, deduped (stamp), not sorted
+  function rayIdx(G, o, d, near, far, idx) {
+    if (++G.run >= 0xffffffff) { G.stamp.fill(0); G.run = 1; } const r = G.run, S = G.stamp;
+    for (const i of G.always) { S[i] = r; idx.push(i); }
+    _cl[0] = Math.max(0, near || 0); _cl[1] = far >= 0 ? far : Infinity;
+    clip(o.x, d.x, G.x0, G.x0 + G.nx * G.cs); clip(o.z, d.z, G.z0, G.z0 + G.nz * G.cs); const t0 = _cl[0]; let t1 = _cl[1];
+    if (!isFinite(t1) && t1 > 0) t1 = t0;   // (straight up / down: the one cell under the origin)
+    if (!(t1 >= t0)) return idx;
+    const sx = o.x + d.x * t0, sz = o.z + d.z * t0; let i = cx(G, sx), j = cz(G, sz);
+    const stx = d.x > 0 ? 1 : d.x < 0 ? -1 : 0, stz = d.z > 0 ? 1 : d.z < 0 ? -1 : 0;
+    const dtx = stx ? G.cs / Math.abs(d.x) : Infinity, dtz = stz ? G.cs / Math.abs(d.z) : Infinity;
+    let tmx = stx ? t0 + ((G.x0 + (i + (stx > 0 ? 1 : 0)) * G.cs) - sx) / d.x : Infinity, tmz = stz ? t0 + ((G.z0 + (j + (stz > 0 ? 1 : 0)) * G.cs) - sz) / d.z : Infinity;
+    for (let guard = 0; guard < 4096; guard++) {
+      const L = G.cells[j * G.nx + i]; for (let q = 0; q < L.length; q++) { const m = L[q]; if (S[m] !== r) { S[m] = r; idx.push(m); } }
+      if (tmx > t1 && tmz > t1) break;
+      if (tmx < tmz) { i += stx; tmx += dtx; } else { j += stz; tmz += dtz; }
+      if (i < 0 || j < 0 || i >= G.nx || j >= G.nz) break;
+    }
+    return idx;
+  }
+  // world.meshes a ray (rc.ray, rc.near..rc.far) can hit: the meshes in the cells its XZ track crosses + the always-tested ones, in array order
+  function rayMeshes(rc, out) {
+    const A = world.meshes; if (changed(GM, A)) buildMeshes(); out = out || []; out.length = 0; st.rayQ++;
+    if (!st.on) { for (let i = 0; i < A.length; i++) out.push(A[i]); return out; }
+    const idx = _mi; idx.length = 0; rayIdx(GM, rc.ray.origin, rc.ray.direction, rc.near, rc.far, idx);
+    if (idx.length > 1) idx.sort(byIdx); for (let q = 0; q < idx.length; q++) out.push(A[idx[q]]); st.rayOut += out.length; return out;
+  }
+  // colliders a ray (origin o, direction d, up to far) can touch, in array order
+  function rayCols(o, d, far, out) {
+    const A = world.colliders; if (changed(GC, A)) buildCols(); out.length = 0; st.colQ++;
+    if (!st.on) { for (let i = 0; i < A.length; i++) out.push(A[i]); return out; }
+    const idx = _ci; idx.length = 0; rayIdx(GC, o, d, 0, far, idx);
+    if (idx.length > 1) idx.sort(byIdx); for (let q = 0; q < idx.length; q++) out.push(A[idx[q]]); st.colOut += out.length; return out;
+  }
+  const dirty = () => { GC.dirty = true; GM.dirty = true; };
+  const stats = () => Object.assign({ colBuilds: GC.builds, meshBuilds: GM.builds, always: GM.always.length, cell: GM.cs, grid: GC.nx + 'x' + GC.nz }, st);
+  return { cols, colsAt, rayMeshes, rayCols, dirty, stats, st, CS };
+})();
 let sun, envRT;
 const MAT = {};
 function addBox(x, y, z, w, h, d, material, opts = {}) {
@@ -3436,7 +3529,17 @@ function updateMatrixWorldIfMoved(force) {
 }
 // (run about once a second from the frame loop: picks up pieces that maps and add-ons add later; only plain Object3D/Mesh
 // matrix code is replaced, never a class with its own updateMatrixWorld such as cameras or skinned meshes)
-function markStaticMap() { MAPROOT.traverse(o => { if (o.updateMatrixWorld === _UMW && !Object.prototype.hasOwnProperty.call(o, 'updateMatrixWorld')) { o._mwc = new Float64Array(10).fill(NaN); o.updateMatrixWorld = updateMatrixWorldIfMoved; } }); }
+function markStaticMap() { const walk = o => { if (o.userData.staticHolder) return; if (o.updateMatrixWorld === _UMW && !Object.prototype.hasOwnProperty.call(o, 'updateMatrixWorld')) { o._mwc = new Float64Array(10).fill(NaN); o.updateMatrixWorld = updateMatrixWorldIfMoved; } const ch = o.children; for (let i = 0; i < ch.length; i++) walk(ch[i]); }; walk(MAPROOT); }
+// (wp-spatial) INVISIBLE STATIC RAYCAST PROXIES (map v2: ~2.3k collider boxes + ~6.4k destructible slabs) live in ONE hidden group of the map:
+// the renderer skips the whole group (visible = false: no per-object visit in the main / shadow passes) and the frame's matrix update never
+// walks it (its updateMatrixWorld is a no-op; each proxy's matrixWorld is computed once here: proxies never move). Raycasts, .parent and
+// clearMap (MAPROOT teardown) work as before. Was ~22 % of a v2 frame (updateMatrixWorldIfMoved on every proxy, every frame).
+let _PXH = null;
+function addStaticProxy(m) {
+  if (!_PXH || _PXH.parent !== MAPROOT) { _PXH = new THREE.Group(); _PXH.name = 'staticProxies'; _PXH.visible = false; _PXH.matrixAutoUpdate = false; _PXH.userData.staticHolder = true;
+    _PXH.updateMatrixWorld = function () {}; MAPROOT.add(_PXH); }
+  _PXH.add(m); m.matrixAutoUpdate = false; m.updateMatrix(); m.updateWorldMatrix(true, false); return m;
+}
 function intoMap(fn) { const add = scene.add; scene.add = function (...o) { return MAPROOT.add(...o); }; try { return fn(); } finally { scene.add = add; } }
 function clearMap() {
   // free GPU memory of the old map (three.js re-uploads anything that gets used again)
@@ -3824,7 +3927,7 @@ function desktownFromData(PM) {
     { const pen = wallClass(c); if (pen) { bx.pen = pen; m.userData.penBoxes = [bx]; m.userData.wall = pen; } }   // WALLBANG class (docs/MECHANICS.md)
     { const sm = dmask ? DESTRUCT.axesOf(ci) : 0;   // faces a slab answers on: this marks-only proxy must stay silent there (else it would shadow the slab)
       if (sm) m.raycast = function (rc, out) { const t = []; THREE.Mesh.prototype.raycast.call(this, rc, t); for (const hh of t) { const n = hh.face && hh.face.normal, ax = n ? (Math.abs(n.x) > .5 ? 0 : Math.abs(n.y) > .5 ? 1 : 2) : -1; if (ax < 0 || !(sm & (1 << ax))) out.push(hh); } }; }
-    m.updateMatrixWorld(); scene.add(m); world.meshes.push(m); if (dmask) DESTRUCT.bind(ci, bx, m);
+    addStaticProxy(m); world.meshes.push(m); if (dmask) DESTRUCT.bind(ci, bx, m);   // (wp-spatial: one hidden static group, no per-frame matrix work)
   }
   const gm = {}; root.traverse(o => { if (o.isMesh && o.material && o.material.name && !gm[o.material.name]) gm[o.material.name] = o.material; });
   const TB = new Map(), glMat = name => { const b = gm[name]; if (!b) return null; if (TB.has(b)) return TB.get(b); const c = b.clone(); c.vertexColors = false; c.lightMap = null; c.onBeforeCompile = THREE.Material.prototype.onBeforeCompile; c.userData = { tile: 2, paper: /paper/.test(name) ? 'cream' : 'kraft' }; c.color.multiplyScalar(.92); TB.set(b, c); return c; };   // (a Map, never userData: Material.clone JSON-copies userData)
@@ -5575,16 +5678,21 @@ function freeBotGpu(root) {
   root.traverse(o => { if (o.isSkinnedMesh && o.skeleton) o.skeleton.dispose(); if (o.geometry && !SHARED_GPU.has(o.geometry)) o.geometry.dispose(); for (const m of [].concat(o.material || [])) m.dispose(); });
 }
 function removeRobot(r) { scene.remove(r.root); scene.remove(r.gun); r.tag.remove(); r.mixer.stopAllAction(); r.mixer.uncacheRoot(r.mixer.getRoot()); freeBotGpu(r.root); freeBotGpu(r.gun); robots.splice(robots.indexOf(r), 1); targetsDirty = true; }
-function rebuildTargets() { targets.length = 0; for (const m of world.meshes) targets.push(m); for (const r of robots) if (!r.dead) for (const m of r.meshes) targets.push(m); targetsDirty = false; }
+// (wp-spatial) what a shot along `ray` can hit: the world meshes under its track (SPATIAL grid, array order) + the living bots' meshes,
+// the same list order as `targets` (world first, then bots), so the distance sort and its ties give the same first hit
+let targetsW = 0; const _shotT = [];
+function shotTargets() { if (targetsDirty) rebuildTargets(); SPATIAL.rayMeshes(ray, _shotT); for (let i = targetsW; i < targets.length; i++) _shotT.push(targets[i]); return _shotT; }
+function rebuildTargets() { targets.length = 0; for (const m of world.meshes) targets.push(m); targetsW = targets.length; for (const r of robots) if (!r.dead) for (const m of r.meshes) targets.push(m); targetsDirty = false; }
 const debris = [];
 
 /* ================= navigation grid (A*) ================= */
 const NAV = { S: .5, N: 128 };
+const _navC = [], _blkC = [], _gndC = [];
 function buildNav() {
   NAV.N = Math.ceil(HALF * 2 / NAV.S); const N = NAV.N, S = NAV.S; NAV.h = new Float32Array(N * N); NAV.ok = new Uint8Array(N * N);
   for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
     const x = -HALF + (i + .5) * S, z = -HALF + (j + .5) * S; let g = 0;
-    for (const b of world.colliders) if (x > b.min.x - .05 && x < b.max.x + .05 && z > b.min.z - .05 && z < b.max.z + .05 && (b.max.y <= 1.75 || b.walk) && b.max.y > g) g = b.max.y;
+    for (const b of SPATIAL.cols(x - .05, z - .05, x + .05, z + .05, _navC)) if (x > b.min.x - .05 && x < b.max.x + .05 && z > b.min.z - .05 && z < b.max.z + .05 && (b.max.y <= 1.75 || b.walk) && b.max.y > g) g = b.max.y;
     NAV.h[j * N + i] = g;
     NAV.ok[j * N + i] = Math.abs(x) < HALF - .8 && Math.abs(z) < HALF - .8 && !blocked(x, z, g, .3, 1.8) ? 1 : 0;
   }
@@ -5644,7 +5752,7 @@ const walkableAt = (x, z) => NAV.ok[cellOf(x, z)] === 1;
 
 /* ================= collision ================= */
 function blocked(px, pz, feet, r, h) {
-  for (const b of world.colliders) {
+  for (const b of SPATIAL.cols(px - r, pz - r, px + r, pz + r, _blkC)) {
     if (b.max.y <= feet + STEP || b.min.y >= feet + h) continue;
     if (b.tearFloor !== undefined) continue;   // a thin floor panel never blocks sideways
     if (px + r > b.min.x && px - r < b.max.x && pz + r > b.min.z && pz - r < b.max.z) return true;
@@ -5653,7 +5761,7 @@ function blocked(px, pz, feet, r, h) {
 }
 function groundAt(px, pz, feet, r) {
   let g = 0; const q = r * .7;
-  for (const b of world.colliders) if (px + q > b.min.x && px - q < b.max.x && pz + q > b.min.z && pz - q < b.max.z && b.max.y <= feet + STEP && b.max.y > g) { if (b.tearFloor !== undefined && TEAR.floorOpen(b.tearFloor, px, b.max.y, pz, r)) continue; g = b.max.y; }   // (a torn-open cardboard floor: you drop through)
+  for (const b of SPATIAL.cols(px - q, pz - q, px + q, pz + q, _gndC)) if (px + q > b.min.x && px - q < b.max.x && pz + q > b.min.z && pz - q < b.max.z && b.max.y <= feet + STEP && b.max.y > g) { if (b.tearFloor !== undefined && TEAR.floorOpen(b.tearFloor, px, b.max.y, pz, r)) continue; g = b.max.y; }   // (a torn-open cardboard floor: you drop through)
   return g;
 }
 /* ================= solid characters (CS2 / Valorant style) ================= */
@@ -5735,11 +5843,11 @@ const OCC = { on: true, ttl: .12, cell: .5, maxDist: 60, diffractDist: 30, maxEx
   mat: { default: [-13, 800], concrete: [-14, 700], stone: [-14, 700], rock: [-14, 700], metal: [-12, 900], sheet: [-11, 1100], wood: [-10, 1300], crate: [-10, 1300], drywall: [-10, 1400], glass: [-7, 2200], grate: [-3, 5000], ice: [-9, 1600], crystal: [-8, 2000] },
   thick: { ref: .3, perM: -4, max: -6 }, around: { dB: -4, perM: -.6, lp: 3500, lpFar: 1500 }, over: { dB: -2, lp: 5000 },
   budget: { rays: 12, paths: 1 }, used: { f: -1, rays: 0, paths: 0 }, cache: new Map(), stats: { calls: 0, cached: 0, blocked: 0, around: 0, over: 0, starved: 0, ms: 0, max: 0 } };
-const _oh = [], _ov = V3(), _oq = V3(), _ow = V3(), _obus = {};
+const _losM = [], _oh = [], _ov = V3(), _oq = V3(), _ow = V3(), _obus = {};
 // the nearest collision mesh on the segment from -> to (ears to source), or null when the way is clear
 function losHit(from, to) {
   _ov.subVectors(to, from); const dist = _ov.length(); if (dist < 1e-4) return null; _ov.divideScalar(dist);
-  ray.set(from, _ov); ray.far = dist - .25; const M = world.meshes; let best = null;
+  ray.set(from, _ov); ray.far = dist - .25; const M = SPATIAL.rayMeshes(ray, _losM); let best = null;
   for (let i = 0; i < M.length; i++) { const m = M[i]; if (!m.layers.test(ray.layers)) continue; _oh.length = 0; m.raycast(ray, _oh);
     for (const h of _oh) if (!best || h.distance < best.distance) best = h;
     if (best) ray.far = best.distance; }
@@ -5796,7 +5904,7 @@ function lineOfSight(from, to) {
   _v1.subVectors(to, from); const dist = _v1.length(); _v1.divideScalar(dist);
   ray.set(from, _v1); ray.far = dist - .3;
   // same answer as intersectObjects(world.meshes).length === 0, but stops at the first mesh that blocks (no hit list, no sort)
-  const M = world.meshes, H = _losHits; let clear = true;
+  const M = SPATIAL.rayMeshes(ray, _losM), H = _losHits; let clear = true;
   for (let i = 0; i < M.length && clear; i++) { const m = M[i]; if (!m.layers.test(ray.layers)) continue; H.length = 0; m.raycast(ray, H); if (H.length) clear = false; }
   H.length = 0; ray.far = Infinity; return clear;
 }
@@ -6172,6 +6280,7 @@ function announceStreak(e) {
   else kfeedText(`${e.name} ${s}`);
 }
 
+const _ptC = [];   // (wp-spatial) collider candidates buffer
 /* ================= combat ================= */
 /* ================= arsenal: weapon definitions (all balanced against 100 HP) ================= */
 // TTK body at close range: carbine .33 s · wasp .33 s (falls off fast) · breacher 1 shot ≤6 m, 2 shots ≤10 m, chip >15 m · helix 2 shots / 1 head · longbow 1 shot (scoped) · nova splash · pistol .45 s
@@ -6415,7 +6524,7 @@ function updateRockets(dt) {
     const r = ROCKETS[i]; r.life -= dt; r.v.y -= 2 * dt;
     const p = r.m.position, prev = _b4.copy(p); p.addScaledVector(r.v, dt);
     let boom = p.y < .1 || r.life <= 0;
-    for (let k = 1; k <= 4 && !boom; k++) { const q = _b3.copy(prev).lerp(p, k / 4); for (const c of world.colliders) if (c.containsPoint(q)) { boom = true; p.copy(q); break; } }
+    for (let k = 1; k <= 4 && !boom; k++) { const q = _b3.copy(prev).lerp(p, k / 4); for (const c of SPATIAL.colsAt(q.x, q.z, _ptC)) if (c.containsPoint(q)) { boom = true; p.copy(q); break; } }
     if (!boom) for (const e of entities()) { if (e === r.owner || !entAlive(e)) continue; const c = entChest(e, _b1); if (c.distanceTo(p) < 1.15) { boom = true; break; } }
     for (let k = 0; k < 2; k++) SMOKE.spawn(p, rand(-.3, .3), rand(-.1, .3), rand(-.3, .3), .5, .45, .45, .25, rand(.5, 1), -.2, 1.5, .6, .45);
     FX.spawn(p, rand(-1, 1), rand(-1, 1), rand(-1, 1), 4, 1.6, .4, .1, .2, 0, 2, 1);
@@ -6528,7 +6637,7 @@ function updateProj(dt) {
     if (pr.kind === 'disc') pr.m.rotation.set(0, pr.m.rotation.y, 0), pr.m.rotateY(G.time * 30);
     // walls / ground
     let wall = null; if (p.y < .05) wall = 'y';
-    else for (let k = 1; k <= 3 && !wall; k++) { const q = _b3.copy(prev).lerp(p, k / 3); for (const c of world.colliders) if (c.containsPoint(q)) { const dx = Math.min(Math.abs(q.x - c.min.x), Math.abs(c.max.x - q.x)), dy = Math.min(Math.abs(q.y - c.min.y), Math.abs(c.max.y - q.y)), dz = Math.min(Math.abs(q.z - c.min.z), Math.abs(c.max.z - q.z)); wall = dy < dx && dy < dz ? 'y' : dx < dz ? 'x' : 'z'; p.copy(prev); break; } }
+    else for (let k = 1; k <= 3 && !wall; k++) { const q = _b3.copy(prev).lerp(p, k / 3); for (const c of SPATIAL.colsAt(q.x, q.z, _ptC)) if (c.containsPoint(q)) { const dx = Math.min(Math.abs(q.x - c.min.x), Math.abs(c.max.x - q.x)), dy = Math.min(Math.abs(q.y - c.min.y), Math.abs(c.max.y - q.y)), dz = Math.min(Math.abs(q.z - c.min.z), Math.abs(c.max.z - q.z)); wall = dy < dx && dy < dz ? 'y' : dx < dz ? 'x' : 'z'; p.copy(prev); break; } }
     if (!wall && (Math.abs(p.x) > HALF + 1 || Math.abs(p.z) > HALF + 1)) wall = Math.abs(p.x) > HALF ? 'x' : 'z';
     // bodies
     let hitE = null, head = false;
@@ -6610,7 +6719,7 @@ function fireArc() {
     damageEntity(best, w.dmg * od, false, c0.clone(), shotDir.clone(), 'body', PLAYER_ENT, 'arc');
     let from = c0, chained = new Set([best]);
     for (let j = 0; j < 2; j++) { let nx = null, nd = 7; for (const e of entities()) { if (e === PLAYER_ENT || chained.has(e) || !entAlive(e)) continue; const c = entChest(e, _b1), d = c.distanceTo(from); if (d < nd && lineOfSight(from, c)) { nd = d; nx = e; } } if (!nx) break; const c = entChest(nx, new THREE.Vector3()); zap(from, c, col); damageEntity(nx, w.dmg * .6 * od, false, c.clone(), shotDir.clone(), 'body', PLAYER_ENT, 'arc'); chained.add(nx); from = c; }
-  } else { ray.set(camera.position, shotDir); ray.far = w.range; const h = shotHits(world.meshes, false)[0]; ray.far = Infinity; const end = h ? h.point : camera.position.clone().addScaledVector(shotDir, w.range); zap(muzzleW, end, col); if (P.shotIdx % 3 === 0) netShot(muzzleW, end); }
+  } else { ray.set(camera.position, shotDir); ray.far = w.range; const h = shotHits(SPATIAL.rayMeshes(ray, _losM), false)[0]; ray.far = Infinity; const end = h ? h.point : camera.position.clone().addScaledVector(shotDir, w.range); zap(muzzleW, end, col); if (P.shotIdx % 3 === 0) netShot(muzzleW, end); }
   if (P.shotIdx++ % 4 === 0) sfx.arc(); P.trauma = Math.min(1, P.trauma + .01); muzzleFlash.visible = true; P.flashT = .03;
   if (P.shotIdx % 8 === 0) updateHud();
 }
@@ -6867,7 +6976,7 @@ function updateBoom(dt) {
     const seg = _b3.subVectors(o.p, prev), sl = seg.length(); let wall = o.p.y < groundAt(o.p.x, o.p.z, o.p.y + .3, .1) + .05, wn = null;
     if (sl > 1e-4) { ray.set(prev, seg.divideScalar(sl)); ray.far = sl + .28; const h = shotHits(boomSolids(), false)[0]; ray.far = Infinity;
       if (h) { wall = true; wn = h.face ? h.face.normal.clone().transformDirection(h.object.matrixWorld) : seg.clone().negate(); o.p.copy(h.point).addScaledVector(wn, .25); } }
-    if (!wall) for (const c of world.colliders) if (c.containsPoint(o.p)) { wall = true; o.p.copy(prev); break; }
+    if (!wall) for (const c of SPATIAL.colsAt(o.p.x, o.p.z, _ptC)) if (c.containsPoint(o.p)) { wall = true; o.p.copy(prev); break; }
     if (!wall && (Math.abs(o.p.x) > HALF || Math.abs(o.p.z) > HALF)) wall = true;
     if (wall) { PAPER_MARKS.add(o.p.clone().addScaledVector(wn || UPV, -.24), wn || o.v.clone().normalize().negate(), 'slash'); boomReturn(o, 'wall'); }
   }
@@ -6901,7 +7010,7 @@ function updateRemoteBooms(dt) {
     const hand = o.r.B && o.r.B.rhand ? o.r.B.rhand.getWorldPosition(_b1) : _b1.copy(o.r.root.position).setY(o.r.root.position.y + 1.3);
     if (o.phase === 'out') {
       const prev = _b4.copy(o.p); o.v.setLength(o.speed * (1 - clamp(o.t / o.tOut, 0, 1) * .55)); o.p.addScaledVector(o.v, dt);
-      let wall = o.p.y < groundAt(o.p.x, o.p.z, o.p.y + .3, .1) + .05; for (const c of world.colliders) if (c.containsPoint(o.p)) { wall = true; o.p.copy(prev); break; }
+      let wall = o.p.y < groundAt(o.p.x, o.p.z, o.p.y + .3, .1) + .05; for (const c of SPATIAL.colsAt(o.p.x, o.p.z, _ptC)) if (c.containsPoint(o.p)) { wall = true; o.p.copy(prev); break; }
       const hitMe = !P.dead && Math.hypot(o.p.x - P.pos.x, o.p.z - P.pos.z) < .7 && o.p.y > P.pos.y && o.p.y < P.pos.y + P.camY + .2;
       if (o.t >= o.tOut || wall || hitMe) { o.phase = 'back'; o.t = 0; o.p0 = o.p.clone(); o.ctl = o.p.clone().add(_b3.set(0, 1.3, 0)); o.T = clamp(o.p.distanceTo(hand) / (hitMe ? 40 : 28), .3, 1.1); if (wall) sfx.boomClang(o.p.clone()); }
     } else {
@@ -7066,7 +7175,7 @@ function fireShot() {
       const _sp = SPREAD.sample(PLAYER_ENT, _sseq, pi), a = _sp.a, m = _sp.m * cone;
       shotDir.copy(base).addScaledVector(camRight, Math.cos(a) * m).addScaledVector(camUp, Math.sin(a) * m).normalize();
       ray.set(camera.position, shotDir); ray.far = 250;
-      TEAR.passed.length = 0; const hits = shotHits(targets, false), passD = TEAR.passed.length ? Math.min(...TEAR.passed) : Infinity;   // passD: the ray went through an EXISTING opening at this distance
+      TEAR.passed.length = 0; const hits = shotHits(shotTargets(), false), passD = TEAR.passed.length ? Math.min(...TEAR.passed) : Infinity;   // passD: the ray went through an EXISTING opening at this distance
       let tl = 0; const tmax = TEAR.maxLayers(id), crater = pi === 0;   // card panels: x TEAR.passK per layer (thin card = thinK), a hole per layer, stops after maxLayers (HOLES_SYSTEM B2 + progressive wear)
       PLANES.shot(camera.position, shotDir, hits.length ? hits[0].distance : 150, w.oneShot ? 100 : w.dmg, PLAYER_ENT);
       end = _v3.copy(camera.position).addScaledVector(shotDir, 150);
@@ -7321,7 +7430,7 @@ const TEAR = (() => {
     const mesh = new THREE.Mesh(panelGeo(P_, false), proxyMat); mesh.visible = false;   // raycast / transform proxy; drawn by the merged mesh
     if (slab) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(o.rx || 0, o.rot || 0, 0, 'YXZ'); } else if (o.floor) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(-Math.PI / 2, o.rot || 0, 0, 'YXZ'); } else { mesh.position.set(o.x, o.y + h / 2, o.z); mesh.rotation.y = o.rot || 0; }
     mesh.userData.surface = 'paper'; mesh.userData.dyn = true; mesh.userData.tear = id;
-    scene.add(mesh); mesh.updateMatrixWorld(true); world.meshes.push(mesh); P_.mesh = mesh; if (typeof targetsDirty !== 'undefined') targetsDirty = true;
+    addStaticProxy(mesh); world.meshes.push(mesh); P_.mesh = mesh;   // (wp-spatial: one hidden static group, no per-frame matrix work for ~6k slabs) if (typeof targetsDirty !== 'undefined') targetsDirty = true;
     P_.cls = o.cls || 'P1'; P_.def = { id, w, h, cls: P_.cls, floor: !!o.floor || !!o.slabFloor, cuts: P_.cuts, flap: o.flap || null, collapse: slab ? false : o.collapse !== false, anchors: o.anchors, posts: o.posts };
     P_.core = H.newPanel(P_.def); P_.hits = P_.core.hits;
     P_.flap = o.flap ? Object.assign({ open: false, k: 0, side: 1, sheet: null, mesh: null }, o.flap) : null;
@@ -7806,6 +7915,7 @@ const DESTRUCT = (() => {
   const axesOf = i => { const L = slabsByCol && slabsByCol.get(i); return L ? (L[0] ? 1 : 0) | (L[1] ? 2 : 0) | (L[2] ? 4 : 0) : 0; };
   return { build, adopt, bind, classOf, noHole, axesOf, info, S, AX };
 })();
+const _ptC2 = [];   // (wp-spatial) collider candidates buffer
 /* ================= deaths that match what killed you ================= */
 const DEATH_OF = { nova: 'blast', seeker: 'blast', nade: 'blast', breacher: 'blast', judge: 'blast', cryo: 'freeze', inferno: 'burn', arc: 'shock', helix: 'vapor', void: 'vapor',
   knife: 'slice', boomerang: 'slice', ricochet: 'slice', titan: 'riddled', lava: 'burn', acid: 'vapor', laser: 'vapor' };
@@ -7965,7 +8075,7 @@ function rayCapsule(o, d, pos, top, rad) {
 }
 function traceShot(o, d, shooter, far) {
   ray.set(o, d); ray.far = far; if (targetsDirty) rebuildTargets();
-  const hits = shotHits(targets, false); let best = null;
+  const hits = shotHits(shotTargets(), false); let best = null;
   for (const h of hits) { const b = h.object.userData.robot; if (b === shooter || (b && b.dead)) continue; best = h; break; }
   ray.far = Infinity;
   if (shooter !== PLAYER_ENT && state === 'play' && !P.dead) {
@@ -8039,7 +8149,7 @@ function updateNades(dt) {
     const p = n.m.position, prev = _b4.copy(p); p.addScaledVector(n.v, dt);
     // swept check so a fast throw can't skip through a thin wall
     let boom = p.y < .1;
-    for (let k = 1; k <= 3 && !boom; k++) { const q = _b3.copy(prev).lerp(p, k / 3); for (const c of world.colliders) if (c.containsPoint(q)) { boom = true; p.copy(prev).lerp(q, .8); break; } }
+    for (let k = 1; k <= 3 && !boom; k++) { const q = _b3.copy(prev).lerp(p, k / 3); for (const c of SPATIAL.colsAt(q.x, q.z, _ptC2)) if (c.containsPoint(q)) { boom = true; p.copy(prev).lerp(q, .8); break; } }
     if (!boom) for (const e of entities()) { if (e === n.owner || !entAlive(e)) continue; const c = entChest(e, _b1); if (Math.hypot(c.x - p.x, c.z - p.z) < .55 && p.y > c.y - 1.3 && p.y < c.y + .7) { boom = true; break; } }
     n.m.rotation.x += dt * 9;
     if (Math.random() < .7) FX.spawn(p, rand(-.3, .3), rand(0, .6), rand(-.3, .3), .3, 1.6, 2.6, .06, .3, 0, 1);
@@ -8054,7 +8164,7 @@ function blastBase(d, kill) { return d <= BLAST.full ? kill : d <= BLAST.edge ? 
 const _bv0 = new THREE.Vector3(), _bv1 = new THREE.Vector3(), _bv2 = new THREE.Vector3();
 function blastClear(from, to) {   // like lineOfSight but the ray reaches the target (lineOfSight stops .3 m short)
   _bv1.subVectors(to, from); const dist = _bv1.length(); if (dist < .01) return true; _bv1.divideScalar(dist);
-  ray.set(from, _bv1); ray.far = dist - .05; const M = world.meshes, H = _losHits; let clear = true;
+  ray.set(from, _bv1); ray.far = dist - .05; const M = SPATIAL.rayMeshes(ray, _losM), H = _losHits; let clear = true;
   for (let i = 0; i < M.length && clear; i++) { const m = M[i]; if (!m.layers.test(ray.layers)) continue; H.length = 0; m.raycast(ray, H); if (H.length) clear = false; }
   H.length = 0; ray.far = Infinity; return clear;
 }
@@ -8339,7 +8449,7 @@ const TF = {
 const PLANES = (() => {
   const R = { speed: 15, life: 7, hp: 25, hitR: .55, turn: 4.2, botTurn: 1.5, sink: .06, catchDist: 4.2, catchCone: Math.cos(1.0), catchBoost: 1.2, blastKill: 120, arm: .2, carry: 3, regen: 10, slowmo: .9, slowK: .3, catchSlow: .45 };
   const list = []; let seq = 0, geo = null, mats = {}, pipCam = null;
-  const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _rc = new THREE.Raycaster(), _hits = []; _rc.plane = true;   // tear panels: a plane only fits through openings >= 45 cm (TEAR raycast reads this flag)
+  const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _rc = new THREE.Raycaster(), _hits = [], _plM = []; _rc.plane = true;   // tear panels: a plane only fits through openings >= 45 cm (TEAR raycast reads this flag)
   const S = { steering: null, want: false, wantEnd: 0, stats: { thrown: 0, caught: 0, shotDown: 0, exploded: 0, returns: 0, botThrows: 0, botCatches: 0, botShotDown: 0 } };
   const teamOf = e => { if (!e) return null; if (e === PLAYER_ENT || e.isPlayer) return window.S9BotModes && S9BotModes.on ? S9BotModes.myTeam : 'me'; return e.mxTeam || (e.netId || e.name); };
   const enemies = (a, b) => a && b && a !== b && teamOf(a) !== teamOf(b);
@@ -8424,7 +8534,7 @@ const PLANES = (() => {
     PFX.burst(p.pos, { n: 140, cols: [col, PFX.TEAMC.white, PFX.TEAMC.cream, col], speed: 9, up: 3, life: 2.8, size: [.04, .12] });
     PFX.burst(p.pos, { n: 26, cols: [col, PFX.TEAMC.white], speed: 6, up: 2, strips: true, size: [.025, .04], life: 2.6 });
     TEAR.blast(p.pos, 1.8);
-    { _rc.set(p.pos, _a.set(0, -1, 0)); _rc.far = 3; _hits.length = 0; for (const m of world.meshes) m.raycast(_rc, _hits); _hits.sort((x, y) => x.distance - y.distance); const g = _hits[0]; PAPER_MARKS.add(g ? g.point : _b.set(p.pos.x, .01, p.pos.z), _c.set(0, 1, 0), 'blast'); }
+    { _rc.set(p.pos, _a.set(0, -1, 0)); _rc.far = 3; _hits.length = 0; for (const m of SPATIAL.rayMeshes(_rc, _plM)) m.raycast(_rc, _hits); _hits.sort((x, y) => x.distance - y.distance); const g = _hits[0]; PAPER_MARKS.add(g ? g.point : _b.set(p.pos.x, .01, p.pos.z), _c.set(0, 1, 0), 'blast'); }
     const orig = p.orig, wasCaught = p.caught > 0, victims = [];
     const _de = damageEntity; damageEntity = function (e, dmg, crit, pt, dir, zone, by, w) { const r = _de.apply(this, arguments); if (!entAlive(e)) victims.push(e); return r; };
     try { explode(p.pos.clone(), p.owner, 'plane'); } finally { damageEntity = _de; }
@@ -8469,7 +8579,7 @@ const PLANES = (() => {
       } else p.dir.y -= R.sink * dt;
       p.dir.normalize();
       const step = p.speed * dt; _rc.set(p.pos, p.dir); _rc.far = step + .25; _hits.length = 0;
-      for (const m of world.meshes) { if (!m.layers.test(_rc.layers)) continue; m.raycast(_rc, _hits); if (_hits.length) break; }
+      for (const m of SPATIAL.rayMeshes(_rc, _plM)) { if (!m.layers.test(_rc.layers)) continue; m.raycast(_rc, _hits); if (_hits.length) break; }
       let boom = _hits.length > 0;
       p.pos.addScaledVector(p.dir, step);
       if (p.age > R.arm && !boom) for (const e of entities()) { if (!entAlive(e) || e === p.owner && p.age < 1) continue; const c = entChest(e, _c); if (Math.hypot(c.x - p.pos.x, c.z - p.pos.z) < .55 && p.pos.y > c.y - 1.2 && p.pos.y < c.y + .75) { boom = true; break; } }
@@ -8531,7 +8641,7 @@ const PLANES = (() => {
     { const hl = Math.hypot(p.dir.x, p.dir.z); if (hl < .5) { const k = (.5 - hl) * CH.back * 1.2, yw = p.yw || 0; want.x += Math.sin(yw) * k; want.z += Math.cos(yw) * k; } }   // steep climb: sit a little behind it so the camera never looks straight along its own up axis
     // keep the camera out of walls: pull it toward the plane if something solid is between them
     _b.subVectors(want, p.pos).normalize();   // (the wall ray runs every 2nd frame: the camera follows 10 frames behind anyway; saves ~0.1 ms/frame)
-    if ((CH.n = (CH.n | 0) + 1) & 1) { CH.clip = -1; _rc.set(p.pos, _b); _rc.far = CH.back + CH.up; _hits.length = 0; for (const m of world.meshes) { m.raycast(_rc, _hits); if (_hits.length) break; } if (_hits.length) { _hits.sort((x, y) => x.distance - y.distance); CH.clip = _hits[0].distance; } }
+    if ((CH.n = (CH.n | 0) + 1) & 1) { CH.clip = -1; _rc.set(p.pos, _b); _rc.far = CH.back + CH.up; _hits.length = 0; for (const m of SPATIAL.rayMeshes(_rc, _plM)) { m.raycast(_rc, _hits); if (_hits.length) break; } if (_hits.length) { _hits.sort((x, y) => x.distance - y.distance); CH.clip = _hits[0].distance; } }
     if (CH.clip >= 0) want.copy(p.pos).addScaledVector(_b, Math.max(.3, CH.clip - .2));
     const tg = _c.copy(p.pos).addScaledVector(p.dir, CH.look);
     if (!CH.on) { CH.on = true; CH.pos.copy(camera.position); CH.tgt.copy(tg); }
@@ -8555,6 +8665,7 @@ const PLANES = (() => {
   /* self test (qa/paper/core.js): throw, steer, hit, shoot down, catch + return to sender, all in this page */
   async function selfTest() {
     const C = {}, ok = (k, v, info) => { C[k] = { ok: !!v, info: info || '' }; }, wait = ms => new Promise(r => setTimeout(r, ms));
+    S.want = false; S.steering = null; for (const q of list) { q.dead = true; scene.remove(q.m); } list.length = 0;   // a clean start: no queued refold-switch, no leftover plane from an earlier step (core ran other flights first)
     for (const x of robots) if (x.dead && x.deadT > .5) x.respawnT = Math.min(x.respawnT, x.deadT);   // bring everyone back first (a respawn mid-test teleports the target)
     for (let i = 0; i < 80 && robots.some(x => x.dead); i++) await wait(100);
     const s = window.__s9, reds = robots.filter(r => r.mxBot && r.mxTeam === 'def').sort((a, b) => a.dead - b.dead), T = reds[0], bot2 = reds[1];
@@ -8571,7 +8682,7 @@ const PLANES = (() => {
     // aim it back at the target and let it hit (clear the steering input the check above left over: it would keep turning the plane)
     p1.inYaw = p1.inPitch = 0;
     p1.dir.subVectors(entChest(T, _c), p1.pos).normalize(); const hp0 = T.hp;
-    for (let i = 0; i < 40 && !p1.dead; i++) { p1.dir.subVectors(entChest(T, _c), p1.pos).normalize(); await wait(50); }
+    for (let i = 0; i < 40 && !p1.dead; i++) { T.shield = 0; p1.dir.subVectors(entChest(T, _c), p1.pos).normalize(); await wait(50); }
     ok('hits and explodes (blast damage)', p1.dead && (T.dead || T.hp < hp0), `target hp ${Math.round(T.hp)} dead=${T.dead} plane at ${p1.pos.toArray().map(v => v.toFixed(1))} target at ${T.root.position.toArray().map(v => v.toFixed(1))} shield=${T.shield}`);
     ok('view comes back after the plane is gone', !S.steering);
     await wait(300);
@@ -9255,7 +9366,7 @@ function knifeHitCheck() {
   for (const [ox, oy] of [[0, 0], [-.12, 0], [.12, 0], [0, -.1], [-.22, -.05], [.22, -.05], [0, -.2], [0, .1], [-.2, .06], [.2, .06]]) {
     const d = _v3.copy(shotDir).addScaledVector(camRight, ox).addScaledVector(camUp, oy).normalize();
     ray.set(camera.position, d); ray.far = 2.6;
-    const hits = shotHits(targets, false); ray.far = Infinity;
+    const hits = shotHits(shotTargets(), false); ray.far = Infinity;
     const h = hits[0]; if (!h) continue;
     const r = h.object.userData.robot;
     if (!r || r.dead) { if (h.distance < 2) { sfx.impact(h.point, true); for (let i = 0; i < 8; i++) FX.spawn(h.point, rand(-2, 2), rand(0, 3), rand(-2, 2), 6, 4, 2, .03, .25, 12, 1); } return; }
@@ -9364,7 +9475,7 @@ function updateDeathcam(dt) {
   const t = P.dieT, k = clamp(t / .9, 0, 1), e = k * k * (3 - 2 * k), a = DC.yaw0 + .5 + t * .35;
   const orbit = _v1.set(P.pos.x + Math.sin(a) * 3.4, P.pos.y + 2.3, P.pos.z + Math.cos(a) * 3.4);
   const chest = _v2.set(P.pos.x, P.pos.y + lerp(1.2, .35, clamp(t / 1.1, 0, 1)), P.pos.z);
-  { const d = _v3.subVectors(orbit, chest), L = d.length(); ray.set(chest, d.divideScalar(L)); ray.far = L; const h = ray.intersectObjects(world.meshes, false)[0]; ray.far = Infinity; if (h) orbit.copy(chest).addScaledVector(d, Math.max(.6, h.distance - .35)); }
+  { const d = _v3.subVectors(orbit, chest), L = d.length(); ray.set(chest, d.divideScalar(L)); ray.far = L; const h = ray.intersectObjects(SPATIAL.rayMeshes(ray, _losM), false)[0]; ray.far = Infinity; if (h) orbit.copy(chest).addScaledVector(d, Math.max(.6, h.distance - .35)); }
   camera.position.copy(DC.from).lerp(orbit, e);
   camera.lookAt(chest); camera.rotation.z = 0;
   if (camera.fov !== 62) { camera.fov = 62; camera.updateProjectionMatrix(); }
@@ -9518,6 +9629,7 @@ function restoreReplay() {
   REC.saved.length = 0;
 }
 
+const _ksM = [];   // (wp-spatial) mesh candidates buffer
 /* ================= KNIFE CUT SHAPES: draw any shape in thin cardboard with the paper cutter ================= */
 // Owner: "implement the holes and cutting shapes inside with knife by holding left click". Rules (docs/HOLES_SYSTEM.md B2/B3):
 // with the cutter out (V), aim at a thin cardboard WALL or FLOOR within R.reach m: the prompt says "hold left click + drag".
@@ -9535,7 +9647,7 @@ const KSLICE = (() => {
   const S = { near: null, thick: false, cont: null, active: null, stats: { cuts: 0, closed: 0, flaps: 0, continued: 0 } };
   function aimHit() {
     camera.getWorldDirection(_d); rc.set(camera.position, _d); rc.far = R.reach + .6; if (targetsDirty) rebuildTargets();
-    const h = rc.intersectObjects(world.meshes, false)[0]; return h && h.distance <= R.reach + (S.active ? .6 : 0) ? h : null;
+    const h = rc.intersectObjects(SPATIAL.rayMeshes(rc, _ksM), false)[0]; return h && h.distance <= R.reach + (S.active ? .6 : 0) ? h : null;
   }
   const isCard = h => { if (!h || h.object.userData.tear === undefined) return false; const C = TEAR.panels[h.object.userData.tear].core; return !C.collapsed && !!HOLES.WEAR.knife[C.cls]; };   // thick board / blocks: too thick to cut
   // mousedown with the cutter out: start (or continue) a cut if we are on thin card (returns true = the swing is held back)
@@ -9597,6 +9709,7 @@ const KSLICE = (() => {
   }
   return { R, S, tryStart, stop, finish, update };
 })();
+const _topC = [];   // (wp-spatial) collider candidates buffer
 /* ================= update: player ================= */
 const fwd = V3(), right = V3(), wish = V3();
 // every movement number in one place (exported to data/move.json for the Unity version)
@@ -9715,13 +9828,13 @@ function updatePlayer(dt, rdt) {
 const MOVE_PROBE = {
   top(x, z, feet, reachUp) {   // (reachUp: solids whose underside is within it of the feet) highest solid top at (x,z) whose bottom is within reach; map pieces may carry .climb (tag)
     let y = -1, tag = null;
-    for (const b of world.colliders) if (b.tearFloor === undefined && x > b.min.x && x < b.max.x && z > b.min.z && z < b.max.z && b.min.y <= feet + reachUp && b.max.y > y) { y = b.max.y; tag = b.climb || null; }
+    for (const b of SPATIAL.colsAt(x, z, _topC)) if (b.tearFloor === undefined && x > b.min.x && x < b.max.x && z > b.min.z && z < b.max.z && b.min.y <= feet + reachUp && b.max.y > y) { y = b.max.y; tag = b.climb || null; }
     return { y, tag };
   },
   blocked: (x, z, feet, r, h) => blocked(x, z, feet, r, h),
 };
 function slideSurfaceUnder() {   // map piece tag first (slideSurface), else the footstep surface (felt / glass / ...)
-  for (const b of world.colliders) if (b.slideSurface && P.pos.x > b.min.x && P.pos.x < b.max.x && P.pos.z > b.min.z && P.pos.z < b.max.z && Math.abs(b.max.y - P.pos.y) < .15) return b.slideSurface;
+  for (const b of SPATIAL.colsAt(P.pos.x, P.pos.z, _topC)) if (b.slideSurface && P.pos.x > b.min.x && P.pos.x < b.max.x && P.pos.z > b.min.z && P.pos.z < b.max.z && Math.abs(b.max.y - P.pos.y) < .15) return b.slideSurface;
   try { if (window.FOOTSTEPS && FOOTSTEPS.surfaceName) return FOOTSTEPS.surfaceName(P.pos.x, P.pos.y, P.pos.z); } catch (e) {}
   return 'default';
 }
@@ -9754,12 +9867,15 @@ function mantleTick(dt) {
   if (k >= 1) { P.mantle = null; P.pos.set(mt.to.x, mt.to.y, mt.to.z); P.onGround = true; springs.land.v -= .5; }
 }
 /* interact (E): a weak thin cardboard panel in front -> tear through (prototype). While a prompt shows, E interacts and never leans. */
-const _tray = new THREE.Raycaster();
+const _tray = new THREE.Raycaster(), _trayM = [];
+// (wp-spatial) the live tear panels under the interact ray's track, in TEAR.panels order (= their world.meshes order), instead of all ~6k slabs
+function tearCands() { const L = SPATIAL.rayMeshes(_tray, _trayM); let n = 0;
+  for (const m of L) { const id = m.userData.tear, p = id !== undefined ? TEAR.panels[id] : null; if (p && p.mesh === m && m.parent && !p.core.collapsed) L[n++] = m; } L.length = n; return L; }
 function interactTick(dt) {
   P.interactT = (P.interactT || 0) - dt; if (P.interactT > 0) return; P.interactT = .1;
   P.interact = null; if (!MOVEC.J.tearThrough.enabled || typeof TEAR === 'undefined' || state !== 'play') return;
   camera.getWorldDirection(_v2); _tray.set(camera.position, _v2); _tray.far = MOVEC.J.tearThrough.range;
-  const hit = _tray.intersectObjects(TEAR.panels.filter(p => p.mesh && p.mesh.parent && !p.core.collapsed).map(p => p.mesh), false)[0];
+  const hit = _tray.intersectObjects(tearCands(), false)[0];
   if (!hit) return;
   const P_ = TEAR.panels[hit.object.userData.tear]; if (!P_) return;
   const r = MOVEC.tearThrough(P_.core, hit.distance, true);
