@@ -12,7 +12,7 @@
 'use strict';
 if (window.S9Perf) return;
 
-const DEFAULT_SRV = 'https://sector-nine-server-production.up.railway.app';
+const DEFAULT_SRV = 'https://foldiers-server-production.up.railway.app';
 const MIN_SECS = 20, MIN_FRAMES = 300, MAX_FRAMES = 120000, MAX_FRAME_MS = 1000, MIN_GAP_MS = 60000;
 const g = (f, d) => { try { const v = f(); return v === undefined ? d : v; } catch (e) { return d; } };
 const S9 = () => window.__s9;

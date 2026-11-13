@@ -8934,7 +8934,7 @@ function roomTransport(code, create) {
    The main route for online play. Nobody needs a direct link to anyone else, so it works on any home, office or
    mobile network and for any number of players. If the server can't be reached, the old peer-to-peer + bus route
    below is used instead. */
-const SRV = { url: new URLSearchParams(location.search).get('srv') || 'wss://sector-nine-server-production.up.railway.app', ws: null, ready: null, on: new Set(), rtt: null, jit: 0, nd: false, listing: false, pingT: null };
+const SRV = { url: new URLSearchParams(location.search).get('srv') || 'wss://foldiers-server-production.up.railway.app', ws: null, ready: null, on: new Set(), rtt: null, jit: 0, nd: false, listing: false, pingT: null };
 function srvInit() {
   if (SRV.ws && SRV.ws.readyState === 1) return Promise.resolve(true);
   if (SRV.ready) return SRV.ready;
