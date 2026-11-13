@@ -5140,7 +5140,6 @@ const PVM = (() => {
       { // ONE aiming reference per gun (owner 2026-11-12, GUN_KIT.md SIGHTS): dot (reflex) XOR card tip (node 'tip', iron) XOR scope
         const tip = vm.paper.getObjectByName('tip'), kind = W().scope ? 'scope' : hasDot(W()) ? 'dot' : 'tip', n = (W().scope ? 1 : 0) + (hasDot(W()) ? 1 : 0) + (tip ? 1 : 0);
         let px = -1; if (tip) { vm.group.updateMatrixWorld(true); tip.getWorldPosition(v); v.project(gunCam); const cv = renderer.domElement.getBoundingClientRect(); px = Math.hypot(v.x * cv.width / 2, v.y * cv.height / 2); }
-        if (id === 'breacher' && !tip) ok(id + ': aiming reference PENDING (shotgun card-tip lands with wp-l5-shotgun-boom-plane; remove this exemption then)', true, 'temporary'); else
         ok(id + ': exactly ONE aiming reference (' + kind + '), a tip sits on screen centre at ADS', n === 1 && (kind !== 'tip' || (!!tip && px <= 2)), 'refs ' + n + ', tip alignment error ' + (tip ? px.toFixed(1) + ' px' : 'n/a')); }
       adsHeld = false; await until(() => P.ads < .01, 2000); await wait(50);
       ok(id + ': aim dot gone at the hip (hip crosshair as before)', +getComputedStyle(document.getElementById('pvmDot')).opacity === 0 && getComputedStyle(document.getElementById('xh')).opacity === '1');

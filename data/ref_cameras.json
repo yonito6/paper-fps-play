@@ -541,6 +541,35 @@
    "source": "panel boxes = tools/look/validate.py (WP-A3); the GLB is rendered as loaded (menu-state bots walk, so the bot model cannot stand still for a turnaround); faces -z assumed; the GLB is skinned (Box3 ignores bones -> 0.02 m box), so size_m 1.8 sets the camera distance",
    "glb": "assets/paper/chars/trooper.glb",
    "size_m": 1.8
+  },
+  "shotgun": {
+   "type": "turnaround",
+   "subject": "glb",
+   "title": "Pump shotgun: her ref2 first-person view (gun only, hands/HUD masked) vs the game's assets/paper/guns/shotgun.glb",
+   "image": "docs/reference/ref2_shotgun_confetti_kill.png",
+   "glb": "assets/paper/guns/shotgun.glb",
+   "forward": [
+    0,
+    0,
+    -1
+   ],
+   "source": "wp-shotgun 2026-11-13: no turnaround sheet exists; ONE usable view = ref2 (first person, gun left side). cam = gun->camera direction at the game hip (data/paper/viewmodel.json shotgun hip). Her mask = tools/shotgun/refmask.py (colour rule, hands/HUD/confetti removed).",
+   "panels": {
+    "fp": {
+     "box": [
+      880,
+      478,
+      1672,
+      860
+     ],
+     "cam": [
+      -0.35,
+      0.41,
+      0.84
+     ],
+     "mask": "data/ref_masks/shotgun/ref2_gun.png"
+    }
+   }
   }
  }
 }
