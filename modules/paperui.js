@@ -21,6 +21,24 @@
     new MutationObserver(sync).observe(mt, { childList: true, characterData: true, subtree: true }); sync();
   }
 
+  // wp-endfit: the end card ALWAYS fits the viewport (no scrollbar, no overlap): measure the card at zoom 1, then scale it down to fit
+  // (and up to the HUD scale on 1440p / 4K). Re-runs on resize, on show, and when XP / medals / board content is added.
+  if (mend) {
+    const sheet = mend.querySelector('.sheet'); let raf = 0;
+    const fit = () => {
+      raf = 0; if (!sheet || mend.hidden) return;
+      sheet.style.zoom = '1';
+      const W = innerWidth, H = innerHeight, w = sheet.offsetWidth || 1, h = sheet.offsetHeight || 1;
+      const base = W >= 3400 ? 2.2 : W >= 2200 ? 1.5 : 1, padX = W < 600 ? 12 : 36, padY = 52;
+      const z = Math.max(.3, Math.min(base, (W - padX) / w, (H - padY) / h));
+      sheet.style.zoom = String(+z.toFixed(3)); mend.dataset.fit = z.toFixed(2);
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(fit); };
+    addEventListener('resize', kick);
+    new MutationObserver(kick).observe(mend, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class'] });
+    if (window.PAPER_UI) window.PAPER_UI.fitEnd = fit;
+  }
+
   // big team score + MVP for the one-card end screen (filled from the bot-match roster; hidden when there is none, e.g. FFA)
   const escH = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   function fill() {

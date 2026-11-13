@@ -97,7 +97,7 @@
 #fpEnd .top{display:flex;gap:14px;align-items:center}#fpEnd .tt{flex:1;display:grid;gap:6px;min-width:0}
 #fpEnd .lvl{display:flex;justify-content:space-between;font-size:13px;color:#4e3420}
 #fpEnd .cols{display:grid;grid-template-columns:1fr 1fr;gap:4px 22px}
-#fpEnd .col h4{margin:0 0 3px;font:800 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#4e3420}
+#fpEnd .col h4{margin:0 0 3px;font:800 13px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:#4e3420}
 #fpEnd .ln{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:1px 0;border-bottom:1px dashed rgba(43,28,14,.22);opacity:0;transform:translateY(5px);animation:fp-line .35s ease-out forwards}
 #fpEnd .ln b{color:#0b3f9a}#fpEnd .tot{display:flex;justify-content:space-between;font:400 22px/1.1 var(--display);font-style:italic;padding-top:3px}#fpEnd .tot b{color:#0b3f9a}
 #fpEnd .nsv{font-size:12px;color:#8a2217}

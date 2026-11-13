@@ -797,6 +797,9 @@ body #pHint{box-sizing:border-box!important;width:max-content;max-width:min(440p
 #kfeed{gap:10px!important}#kfeed .kf{flex:none}
 @media (min-width:2200px){#mxHud,#hud .corner.bl,#hud .corner.br,#pHint,#hud .corner.tr,#wxPlanes,#pause .sheet,#mend .sheet,#death .huge,#deathBy,#deathT,#kcCard,#kcBan,#kcSkip,#killcam .kc-top{zoom:1.5}#wxPlanes{bottom:98px!important}}
 @media (min-width:3400px){#mxHud,#hud .corner.bl,#hud .corner.br,#pHint,#hud .corner.tr,#wxPlanes,#pause .sheet,#mend .sheet,#death .huge,#deathBy,#deathT,#kcCard,#kcBan,#kcSkip,#killcam .kc-top{zoom:2.2}#wxPlanes{bottom:98px!important}}
+/* wp-endfit: the end card never scrolls; paperui.js scales it to fit (inline zoom). No inner scrollbar, buttons are in the flow. */
+#mend,body #mend{overflow:hidden!important}body #mend .sheet,#mend .sheet{overflow:visible!important;max-height:none!important;scrollbar-width:none}
+body #mend .row,#mend .row{position:static!important;bottom:auto!important;background:none!important;padding:10px 0 4px!important}
 </style>
 
 <div id="game"></div>
