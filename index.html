@@ -1337,6 +1337,16 @@ addEventListener('resize', resize);
     collapseOpen: 0.55, collapseFlapHoles: 24, collapseEdges: 3, edgeTouch: 30, gridMM: 80,
     flapTime: 0.45, flapAngle: 1.9, collapseFall: 0.6, collapseFade: 4,
   };
+  // ---- STRUCTURAL INTEGRITY (HOLES_SYSTEM part H). Support grid of 40 mm cells per panel: 0 card, 1 open, 3 severed by a knife line
+  // (drawn as card, never connects), 2 gone (part of a piece that fell / sags: OPEN for rays). Card must be 4-connected to an anchor.
+  const IG = {
+    cell: 40, sever: 29,                                   // knife lines cut every cell whose centre is within cutR x rayK + 29 mm
+    erode: { P0: 4, P1: 3, P2: 2, P3: 0, P4: 0 },          // neck test: bridges narrower than (2e+1) cells sag (paper floppy, board rigid)
+    sagMax: { P0: 600000, P1: 1200000, P2: 1500000 },     // mm^2: a bigger piece on a thin bridge tears it and falls
+    sagMin: 20000,                                         // mm^2 (.02 m^2): smaller hanging bits stay (a ragged edge)
+    neckMin: 3,                                            // a sagging flap whose bridge is cut below 3 card cells (12 cm) tears off and falls
+    anchors: { wall: 'blr', floor: 'lrtb' },
+  };
   // ---- per-gun table (B2). id = u8 on the wire. entry/exit radius in mm. 'rifle'/'smg'/'shotgun' are class aliases of the game ids.
   const GUNS = {
     sniper:    { id: 1, entry: 95,  exit: 120, thinK: 0.92, maxLayers: 3, power: 1.3 },
@@ -1405,6 +1415,8 @@ addEventListener('resize', resize);
       collapse: def.collapse !== false, maxHoles: Math.min(def.maxHoles || K.maxHoles, K.maxHoles),
       cuts: (def.cuts || []).map(c => [q(c[0]), q(c[1]), q(c[2]), q(c[3])]),
       flap: null, holes: [], slits: [], knife: [], collapsed: false, openFrac: 0, hits: [], wear: new Map(), breaches: 0,
+      anchors: typeof def.anchors === 'string' ? def.anchors : def.floor ? IG.anchors.floor : IG.anchors.wall, posts: (def.posts || []).map(a => [q(a[0]), q(a[1]), q(a[2])]),
+      pieces: [], _dr: null,
     };
     if (def.flap) {
       const f = { u0: q(def.flap.u0), v0: q(def.flap.v0), u1: q(def.flap.u1), v1: q(def.flap.v1), hinge: def.flap.hinge || 'bottom', open: false, side: 1, segs: null, lines: null, len: 0 };
@@ -1413,6 +1425,7 @@ addEventListener('resize', resize);
       f.len = f.lines.reduce((s, l) => s + l.len, 0); f.segs = new Array(Math.max(1, Math.ceil(f.len / K.crSeg))).fill(0);
       P.flap = f;
     }
+    gridInit(P);
     return P;
   }
   const isPanel = (P) => !!(P && P.holes);
@@ -1420,9 +1433,10 @@ addEventListener('resize', resize);
   function inPoly(pts, u, v) { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const xi = pts[i][0], yi = pts[i][1], xj = pts[j][0], yj = pts[j][1]; if ((yi > v) !== (yj > v) && u < (xj - xi) * (v - yi) / ((yj - yi) || 1e-9) + xi) c = !c; } return c; }
 
   // ---- the single sight/shot/sound opening test (B4). mm in. A ray PASSES the panel iff this is true.
-  function openAtMM(P, u, v) {
+  function openAtMM(P, u, v, raw) {
     if (u < 0 || v < 0 || u > P.w || v > P.h) return false;
     if (P.collapsed) return true;
+    if (!raw && P.pieces.length && P.grid[cellOf(P, u, v)] === 2) return true;   // a piece that fell out / sags (part H)
     for (const c of P.cuts) if (u > c[0] && u < c[2] && v > c[1] && v < c[3]) return true;
     const f = P.flap; if (f && f.open && u > f.u0 && u < f.u1 && v > f.v0 && v < f.v1) return true;
     for (const h of P.holes) { const r = h.r * K.rayK; if ((u - h.u) * (u - h.u) + (v - h.v) * (v - h.v) < r * r) return true; }
@@ -1441,6 +1455,7 @@ addEventListener('resize', resize);
     if (P.collapsed) return null; const out = [], f = P.flap;
     if (f && f.open) out.push([f.u0, f.v0, f.u1, f.v1]);
     for (const L of P.knife) if (L.closed || L.flap) { let a = 1e9, b = 1e9, c = -1e9, d = -1e9; for (const q of L.pts) { a = Math.min(a, q[0]); b = Math.min(b, q[1]); c = Math.max(c, q[0]); d = Math.max(d, q[1]); } out.push([a, b, c, d]); }
+    for (const pc of P.pieces) out.push([pc.u0, pc.v0, pc.u1, pc.v1]);   // fallen / sagging pieces (part H)
     const w = P.floor ? K.splitW : K.splitW, h = P.floor ? K.splitW : K.splitH;
     return out.filter(r => r[2] - r[0] >= w && r[3] - r[1] >= h);
   }
@@ -1476,6 +1491,7 @@ addEventListener('resize', resize);
   function drawnOpenMM(P, u, v) {
     if (u < 0 || v < 0 || u > P.w || v > P.h) return false;
     if (P.collapsed) return true;
+    if (P.pieces.length && P.grid[cellOf(P, u, v)] === 2) return true;
     for (const c of P.cuts) if (u > c[0] && u < c[2] && v > c[1] && v < c[3]) return true;
     const f = P.flap; if (f && f.open && u > f.u0 && u < f.u1 && v > f.v0 && v < f.v1) return true;
     for (const h of P.holes) {
@@ -1507,6 +1523,7 @@ addEventListener('resize', resize);
     else if (hit[0] === 'blast') out = applyHole(P, hit[1], hit[2], hit[3], hit[4]);
     else { const g = GUN_BY_ID[hit[3]] || GUNS.carbine; out = applyHole(P, hit[0], hit[1], hit[2], g.entry); }
     P.hits.push(hit);
+    if (out) { integrity(P); if (P.collapsed) return 'collapse'; }
     if (out && checkCollapse(P)) return 'collapse';
     return out;
   }
@@ -1516,9 +1533,10 @@ addEventListener('resize', resize);
     for (const h of P.holes) { const d = Math.hypot(h.u - u, h.v - v); if (d < bd) { bd = d; best = h; } }
     if (best && (bd < best.r * K.rimClip || P.holes.length >= P.maxHoles)) {           // 1b grow (rim clip) or cap: no new hole
       best.r = Math.min(K.growMax, Math.max(best.r, Math.round(best.r * K.growK), r)); res = 'grow';   // never smaller than the new hit (a crater over a pellet hole = crater size)
+      dirt(P, best.u - best.r, best.v - best.r, best.u + best.r, best.v + best.r);
     } else {
-      for (const h of P.holes) { const d = Math.hypot(h.u - u, h.v - v); if (d < K.mergeD && d > 0.1 && P.slits.length < K.maxSlits) P.slits.push({ a: [h.u, h.v], b: [u, v], r: Math.round(Math.min(h.r, r) * K.slitK), i: P.slits.length }); }
-      P.holes.push({ u, v, r, side, i: P.holes.length });
+      for (const h of P.holes) { const d = Math.hypot(h.u - u, h.v - v); if (d < K.mergeD && d > 0.1 && P.slits.length < K.maxSlits) { const sr = Math.round(Math.min(h.r, r) * K.slitK); P.slits.push({ a: [h.u, h.v], b: [u, v], r: sr, i: P.slits.length }); dirt(P, Math.min(h.u, u) - sr, Math.min(h.v, v) - sr, Math.max(h.u, u) + sr, Math.max(h.v, v) + sr); } }
+      P.holes.push({ u, v, r, side, i: P.holes.length }); dirt(P, u - r, v - r, u + r, v + r);
     }
     const f = P.flap;
     if (f && !f.open) {
@@ -1530,7 +1548,7 @@ addEventListener('resize', resize);
         off += L.len;
       }
       let n = 0; for (const s of f.segs) n += s;
-      if (n / f.segs.length >= K.crNeed) { f.open = true; f.side = side; res = 'flap'; }
+      if (n / f.segs.length >= K.crNeed) { f.open = true; f.side = side; res = 'flap'; dirt(P, f.u0, f.v0, f.u1, f.v1); }
     }
     return res;
   }
@@ -1575,6 +1593,7 @@ addEventListener('resize', resize);
     const gap = Math.hypot(e[0] - s0[0], e[1] - s0[1]); area = Math.abs(area / 2);
     L.closed = p.length >= 4 && gap < K.cutCloseD && area >= K.cutCloseArea;
     L.flap = !L.closed && p.length >= 4 && gap >= K.flapGap && len >= K.flapLenK * gap && area >= K.cutCloseArea;
+    { let a = 1e9, b = 1e9, c = -1e9, d = -1e9; for (const q of p) { if (q[0] < a) a = q[0]; if (q[1] < b) b = q[1]; if (q[0] > c) c = q[0]; if (q[1] > d) d = q[1]; } dirt(P, a, b, c, d); }
     return L.closed ? 'cut-open' : L.flap ? 'cut-flap' : 'cut';
   }
   // B3 stage 4. open fraction on a fixed grid (deterministic); only when the panel's collapse tag is true.
@@ -1596,18 +1615,239 @@ addEventListener('resize', resize);
     return false;
   }
 
+  // ================= STRUCTURAL INTEGRITY (part H) =================
+  const cellOf = (P, u, v) => Math.min(P.gy - 1, (v / P.gc) | 0) * P.gx + Math.min(P.gx - 1, (u / P.gc) | 0);
+  function dirt(P, u0, v0, u1, v1) { const d = P._dr; if (!d) P._dr = [u0, v0, u1, v1]; else { if (u0 < d[0]) d[0] = u0; if (v0 < d[1]) d[1] = v0; if (u1 > d[2]) d[2] = u1; if (v1 > d[3]) d[3] = v1; } }
+  function gridInit(P) {
+    const g = IG.cell; P.gc = g; P.gx = Math.max(1, Math.ceil(P.w / g)); P.gy = Math.max(1, Math.ceil(P.h / g)); P.grid = new Uint8Array(P.gx * P.gy);
+    const an = [], A = P.anchors, gx = P.gx, gy = P.gy;
+    for (let j = 0; j < gy; j++) for (let i = 0; i < gx; i++) {
+      let a = (i === 0 && A.indexOf('l') >= 0) || (i === gx - 1 && A.indexOf('r') >= 0) || (j === 0 && A.indexOf('b') >= 0) || (j === gy - 1 && A.indexOf('t') >= 0);
+      if (!a) for (const p of P.posts) { const cu = i * g + g / 2, cv = j * g + g / 2; if ((cu - p[0]) * (cu - p[0]) + (cv - p[1]) * (cv - p[1]) <= p[2] * p[2]) { a = true; break; } }
+      if (a) an.push(j * gx + i);
+    }
+    P.anchorCells = Int32Array.from(an); P.isAnchor = new Uint8Array(gx * gy); for (const c of an) P.isAnchor[c] = 1;
+    sample(P, 0, 0, P.w, P.h); P._dr = null;
+  }
+  function severedAt(P, u, v) { const r = K.cutR * K.rayK + IG.sever, r2 = r * r; for (const L of P.knife) for (let i = 1; i < L.pts.length; i++) if (segD2(u, v, L.pts[i - 1], L.pts[i]) < r2) return true; return false; }
+  // re-sample the card cells inside a rectangle (mm, +1 cell margin); returns how many changed. Cells only ever go card -> open / severed.
+  function sample(P, u0, v0, u1, v1) {
+    const g = P.gc, gr = P.grid, i0 = Math.max(0, Math.floor(u0 / g) - 1), i1 = Math.min(P.gx - 1, Math.floor(u1 / g) + 1), j0 = Math.max(0, Math.floor(v0 / g) - 1), j1 = Math.min(P.gy - 1, Math.floor(v1 / g) + 1);
+    let n = 0; const segs = [], rr = K.cutR * K.rayK + IG.sever, ua = i0 * g - rr, ub = (i1 + 1) * g + rr, va = j0 * g - rr, vb = (j1 + 1) * g + rr;
+    for (const L of P.knife) for (let k = 1; k < L.pts.length; k++) { const a = L.pts[k - 1], b = L.pts[k];   // only the knife segments near this rectangle
+      if (Math.max(a[0], b[0]) >= ua && Math.min(a[0], b[0]) <= ub && Math.max(a[1], b[1]) >= va && Math.min(a[1], b[1]) <= vb) segs.push(a, b); }
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const c = j * P.gx + i; if (gr[c] !== 0) continue;
+      const cu = Math.min(P.w, i * g + g / 2), cv = Math.min(P.h, j * g + g / 2);
+      if (openAtMM(P, cu, cv)) { gr[c] = 1; n++; continue; }
+      for (let k = 0; k < segs.length; k += 2) if (segD2(cu, cv, segs[k], segs[k + 1]) < rr * rr) { gr[c] = 3; n++; break; } }
+    return n;
+  }
+  // shared scratch (grown on demand; no per-hit garbage beyond the piece records)
+  let SQ = new Int32Array(4096), SM = new Uint8Array(4096), SE = new Uint8Array(4096), SH = new Uint8Array(4096), SD = new Uint8Array(4096);
+  function scratch(n) { if (SQ.length < n) { SQ = new Int32Array(n); SM = new Uint8Array(n); SE = new Uint8Array(n); SH = new Uint8Array(n); SD = new Uint8Array(n); } }
+  // flood from the anchors over card cells into mark[] (1 = supported). Returns the count.
+  function flood(P, mark) {
+    const gx = P.gx, n = gx * P.gy, gr = P.grid; mark.fill(0, 0, n); let h = 0, t = 0;
+    for (const c of P.anchorCells) if (gr[c] === 0 && !mark[c]) { mark[c] = 1; SQ[t++] = c; }
+    while (h < t) { const c = SQ[h++], i = c % gx;
+      if (i > 0 && !mark[c - 1] && gr[c - 1] === 0) { mark[c - 1] = 1; SQ[t++] = c - 1; }
+      if (i < gx - 1 && !mark[c + 1] && gr[c + 1] === 0) { mark[c + 1] = 1; SQ[t++] = c + 1; }
+      if (c >= gx && !mark[c - gx] && gr[c - gx] === 0) { mark[c - gx] = 1; SQ[t++] = c - gx; }
+      if (c < n - gx && !mark[c + gx] && gr[c + gx] === 0) { mark[c + gx] = 1; SQ[t++] = c + gx; } }
+    return t;
+  }
+  // one 4-connected component of cells where sel[c] === val, from c0; consumes them (sel = 0). Returns the cell list (index-ordered BFS).
+  function component(P, c0, sel, val) {
+    const gx = P.gx, n = gx * P.gy; let h = 0, t = 0; SQ[t++] = c0; sel[c0] = 0;
+    while (h < t) { const c = SQ[h++], i = c % gx;
+      if (i > 0 && sel[c - 1] === val) { sel[c - 1] = 0; SQ[t++] = c - 1; }
+      if (i < gx - 1 && sel[c + 1] === val) { sel[c + 1] = 0; SQ[t++] = c + 1; }
+      if (c >= gx && sel[c - gx] === val) { sel[c - gx] = 0; SQ[t++] = c - gx; }
+      if (c < n - gx && sel[c + gx] === val) { sel[c + gx] = 0; SQ[t++] = c + gx; } }
+    return Array.from(SQ.subarray(0, t));
+  }
+  const nb4 = (c, gx, n) => [c % gx > 0 ? c - 1 : -1, c % gx < gx - 1 ? c + 1 : -1, c >= gx ? c - gx : -1, c < n - gx ? c + gx : -1];
+  // remove a piece from the panel (cells -> gone) and record it. kind 'fall' | 'sag'. neck = bridge cells (sag only).
+  function addPiece(P, cells, kind, neck) {
+    const g = P.gc, gx = P.gx, n = gx * P.gy, gr = P.grid;
+    for (const c of cells) gr[c] = 2;
+    const extra = []; for (const c of cells) for (const d of nb4(c, gx, n)) if (d >= 0 && gr[d] === 3) { gr[d] = 2; extra.push(d); }   // severed slivers go with it
+    const all = Int32Array.from(extra.length ? cells.concat(extra) : cells);
+    let su = 0, sv = 0, u0 = 1e9, v0 = 1e9, u1 = -1e9, v1 = -1e9;
+    for (const c of all) { const i = c % gx, j = (c / gx) | 0; su += i; sv += j; if (i * g < u0) u0 = i * g; if (j * g < v0) v0 = j * g; if ((i + 1) * g > u1) u1 = (i + 1) * g; if ((j + 1) * g > v1) v1 = (j + 1) * g; }
+    const pc = { k: kind, i: P.pieces.length, ev: P.hits.length, n: all.length, cells: all, area: all.length * g * g, torn: 0,
+      cu: Math.round(su / all.length * g + g / 2), cv: Math.round(sv / all.length * g + g / 2), u0, v0, u1: Math.min(u1, P.w), v1: Math.min(v1, P.h), neck: null, hu: 0, hv: 0 };
+    if (neck && neck.length) { let a = 0, b = 0; for (const c of neck) { a += c % gx; b += (c / gx) | 0; } pc.neck = Int32Array.from(neck); pc.hu = Math.round(a / neck.length * g + g / 2); pc.hv = Math.round(b / neck.length * g + g / 2); }
+    P.pieces.push(pc); return pc;
+  }
+  // H3 steps 2 + 4: every card cell not supported -> falling pieces. Returns false when nothing at all is supported (the panel goes).
+  function detachUnsupported(P) {
+    const n = P.gx * P.gy, gr = P.grid; scratch(n);
+    const sup = flood(P, SM);
+    let card = 0; for (let c = 0; c < n; c++) if (gr[c] === 0) card++;
+    if (sup === card) return true;
+    if (sup === 0) return false;
+    for (let c = 0; c < n; c++) SE[c] = gr[c] === 0 && !SM[c] ? 1 : 0;
+    for (let c = 0; c < n; c++) if (SE[c] === 1) addPiece(P, component(P, c, SE, 1), 'fall', null);
+    return true;
+  }
+  // H3 step 3: thin bridges. sup = supported card. Erode by e (outside an anchored edge = card, outside a free edge = air), keep what is
+  // still anchored, grow it back by e = the rigid body. Left-overs with an eroded core = hanging by a bridge narrower than (2e+1) cells.
+  // sliding-window helpers (O(cells) whatever e is): out[i] = 1 iff every cell of the row/column window is on (erode) / any is on (dilate)
+  let PS = new Int32Array(1024);
+  function win1(src, out, n, stride, base, e, oobLo, oobHi, any) {
+    if (PS.length < n + 2 * e + 2) PS = new Int32Array(n + 2 * e + 2);
+    PS[0] = 0; for (let k = -e; k < n + e; k++) { const on = k < 0 ? oobLo : k >= n ? oobHi : src[base + k * stride]; PS[k + e + 1] = PS[k + e] + (any ? (on ? 1 : 0) : (on ? 0 : 1)); }
+    for (let i = 0; i < n; i++) { const c = PS[i + 2 * e + 1] - PS[i]; out[base + i * stride] = any ? (c > 0 ? 1 : 0) : (c === 0 ? 1 : 0); }
+  }
+  // windowed erosion: SE = card eroded by e, valid inside cells [i0..i1] x [j0..j1] (every card cell is supported here: card == supported)
+  function winR(src, out, n, stride, base, e, lo, hi, a, z) {   // erode one row/column, outputs only for i in [a, z]
+    if (PS.length < n + 2 * e + 2) PS = new Int32Array(n + 2 * e + 2);
+    const k0 = a - e; PS[0] = 0; for (let k = k0; k <= z + e; k++) { const on = k < 0 ? lo : k >= n ? hi : src[base + k * stride]; PS[k - k0 + 1] = PS[k - k0] + (on ? 0 : 1); }
+    for (let i = a; i <= z; i++) out[base + i * stride] = PS[i - k0 + 2 * e + 1] - PS[i - k0] === 0 ? 1 : 0;
+  }
+  function erodeWin(P, e, i0, j0, i1, j1) {
+    const gx = P.gx, gy = P.gy, A = P.anchors, gr = P.grid, L = A.indexOf('l') >= 0 ? 1 : 0, Rr = A.indexOf('r') >= 0 ? 1 : 0, B = A.indexOf('b') >= 0 ? 1 : 0, T = A.indexOf('t') >= 0 ? 1 : 0;
+    const ra = Math.max(0, j0 - e), rz = Math.min(gy - 1, j1 + e), ca = Math.max(0, i0 - e), cz = Math.min(gx - 1, i1 + e);
+    for (let j = ra; j <= rz; j++) for (let i = ca; i <= cz; i++) { const c = j * gx + i; SM[c] = gr[c] === 0 ? 1 : 0; }
+    for (let j = ra; j <= rz; j++) winR(SM, SH, gx, 1, j * gx, e, L, Rr, i0, i1);
+    for (let i = i0; i <= i1; i++) {   // columns: rows outside [ra, rz] are never read except off-grid ones (B / T)
+      const k0 = j0 - e; for (let k = k0; k <= j1 + e; k++) { const on = k < 0 ? B : k >= gy ? T : SH[k * gx + i]; PS[k - k0 + 1] = PS[k - k0] + (on ? 0 : 1); }
+      for (let j = j0; j <= j1; j++) { const c = j * gx + i; SE[c] = PS[j - k0 + 2 * e + 1] - PS[j - k0] === 0 || (P.isAnchor[c] && SM[c]) ? 1 : 0; } }
+  }
+  function neckPass(P) {
+    const e = IG.erode[P.cls] | 0; if (!e) return;
+    const gx = P.gx, gy = P.gy, n = gx * gy, A = P.anchors, L = A.indexOf('l') >= 0 ? 1 : 0, Rr = A.indexOf('r') >= 0 ? 1 : 0, B = A.indexOf('b') >= 0 ? 1 : 0, T = A.indexOf('t') >= 0 ? 1 : 0;
+    scratch(n); const sup = SM, H_ = SH, E = SE, D = SD; flood(P, sup);
+    for (let j = 0; j < gy; j++) win1(sup, H_, gx, 1, j * gx, e, L, Rr, false);
+    for (let i = 0; i < gx; i++) win1(H_, E, gy, gx, i, e, B, T, false);
+    for (let c = 0; c < n; c++) if (P.isAnchor[c] && sup[c]) E[c] = 1;
+    let h = 0, t = 0; D.fill(0, 0, n);   // D = the eroded body still connected to an anchor
+    for (const c of P.anchorCells) if (E[c] && !D[c]) { D[c] = 1; SQ[t++] = c; }
+    while (h < t) { const c = SQ[h++], i = c % gx;
+      if (i > 0 && E[c - 1] && !D[c - 1]) { D[c - 1] = 1; SQ[t++] = c - 1; }
+      if (i < gx - 1 && E[c + 1] && !D[c + 1]) { D[c + 1] = 1; SQ[t++] = c + 1; }
+      if (c >= gx && E[c - gx] && !D[c - gx]) { D[c - gx] = 1; SQ[t++] = c - gx; }
+      if (c < n - gx && E[c + gx] && !D[c + gx]) { D[c + gx] = 1; SQ[t++] = c + gx; } }
+    let anyCore = false; for (let c = 0; c < n; c++) { E[c] = E[c] && !D[c] ? 1 : 0; if (E[c]) anyCore = true; }   // E now = hanging cores
+    if (!anyCore) return;
+    for (let j = 0; j < gy; j++) win1(D, H_, gx, 1, j * gx, e, 0, 0, true);
+    for (let i = 0; i < gx; i++) win1(H_, D, gy, gx, i, e, 0, 0, true);
+    for (let c = 0; c < n; c++) D[c] = !sup[c] ? 0 : D[c] ? 1 : 2;
+    for (let c = 0; c < n; c++) if (D[c] === 2) {   // 1 = rigid body, 2 = the rest
+      const cells = component(P, c, D, 2); let core = 0; for (const x of cells) core += E[x];
+      if (!core || cells.length * P.gc * P.gc < IG.sagMin) { for (const x of cells) D[x] = 3; continue; }   // a thin strand / small tab: stays
+      const neck = [], pairs = [], free = [];   // the bridge = pairs (body cell, piece cell) that touch; anchor cells in the part stay as body
+      for (const x of cells) if (P.isAnchor[x]) D[x] = 1;
+      for (const x of cells) { if (P.isAnchor[x]) continue; free.push(x); for (const d of nb4(x, gx, n)) if (d >= 0 && D[d] === 1) { pairs.push(d, x); if (neck.indexOf(d) < 0) neck.push(d); } }
+      for (const x of cells) if (!P.isAnchor[x]) D[x] = 3;
+      if (!free.length) continue;
+      const pc = addPiece(P, free, free.length * P.gc * P.gc > (IG.sagMax[P.cls] || 0) ? 'fall' : 'sag', neck); pc.pairs = Int32Array.from(pairs); pc.cut = new Uint8Array(pc.n);
+    }
+  }
+  // H7 incremental: before an event every card cell was supported (and every eroded core anchored). Cutting set X can only strand a
+  // cell whose old path to an anchor crossed X; such a path enters / leaves X through cells next to X. So if all the "on" cells round
+  // the change (rect) are still joined to each other inside a small window (or each reaches an anchor there), nothing got stranded and
+  // the global pass is skipped. Otherwise the full pass runs (same result, just slower). Deterministic: depends only on the state.
+  let VS = new Int32Array(4096), stamp = 0;
+  function localOK(P, i0, j0, i1, j1, m, on) {
+    const gx = P.gx, gy = P.gy, n = gx * gy; if (VS.length < n) { VS = new Int32Array(n); stamp = 0; }
+    const wi0 = Math.max(0, i0 - m), wi1 = Math.min(gx - 1, i1 + m), wj0 = Math.max(0, j0 - m), wj1 = Math.min(gy - 1, j1 + m);
+    i0 = Math.max(0, i0); i1 = Math.min(gx - 1, i1); j0 = Math.max(0, j0); j1 = Math.min(gy - 1, j1);
+    let comps = 0, loose = 0; stamp++;
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const s0 = j * gx + i; if (VS[s0] === stamp || !on(s0)) continue;
+      comps++; let h = 0, t = 0, anch = false; SQ[t++] = s0; VS[s0] = stamp;
+      while (h < t) { const c = SQ[h++], ci = c % gx, cj = (c / gx) | 0; if (P.isAnchor[c]) anch = true;
+        if (ci > wi0 && VS[c - 1] !== stamp && on(c - 1)) { VS[c - 1] = stamp; SQ[t++] = c - 1; }
+        if (ci < wi1 && VS[c + 1] !== stamp && on(c + 1)) { VS[c + 1] = stamp; SQ[t++] = c + 1; }
+        if (cj > wj0 && VS[c - gx] !== stamp && on(c - gx)) { VS[c - gx] = stamp; SQ[t++] = c - gx; }
+        if (cj < wj1 && VS[c + gx] !== stamp && on(c + gx)) { VS[c + gx] = stamp; SQ[t++] = c + gx; } }
+      if (!anch) loose++;
+      if (comps > 1 && loose) return false; }
+    if (comps > 1 && loose) return false;
+    return true;
+  }
+  const LOCAL_M = 6;
+  // neck test, local (cosmetic realism only: "no floating" is the exact card flood above). E components in the window: one component,
+  // or every smaller component lies within e cells of the biggest (or of an anchored one) = the rigid body still covers it after
+  // growing back by e = no new hanging core. Otherwise the full neck pass runs. Deterministic (index-ordered labels, ties -> first).
+  let LB = new Int32Array(4096);
+  function localNeckOK(P, i0, j0, i1, j1, wi0, wj0, wi1, wj1, e) {
+    const gx = P.gx, n = gx * P.gy; if (LB.length < n) LB = new Int32Array(n);
+    for (let j = wj0; j <= wj1; j++) LB.fill(0, j * gx + wi0, j * gx + wi1 + 1);
+    i0 = Math.max(i0, wi0); i1 = Math.min(i1, wi1); j0 = Math.max(j0, wj0); j1 = Math.min(j1, wj1);
+    const sizes = [0], anch = [0]; let lab = 0;
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const s0 = j * gx + i; if (LB[s0] || SE[s0] !== 1) continue;
+      lab++; let h = 0, t = 0, an = 0; SQ[t++] = s0; LB[s0] = lab;
+      while (h < t) { const c = SQ[h++], ci = c % gx, cj = (c / gx) | 0; if (P.isAnchor[c]) an = 1;
+        if (ci > wi0 && !LB[c - 1] && SE[c - 1] === 1) { LB[c - 1] = lab; SQ[t++] = c - 1; }
+        if (ci < wi1 && !LB[c + 1] && SE[c + 1] === 1) { LB[c + 1] = lab; SQ[t++] = c + 1; }
+        if (cj > wj0 && !LB[c - gx] && SE[c - gx] === 1) { LB[c - gx] = lab; SQ[t++] = c - gx; }
+        if (cj < wj1 && !LB[c + gx] && SE[c + gx] === 1) { LB[c + gx] = lab; SQ[t++] = c + gx; } }
+      sizes.push(t); anch.push(an); }
+    if (lab <= 1) return true;
+    let big = 1; for (let k = 2; k <= lab; k++) if (sizes[k] > sizes[big]) big = k;
+    for (let k = 1; k <= lab; k++) { if (k === big || anch[k]) continue;   // every cell of a small loose component must be within e of the body
+      for (let j = wj0; j <= wj1; j++) for (let i = wi0; i <= wi1; i++) { const c = j * gx + i; if (LB[c] !== k) continue; let near = false;
+        for (let y = Math.max(wj0, j - e); y <= Math.min(wj1, j + e) && !near; y++) for (let x = Math.max(wi0, i - e); x <= Math.min(wi1, i + e); x++) { const l = LB[y * gx + x]; if (l && l !== k && (l === big || anch[l])) { near = true; break; } }
+        if (!near) return false; } }
+    return true;
+  }
+  // H3 step 5: a sagging flap's bridge was hit. Body side (neck) = card cells left; piece side (lip) = its cells the new openings did not
+  // cut (raw test: the piece swung away, but the cut still went through the paper there). Hangs on what is left; under neckMin -> falls.
+  function cellCut(P, c) { const g = P.gc, cu = Math.min(P.w, (c % P.gx) * g + g / 2), cv = Math.min(P.h, ((c / P.gx) | 0) * g + g / 2); return openAtMM(P, cu, cv, true) || (P.knife.length && severedAt(P, cu, cv)); }
+  function tearCheck(P, pc, d) {
+    const g = P.gc, gx = P.gx, n = gx * P.gy, cs = pc.cells; let ch = 0;
+    for (let k = 0; k < cs.length; k++) { if (pc.cut[k]) continue; const c = cs[k], u = (c % gx) * g, v = ((c / gx) | 0) * g;   // piece cells under this event: cut?
+      if (u + g < d[0] - g || u > d[2] + g || v + g < d[1] - g || v > d[3] + g) continue; if (cellCut(P, c)) { pc.cut[k] = 1; ch++; } }
+    let alive = 0; for (let k = 0; k < pc.pairs.length; k += 2) if (P.grid[pc.pairs[k]] === 0) alive++;
+    if (!ch && alive * 2 === pc.pairs.length) return;
+    scratch(n); for (let k = 0; k < cs.length; k++) SE[cs[k]] = pc.cut[k] ? 0 : 5;   // BFS through the uncut piece from the live bridge
+    let h = 0, t = 0; const hinge = [];
+    for (let k = 0; k < pc.pairs.length; k += 2) { const b = pc.pairs[k], x = pc.pairs[k + 1]; if (P.grid[b] !== 0 || SE[x] === 0) continue; hinge.push(b); if (SE[x] === 5) { SE[x] = 6; SQ[t++] = x; } }
+    while (h < t) { const c = SQ[h++]; for (const e of nb4(c, gx, n)) if (e >= 0 && SE[e] === 5) { SE[e] = 6; SQ[t++] = e; } }
+    for (const c of cs) SE[c] = 0;
+    if (hinge.length < IG.neckMin || t * 2 < cs.length) { pc.k = 'fall'; pc.torn = P.hits.length; return; }   // bridge (almost) gone, or most of it cut away
+    let a = 0, b = 0; for (const c of hinge) { a += c % gx; b += (c / gx) | 0; } pc.rev = (pc.rev | 0) + 1;
+    pc.hu = Math.round(a / hinge.length * g + g / 2); pc.hv = Math.round(b / hinge.length * g + g / 2);
+  }
+  // the whole pass, run by applyHit after any event that opened something (H3). Deterministic: integers, index-ordered scans.
+  function integrity(P) {
+    const d = P._dr; P._dr = null; if (!d || P.collapsed) return;
+    if (sample(P, d[0], d[1], d[2], d[3])) connectivity(P, d);
+    if (P.collapsed) return;
+    for (const pc of P.pieces) if (pc.k === 'sag' && d[2] >= pc.u0 - 300 && d[0] <= pc.u1 + 300 && d[3] >= pc.v0 - 300 && d[1] <= pc.v1 + 300) tearCheck(P, pc, d);   // step 5
+  }
+  function connectivity(P, d) {
+    scratch(P.gx * P.gy); P.stats = P.stats || { local: 0, full: 0, neckFull: 0 };
+    const g = P.gc, i0 = Math.floor(d[0] / g) - 2, i1 = Math.floor(d[2] / g) + 2, j0 = Math.floor(d[1] / g) - 2, j1 = Math.floor(d[3] / g) + 2, gr = P.grid;
+    if (!localOK(P, i0, j0, i1, j1, LOCAL_M, c => gr[c] === 0)) { P.stats.full++; if (!detachUnsupported(P)) { P.collapsed = true; return; } } else P.stats.local++;
+    const e = IG.erode[P.cls] | 0; if (!e) return;
+    const wi0 = Math.max(0, i0 - e - LOCAL_M), wj0 = Math.max(0, j0 - e - LOCAL_M), wi1 = Math.min(P.gx - 1, i1 + e + LOCAL_M), wj1 = Math.min(P.gy - 1, j1 + e + LOCAL_M);
+    if (PS.length < Math.max(P.gx, P.gy) + 2 * e + 2) PS = new Int32Array(Math.max(P.gx, P.gy) + 2 * e + 2);
+    erodeWin(P, e, wi0, wj0, wi1, wj1);   // sliding windows over the check window only
+    if (!localNeckOK(P, i0 - e, j0 - e, i1 + e, j1 + e, wi0, wj0, wi1, wj1, e)) {
+      P.stats.neckFull++; neckPass(P); if (!detachUnsupported(P)) P.collapsed = true; }
+  }
+
+  // test helper: card cells NOT connected to any anchor (must be 0 after every event)
+  function unsupported(P) { if (P.collapsed) return 0; const n = P.gx * P.gy; scratch(n); const s = flood(P, SM); let card = 0; for (let c = 0; c < n; c++) if (P.grid[c] === 0) card++; return card - s; }
+  function gridHash(P) { let h = 0x811c9dc5; for (let c = 0; c < P.grid.length; c++) { h ^= P.grid[c]; h = Math.imul(h, 0x01000193); } return h >>> 0; }
+
   // ---- deterministic state dump + replay. Same events => identical string (D1).
   function serialize(P) {
     const f = P.flap;
     return JSON.stringify([P.id, P.collapsed ? 1 : 0,
       P.holes.map(h => [h.u, h.v, h.r, h.side, h.i]), P.slits.map(s => [s.a[0], s.a[1], s.b[0], s.b[1], s.r, s.i]),
-      P.knife.map(L => [L.closed ? 1 : L.flap ? 2 : 0, L.pts]), f ? [f.open ? 1 : 0, f.side, f.segs.join('')] : null, [...P.wear.entries()].sort((a, b) => a[0] - b[0])]);
+      P.knife.map(L => [L.closed ? 1 : L.flap ? 2 : 0, L.pts]), f ? [f.open ? 1 : 0, f.side, f.segs.join('')] : null, [...P.wear.entries()].sort((a, b) => a[0] - b[0]),
+      P.pieces.map(pc => [pc.k === 'sag' ? 1 : 0, pc.n, pc.cu, pc.cv, pc.hu, pc.hv, pc.ev, pc.torn || 0]), gridHash(P)]);
   }
   function replay(def, hits) { const P = newPanel(def); for (const h of hits) applyHit(P, h); return P; }
   const replayKey = (def, hits) => serialize(replay(def, hits));
 
   return { K, GUNS, GUN_BY_ID, CRATER_R, WEAR, THICK, applyWear, wearAt, passK, blastRadius, q, hash32, strId, hrand, spreadSample, shotRand, newPanel, isPanel, openAt, openAtMM, passAtMM, bigOpenings, solidRects,
-    drawnOpenMM, starShape, starRadius, makeHits, makeBlast, applyHit, openFraction, checkCollapse, serialize, replay, replayKey };
+    drawnOpenMM, starShape, starRadius, makeHits, makeBlast, applyHit, openFraction, checkCollapse, serialize, replay, replayKey,
+    IG, integrity, unsupported, cellOf };
 });
 // 04-seeded-spread.js  --  STEP 3 of docs/HOLES_SYSTEM.md: thin adapter between the game's shot path and the pure HOLES core (03-holes-core.js).
 // Replaces Math.random() in the SPREAD of player + bot shots with hash(matchSeed, shooterId, shotSeq, pellet) so any client (and later the
@@ -5802,6 +6042,7 @@ function prewarmView() {
     const seen = new Set(), up = o => { if (!o.material) return; for (const m of [].concat(o.material)) for (const k in m) { const t = m[k]; if (t && t.isTexture && !t.isRenderTargetTexture && !seen.has(t)) { seen.add(t); try { renderer.initTexture(t); } catch (e) {} } } };
     scene.traverse(up); gunScene.traverse(up);
     gunVisible = true;
+    const warmDone = (typeof TEAR !== 'undefined' && TEAR.warmSheets) ? TEAR.warmSheets() : null;   // falling-piece sheets (main + shadow programs) are drawn once here
     // one draw of EVERYTHING (no frustum culling, hidden objects shown): the graphics driver (ANGLE / D3D11) finishes each shader at
     // the first real draw of an object, which renderer.compile does not do; a laptop trace showed 36-224 ms GPU-process flushes in
     // the first 1.5 s of play otherwise. State restored right after, all within this task (never presented).
@@ -5809,7 +6050,7 @@ function prewarmView() {
     c.position.set(P.pos.x, P.pos.y + 1.65, P.pos.z); c.rotation.set(0, P.yaw, 0); c.updateMatrixWorld();
     try { composer.render(0); } finally { for (const [o, v, f] of keep) { o.visible = v; o.frustumCulled = f; } }
     for (const a of [Math.PI / 2, Math.PI, -Math.PI / 2, 0]) { c.position.set(P.pos.x, P.pos.y + 1.65, P.pos.z); c.rotation.set(0, P.yaw + a, 0); c.updateMatrixWorld(); composer.render(0); }
-    gunVisible = g0;
+    gunVisible = g0; if (warmDone) warmDone();
     try { const gl = renderer.getContext(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4)); } catch (e) {}   // wait for the GPU here, behind the menu
     perf.prewarm = Math.round(performance.now() - t0);
   } catch (e) { console.warn('prewarmView', e); }
@@ -6813,7 +7054,7 @@ function fireShot() {
     launchRocket(PLAYER_ENT, from, d); netNade(from, d.clone().multiplyScalar(44), 1);
   } else {
     const pellets = w.pellets || 1, seen = new Set(), pw = PEN.power[id] || 0;
-    P.collat = 0;
+    P.fireShot = P.shotSeq = (P.shotSeq | 0) + 1; P.fireOn = true;   // one trigger pull = one shot id; kills made inside this loop carry it (Collateral = 2+ KILLS with the same id)
     for (let pi = 0; pi < pellets; pi++) {
       const cone = pellets > 1 ? w.spreadP * (1 - scoped * .25) : spread;
       const _sp = SPREAD.sample(PLAYER_ENT, _sseq, pi), a = _sp.a, m = _sp.m * cone;
@@ -6832,7 +7073,7 @@ function fireShot() {
           if (!r && h.object.userData.tear !== undefined) { const tk = TEAR.passK(h.object, id, TEAR.hit(h.object, h.point, shotDir, id, { crater })); if (tk < 0 || tl >= tmax) { end.copy(h.point); break; } tl++; mult *= tk; through++; continue; }
           if (!r) { const pn = penHit(h, shotDir), pm = pn ? penCalc(pw, pn.mat, pn.t) : -1; end.copy(h.point); wallHit = h; if (pm < 0) break; mult *= pm; if (mult < PEN.minMult) break; through++; skipTo = h.distance + pn.t + .01; penMarks(h, shotDir, pn.t); wallHit = null; continue; }
           if (through) { r.wbT = G.time; r.wbBy = PLAYER_ENT; } if (passD < h.distance) { r.peepT = G.time; r.peepBy = PLAYER_ENT; }
-          if (seen.has(r) || r.dead) continue; seen.add(r); P.collat = seen.size;
+          if (seen.has(r) || r.dead) continue; seen.add(r);
           const zone = h.object.userData.zone, crit = zone === 'head';
           G.hits++; damageBot(r, w.oneShot && mult > .999 ? Math.max(r.hp + 1, 101) : w.oneShot && tl === through ? TEAR.R.oneShotDmg * mult * (crit ? 2 : 1) : w.oneShot && mult > .5 ? Math.max(r.hp + 1, 101) : (w.oneShot ? 100 : w.dmg) * sm * mult * (crit ? w.head : zone === 'limb' ? (w.armK && h.object.userData.part === 'arm' ? w.armK : .75) : 1) * (od ? 1.25 : 1), crit, h.point, shotDir.clone(), zone, PLAYER_ENT, id); if (w.status) applyStatus(r, w.status, PLAYER_ENT);
         }
@@ -6870,7 +7111,7 @@ function fireShot() {
       else if (pellets > 1) { if (pi < 6) tracer(muzzleW, end, tc, .016, .05); }
       else if (P.shotIdx % 2 === 1 || id === 'pistol') tracer(muzzleW, end, tc, .022, .05);
     }
-    if (seen.size > 1 && w.pierce) { P.collat = seen.size; callout(seen.size === 2 ? 'COLLATERAL' : `COLLATERAL ×${seen.size}`, 'multi'); }
+    P.fireOn = false;
   }
   netShot(muzzleW, end);
   if (!w.beam && !w.projectile && id !== 'breacher') ejectCasing();
@@ -6951,7 +7192,9 @@ function killEntity(v, k, weapon, crit, dir) {
   kfeed(k, v, weapon, crit, wb, { ns: k === PLAYER_ENT && kfNoScope(weapon), smoke: k && k !== v && kfSmoke(k, v), peep });
   v.deathW = weapon; if (k && k !== v && v.root) v.killDist = entPos(k).distanceTo(v.root.position);
   if (v.isPlayer) playerDie(k, weapon, crit); else botDie(v, dir || _v1.set(0, 0, 1), crit, k === PLAYER_ENT);
-  if (k === PLAYER_ENT && k !== v) playerKillFx(v, crit, weapon, dir, { streak: vStreak, first, wb, peep });
+  if (k === PLAYER_ENT && k !== v) { let cn = 0; if (P.fireOn) { if (P.kShot === P.fireShot) P.kShotN++; else { P.kShot = P.fireShot; P.kShotN = 1; } cn = P.kShotN; }   // kills of THIS shot so far (explosions/DOT/net kills = 0)
+    if (cn > 1) callout(cn === 2 ? 'COLLATERAL' : `COLLATERAL ×${cn}`, 'multi');
+    playerKillFx(v, crit, weapon, dir, { streak: vStreak, first, wb, peep, collat: cn }); }
   if (v === PLAYER_ENT) NET.killWB = wb;
   if (v === PLAYER_ENT && k && k !== v) P.lastKiller = k;
   if (k && k.kills >= KILL_LIMIT) setTimeout(() => endMatch(k), 1200);
@@ -7066,13 +7309,13 @@ const TEAR = (() => {
     const id = panels.length, w = o.w, h = o.h, t = o.t || .05, ppm = o.ppm || R.ppm, slab = !!o.slab;
     // slab (DESTRUCTIBLE, 63-destructible.js): a collider's face pair; the baked map mesh is the picture (huv written into it), the mask canvas + atlas rect are made on the FIRST hit (lazy), no collider / merged mesh of its own
     let cv = null; if (!slab) { cv = document.createElement('canvas'); cv.width = Math.max(8, Math.ceil(w * ppm)); cv.height = Math.max(8, Math.ceil(h * ppm)); }
-    const P_ = { id, w, h, t, ppm, cv, ctx: cv ? cv.getContext('2d') : null, mat: o.mat, floor: !!o.floor, slab, cuts: o.cuts || [], rect: null, boxes: [], holes: [], slits: [], knife: [], hits: null, live: null, sheets: [] };
+    const P_ = { id, w, h, t, ppm, cv, ctx: cv ? cv.getContext('2d') : null, mat: o.mat, floor: !!o.floor, slab, cuts: o.cuts || [], rect: null, boxes: [], holes: [], slits: [], knife: [], hits: null, live: null, sheets: [], pseen: [], psheet: [] };
     if (!slab) P_.rect = alloc(cv.width, cv.height);
     const mesh = new THREE.Mesh(panelGeo(P_, false), proxyMat); mesh.visible = false;   // raycast / transform proxy; drawn by the merged mesh
     if (slab) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(o.rx || 0, o.rot || 0, 0, 'YXZ'); } else if (o.floor) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(-Math.PI / 2, o.rot || 0, 0, 'YXZ'); } else { mesh.position.set(o.x, o.y + h / 2, o.z); mesh.rotation.y = o.rot || 0; }
     mesh.userData.surface = 'paper'; mesh.userData.dyn = true; mesh.userData.tear = id;
     scene.add(mesh); mesh.updateMatrixWorld(true); world.meshes.push(mesh); P_.mesh = mesh; if (typeof targetsDirty !== 'undefined') targetsDirty = true;
-    P_.cls = o.cls || 'P1'; P_.def = { id, w, h, cls: P_.cls, floor: !!o.floor, cuts: P_.cuts, flap: o.flap || null, collapse: slab ? false : o.collapse !== false };
+    P_.cls = o.cls || 'P1'; P_.def = { id, w, h, cls: P_.cls, floor: !!o.floor, cuts: P_.cuts, flap: o.flap || null, collapse: slab ? false : o.collapse !== false, anchors: o.anchors, posts: o.posts };
     P_.core = H.newPanel(P_.def); P_.hits = P_.core.hits;
     P_.flap = o.flap ? Object.assign({ open: false, k: 0, side: 1, sheet: null, mesh: null }, o.flap) : null;
     if (P_.flap) P_.flap.lines = P_.core.flap.lines.map(L => ({ a: [L.a[0] / 1000, L.a[1] / 1000], b: [L.b[0] / 1000, L.b[1] / 1000], len: L.len / 1000 }));
@@ -7109,7 +7352,7 @@ const TEAR = (() => {
     if (C.flap && C.flap.open && !flap0) { openFlap(P_); if (res !== 'collapse') res = 'flap'; }
     C.knife.forEach((L, i) => { const was = k0[i] || 0; if (L.closed && !(was & 2)) dropPiece(P_, P_.knife[i], i); else if (L.flap && !(was & 1) && !L.closed) knifeFlap(P_, P_.knife[i], i); });
     if (P_.slab) return res;   // (a slab never collapses / splits its collider: the solid stays, only the picture + the rays open)
-    if (C.collapsed) collapse(P_); else updateColliders(P_);
+    if (C.collapsed) collapse(P_); else { syncPieces(P_); updateColliders(P_); }
     return res;
   }
   /* world hit -> wire events -> state (fireShot / botShoot / explosions). opts.crater: a shotgun shot's ONE big crater (pellet 0).
@@ -7175,6 +7418,8 @@ const TEAR = (() => {
       else { const big = q.r > markMax(), rr = hrand(P_.id + 1, q.i + 1), n = big ? 9 : 7; c.beginPath(); for (let i = 0; i < n * 2; i++) { const a = i / (n * 2) * 6.283 + rr() * (big ? .3 : .2), r = q.r * R.holeVis * (big ? (i % 2 ? .95 + rr() * .1 : 1 + rr() * .35) : 1.12 + rr() * .08); const x = X(q.u + Math.cos(a) * r), y = Y(q.v + Math.sin(a) * r); if (!i) c.moveTo(x, y); else c.lineTo(x, y); } c.closePath(); c.fill(); }
       c.beginPath(); c.arc(X(q.u), Y(q.v), q.r * K.drawK * ppm + 1.5, 0, 6.2832); c.fill();
     }
+    // pieces that fell out / sag (part H): their cells are open (the same cells the rays pass: see == shoot)
+    if (P_.core.pieces.length) { const C = P_.core, gp = C.gc / 1000 * ppm, gr = C.grid; for (let j = 0; j < C.gy; j++) { let i = 0; while (i < C.gx) { if (gr[j * C.gx + i] !== 2) { i++; continue; } let k = i; while (k < C.gx && gr[j * C.gx + k] === 2) k++; c.fillRect(i * gp - .5, j * gp - .5, (k - i) * gp + 1, gp + 1); i = k; } } }
     // slits: a ragged torn strip (never narrower than the ray capsule) + the stretched star's opening
     for (const s of P_.slits) { const rr = hrand(P_.id + 7, s.i + 3), dx = s.b[0] - s.a[0], dy = s.b[1] - s.a[1], L = Math.hypot(dx, dy) || 1e-3, nx = -dy / L, ny = dx / L, k = Math.max(2, Math.ceil(L / .03)), top = [], bot = [];
       for (let j = 0; j <= k; j++) { const t = j / k, w = s.r * (j % 2 ? .95 + rr() * .15 : 1.05 + rr() * .3); const x = s.a[0] + dx * t, y = s.a[1] + dy * t; top.push([x + nx * w, y + ny * w]); bot.push([x - nx * w * (1 + rr() * .3), y - ny * w * (1 + rr() * .3)]); }
@@ -7190,7 +7435,7 @@ const TEAR = (() => {
     if (!s) { s = pool.filter(x => x.kind === 'fall').sort((a, b) => a.t0 - b.t0)[0] || pool.slice().sort((a, b) => a.t0 - b.t0)[0]; release(s); }
     s.m.geometry.dispose(); s.m.geometry = geo; s.m.material = P_.mat; s.m.position.set(0, 0, 0); s.m.scale.set(1, 1, 1); s.piv.position.set(0, 0, 0); s.piv.quaternion.identity();
     s.g.matrixAutoUpdate = true; s.g.position.set(0, 0, 0); s.g.quaternion.identity(); s.g.scale.set(1, 1, 1);
-    Object.assign(s, { busy: true, kind, P_, t0: performance.now(), k: 0, a: 0, av: 0, rest: 0, life: 0, landed: false, vel: null, spin: null });
+    Object.assign(s, { busy: true, kind, P_, t0: performance.now(), k: 0, a: 0, av: 0, rest: 0, life: 0, landed: false, vel: null, spin: null, vt: 0, flut: 0, landedAt: 0, flat: null });
     if (!s.g.parent) scene.add(s.g); s.g.visible = true; P_.sheets.push(s); TEAR.stats.sheets = pool.filter(x => x.busy).length; return s;
   }
   function release(s) { if (!s) return; s.busy = false; s.g.visible = false; if (s.P_) { const i = s.P_.sheets.indexOf(s); if (i >= 0) s.P_.sheets.splice(i, 1); } if (s.P_ && s.P_.flap && s.P_.flap.sheet === s) { s.P_.flap.sheet = null; s.P_.flap.mesh = null; } s.P_ = null; }
@@ -7239,6 +7484,69 @@ const TEAR = (() => {
     try { if (typeof psnd === 'function') psnd(P_.floor ? 'floor_break' : 'flap_tear', { pos: s.g.position.clone(), ref: 5, roll: 1, hrtf: true }); } catch (e) {}
     if (typeof PFX !== 'undefined') PFX.burst(s.g.position, { n: 30, cols: [P_.mat.color, PFX.TEAMC.cream], speed: 2, up: .6, size: [.05, .14] });
   }
+  /* ---------- STRUCTURAL INTEGRITY view (HOLES_SYSTEM part H): pieces the core cut loose fall (gravity + paper drag) or sag on a thin bridge ---------- */
+  // a piece's cells -> one paper sheet geometry (2 quads per row run + the cut edges), origin at (ou, ov) metres panel-local
+  function cellsGeo(P_, cells, ou, ov) {
+    const C = P_.core, g = C.gc / 1000, gx = C.gx, t = P_.t * .9 / 2, tile = P_.mat.userData.tile || 0, set = new Set(cells), pos = [], nor = [], uv = [];
+    const U = (u, v) => tile ? [u / tile, v / tile] : [u / P_.w, v / P_.h];
+    const quad = (a, b, c, d, n) => { for (const p of [a, b, c, a, c, d]) { pos.push(p[0] - ou, p[1] - ov, p[2]); nor.push(n[0], n[1], n[2]); const w = U(p[0] + (n[2] ? 0 : p[2]), p[1]); uv.push(w[0], w[1]); } };
+    const rows = new Map(); for (const c of cells) { const j = (c / gx) | 0; if (!rows.has(j)) rows.set(j, []); rows.get(j).push(c % gx); }
+    for (const [j, is] of rows) { is.sort((a, b) => a - b); let s = is[0], p = s;
+      const flush = () => { const u0 = s * g, u1 = Math.min(P_.w, (p + 1) * g), v0 = j * g, v1 = Math.min(P_.h, (j + 1) * g);
+        quad([u0, v0, t], [u1, v0, t], [u1, v1, t], [u0, v1, t], [0, 0, 1]); quad([u1, v0, -t], [u0, v0, -t], [u0, v1, -t], [u1, v1, -t], [0, 0, -1]); };
+      for (let k = 1; k < is.length; k++) { if (is[k] === p + 1) { p = is[k]; continue; } flush(); s = p = is[k]; } flush(); }
+    for (const c of cells) { const i = c % gx, j = (c / gx) | 0, u0 = i * g, u1 = (i + 1) * g, v0 = j * g, v1 = (j + 1) * g;   // torn edges (card thickness)
+      if (!set.has(c - 1) || i === 0) quad([u0, v1, t], [u0, v1, -t], [u0, v0, -t], [u0, v0, t], [-1, 0, 0]);
+      if (!set.has(c + 1) || i === gx - 1) quad([u1, v0, t], [u1, v0, -t], [u1, v1, -t], [u1, v1, t], [1, 0, 0]);
+      if (!set.has(c - gx)) quad([u0, v0, t], [u0, v0, -t], [u1, v0, -t], [u1, v0, t], [0, -1, 0]);
+      if (!set.has(c + gx)) quad([u1, v1, t], [u1, v1, -t], [u0, v1, -t], [u0, v1, t], [0, 1, 0]); }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setAttribute('uv2', new THREE.Float32BufferAttribute(uv, 2)); geo.computeBoundingSphere(); return geo;
+  }
+  // H4 numbers: areal density (kg/m2) per class -> terminal speed face-down; chips flutter, plates fall faster and land flat
+  const RHO_A = { P0: .08, P1: .45, P2: .9, P3: 1.6, P4: 2.5 }, STIFF = { P0: 1, P1: .85, P2: .6, P3: .4, P4: .3 };
+  function fallPhys(s, P_, area, seed) {
+    const vt = Math.sqrt(2 * (RHO_A[P_.cls] || .45) * 9.8 / (1.2 * 1.2)), rr = hrand(P_.id + 31, seed + 1);
+    s.vt = vt * (1 + 1.5 * Math.min(1, area / .5)); s.area = area;
+    if (area < .03) { s.flut = .15 + rr() * .2; s.fw = (1.5 + rr() * 1.5) * 6.283; s.fph = rr() * 6.283; s.spin.set((rr() - .5) * 4, (rr() - .5) * 4, (rr() - .5) * 4); s.vt = vt; }
+  }
+  // a piece the core cut loose: crumbs = a puff of chips, chips flutter down, plates fall and land flat, then fold away (H4)
+  function dropCells(P_, pc) {
+    const C = P_.core, g = C.gc / 1000, area = pc.n * g * g, cu = pc.cu / 1000, cv = pc.cv / 1000, side = P_.lastSide || 1, ctr = toWorld(P_, cu, cv, 0);
+    hideCells(P_, pc);
+    if (area < .01) { if (typeof PFX !== 'undefined') PFX.chips(ctr, new THREE.Vector3(0, 0, -side).transformDirection(P_.mesh.matrixWorld), P_.mat.color, P_.mat.userData.paper, Math.min(12, Math.max(3, Math.round(area / .0015)))); TEAR.stats.crumbs++; return null; }
+    const s = sheet(P_, cellsGeo(P_, pc.cells, cu, cv), 'fall'); s.g.position.copy(ctr); s.g.quaternion.setFromRotationMatrix(_inv.extractRotation(P_.mesh.matrixWorld));
+    const rr = hrand(P_.id + 17, pc.i + 1), n = new THREE.Vector3(0, 0, -side).transformDirection(P_.mesh.matrixWorld);
+    s.vel = n.multiplyScalar(P_.floor ? .05 : .5 + rr() * .4).add(new THREE.Vector3(0, P_.floor ? -.3 : .1, 0));
+    s.spin = new THREE.Vector3((rr() - .5) * 2, (rr() - .5) * 2, (rr() - .5) * 1.5); if (P_.floor) s.spin.multiplyScalar(.3);
+    fallPhys(s, P_, area, pc.i);
+    s.ground = typeof groundAt === 'function' ? groundAt(ctr.x, ctr.z, ctr.y - (P_.floor ? .3 : 0), .1) : R.groundY;
+    TEAR.stats.pieces++; return s;
+  }
+  // a piece hanging on a thin bridge: hinged there, it bends under its own weight (H4 rest angles x stiffness), a body pushes it
+  function sagCells(P_, pc) {
+    const C = P_.core, hu = pc.hu / 1000, hv = pc.hv / 1000, cu = pc.cu / 1000, cv = pc.cv / 1000; hideCells(P_, pc);
+    const s = sheet(P_, cellsGeo(P_, pc.cells, hu, hv), 'kflap'); inPanel(s, P_); s.piv.position.set(hu - P_.w / 2, hv - P_.h / 2, 0);
+    const du = cu - hu, dv = cv - hv, dl = Math.hypot(du, dv) || 1; s.axis = new THREE.Vector3(-dv / dl, du / dl, 0);
+    const out = new THREE.Vector3(du, dv, 0), z = new THREE.Vector3().crossVectors(s.axis, out).z; s.cz = z > 0 ? 1 : -1;
+    _ax.set(0, -1, 0).transformDirection(_inv.copy(P_.mesh.matrixWorld).invert());   // world down in panel space
+    const st = STIFF[P_.cls] || .85; let rest, tz;
+    if (P_.floor) { tz = _ax.z < 0 ? -1 : 1; rest = 1.4 * st; }
+    else { tz = -(P_.lastSide || 1); const below = -dv / dl, hz = Math.abs(s.axis.x); rest = (hz * (.25 + Math.PI / 2 * (1 - below) * .92) + (1 - hz) * .5) * st; }
+    s.sgn = s.cz * tz; s.rest = rest * s.sgn; s.a = 0; s.av = 2 * s.sgn; s.centre = toWorld(P_, cu, cv, 0); TEAR.stats.sags++; return s;
+  }
+  const _cellIn = (P_, u, v) => { const C = P_.core; return u >= 0 && v >= 0 && u <= P_.w && v <= P_.h && C.grid[H.cellOf(C, u * 1000, v * 1000)] === 2; };
+  function hideCells(P_, pc) { if (typeof PAPER_MARKS !== 'undefined' && PAPER_MARKS.hideTear) PAPER_MARKS.hideTear(P_.id, (u, v) => _cellIn(P_, u, v)); }
+  // after events: start the sheet of every new / changed piece (fall, sag, sag that tore off, sag whose hinge moved)
+  function syncPieces(P_) {
+    const C = P_.core; if (!C.pieces.length) return; P_.pseen = P_.pseen || []; P_.psheet = P_.psheet || [];
+    for (const pc of C.pieces) { const st = pc.k + ':' + (pc.rev | 0); if (P_.pseen[pc.i] === st) continue; P_.pseen[pc.i] = st;
+      const old = P_.psheet[pc.i], live = old && old.busy && old.P_ === P_ && old.kind === 'kflap';
+      const ns = pc.k === 'sag' ? sagCells(P_, pc) : dropCells(P_, pc);
+      if (live && ns && ns.kind === 'fall') { old.m.updateMatrixWorld(true); _v.set((pc.cu - pc.hu) / 1000, (pc.cv - pc.hv) / 1000, 0).applyMatrix4(old.m.matrixWorld); ns.g.position.copy(_v); ns.g.quaternion.setFromRotationMatrix(_inv.extractRotation(old.m.matrixWorld)); }   // tears off from where it hung
+      if (old && old.busy && old.P_ === P_) release(old); P_.psheet[pc.i] = ns;
+      if (pc.k === 'fall' && pc.torn) TEAR.stats.tornOff++; }
+  }
   /* ---------- colliders (C5): split round openings >= .6 x 1.0 m, none after a collapse ---------- */
   function setBoxes(P_, rects) {
     for (const b of P_.boxes) { const i = world.colliders.indexOf(b); if (i >= 0) world.colliders.splice(i, 1); }
@@ -7284,19 +7592,23 @@ const TEAR = (() => {
         s.av += (-(s.a - rest) * 30 - s.av * 4) * dt; s.a += s.av * dt; s.piv.quaternion.setFromAxisAngle(s.axis, s.a); }
       else if (s.kind === 'fall') {
         s.life += dt;
-        if (!s.landed) { s.vel.y -= 9.8 * dt; s.g.position.addScaledVector(s.vel, dt); _v.copy(s.spin).multiplyScalar(dt); _q.setFromEuler(new THREE.Euler(_v.x, _v.y, _v.z)); s.g.quaternion.multiply(_q);
-          if (s.g.position.y <= s.ground + .03 || s.life > 3) { s.landed = true; s.g.position.y = Math.max(s.g.position.y, s.ground + .03); const yaw = new THREE.Euler().setFromQuaternion(s.g.quaternion, 'YXZ').y; s.flat = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, yaw, 0, 'YXZ')); } }
+        if (!s.landed) { s.vel.y -= 9.8 * dt;
+          if (s.vt) { if (s.vel.y < -s.vt) s.vel.y += (-s.vt - s.vel.y) * Math.min(1, dt * 6); const dr = Math.max(0, 1 - dt * (s.flut ? 2.5 : .8)); s.vel.x *= dr; s.vel.z *= dr; }   // paper drag (H4)
+          if (s.flut) { const w = Math.cos(s.life * s.fw + s.fph) * s.flut * s.fw * dt * .5; s.g.position.x += w * Math.cos(s.fph); s.g.position.z += w * Math.sin(s.fph); }   // chips sway as they flutter
+          s.g.position.addScaledVector(s.vel, dt); _v.copy(s.spin).multiplyScalar(dt); _q.setFromEuler(new THREE.Euler(_v.x, _v.y, _v.z)); s.g.quaternion.multiply(_q);
+          if (s.g.position.y <= s.ground + .03 || s.life > (s.vt ? 8 : 3)) { s.landed = true; s.g.position.y = Math.max(s.g.position.y, s.ground + .03); const yaw = new THREE.Euler().setFromQuaternion(s.g.quaternion, 'YXZ').y; s.flat = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, yaw, 0, 'YXZ')); } }
         else if (s.flat) s.g.quaternion.slerp(s.flat, Math.min(1, dt * 10));
-        if (s.life > R.fallLife) { const k = Math.max(0, 1 - (s.life - R.fallLife) / .5); s.g.scale.setScalar(Math.max(.001, k)); if (k <= 0) release(s); } }
+        const life = s.vt ? (s.landedAt || (s.landed ? (s.landedAt = s.life) : 1e9)) + R.fallLife : R.fallLife;   // pieces: 4 s after they land
+        if (s.life > life) { const k = Math.max(0, 1 - (s.life - life) / .5); if (s.vt) s.g.scale.set(Math.max(.001, k), Math.max(.001, k * k), 1); else s.g.scale.setScalar(Math.max(.001, k)); if (k <= 0) release(s); } }   // folds in half and goes (like weapon drops)
     }
   }
   // every panel back to new (match start): state, masks, colliders, sheets
   function reset() {
     for (const s of pool) release(s);
-    for (const P_ of panels) { P_.core = H.newPanel(P_.def); P_.hits = P_.core.hits; P_.holes.length = 0; P_.slits.length = 0; P_.knife = []; P_.live = null; P_.gone = false; P_.boxKey = null;
+    for (const P_ of panels) { P_.core = H.newPanel(P_.def); P_.hits = P_.core.hits; P_.holes.length = 0; P_.slits.length = 0; P_.knife = []; P_.live = null; P_.gone = false; P_.boxKey = null; P_.pseen = []; P_.psheet = [];
       if (P_.flap) { P_.flap.open = false; P_.flap.k = 0; P_.flap.sheet = null; P_.flap.mesh = null; } sync(P_); if (P_.slab) { if (P_.cv) redraw(P_); continue; } redraw(P_);
       const bx = new THREE.Box3().setFromObject(P_.mesh); if (P_.floor) { bx.walk = true; bx.tearFloor = P_.id; } for (const b of P_.boxes) { const i = world.colliders.indexOf(b); if (i >= 0) world.colliders.splice(i, 1); } world.colliders.push(bx); P_.boxes = [bx]; }
-    TEAR.stats.holes = 0; TEAR.stats.flaps = 0; TEAR.stats.collapses = 0;
+    TEAR.stats.holes = 0; TEAR.stats.flaps = 0; TEAR.stats.collapses = 0; TEAR.stats.pieces = 0; TEAR.stats.sags = 0; TEAR.stats.crumbs = 0; TEAR.stats.tornOff = 0;
   }
   // an explosion next to cardboard: a big ragged hole where the panel is closest (within `reach` m)
   function blast(pt, reach) {
@@ -7320,11 +7632,20 @@ const TEAR = (() => {
     return { holes: C.holes.map(c => [c.u / 1000, c.v / 1000, c.r / 1000]), slits: C.slits.length, flap: C.flap ? C.flap.open : null, collapsed: C.collapsed, key: H.serialize(C) }; }
   const stateKey = id => H.serialize(panels[id].core);
   // draw-call / memory numbers for the perf test
+  // load-time prewarm: one tiny falling sheet per distinct panel material (same geometry layout as a real piece: uv + uv2, no index,
+  // casting shadows) shown for the one warm-up draw, so the main + shadow-depth programs of falling / sagging pieces exist before play.
+  // Returns the cleanup (call it right after the draw).
+  function warmSheets() {
+    const seen = new Set(), made = [];
+    for (const P_ of panels) { if (!P_.mat || seen.has(P_.mat.uuid) || !P_.core) continue; seen.add(P_.mat.uuid);
+      try { const s = sheet(P_, cellsGeo(P_, [0], 0, 0), 'warm'); s.g.position.set(0, -60, 0); s.g.updateMatrixWorld(true); s.m.frustumCulled = false; made.push(s); } catch (e) {} }
+    return () => { for (const s of made) release(s); TEAR.stats.sheets = pool.filter(x => x.busy).length; };
+  }
   const renderStats = () => ({ merged: [...groups.values()].filter(g => g.mesh).length, pages: pages.length, panels: panels.length, sheets: pool.filter(s => s.busy).length, queued: upQ.size,
     atlasMB: +(pages.length * R.atlas * R.atlas * 2 / 1048576).toFixed(1) });
   const internals = { alloc, pages, holeHook, tearMaterials, upQ, ensureRaster };   // for 63-destructible.js (baked-mesh holes)
-  return { internals, R, panels, passed, add, hit, blast, apply, cut, cutApply, setLive, openEndNear, uvOf, sideOf, redraw, floorOpen, openAt, openAtWorld, update, reset, clear, replay, stateKey, flush, renderStats,
-    thinK, maxLayers, passK, gunKey, stats: { holes: 0, flaps: 0, collapses: 0, uploads: 0, sheets: 0, wear: 0, breaches: 0 } };
+  return { internals, R, panels, passed, add, hit, blast, apply, cut, cutApply, setLive, openEndNear, uvOf, sideOf, redraw, floorOpen, warmSheets, openAt, openAtWorld, update, reset, clear, replay, stateKey, flush, renderStats,
+    thinK, maxLayers, passK, gunKey, stats: { holes: 0, flaps: 0, collapses: 0, uploads: 0, sheets: 0, wear: 0, breaches: 0, pieces: 0, sags: 0, crumbs: 0, tornOff: 0 } };
 })();
 /* ================= DESTRUCTIBLE BY DEFAULT (owner 2026-11-13: "everything needs to be punchable and holes can penetrate to destroy ... this is the base of the game") =================
    RULE: every map collider is holeable unless the DESIGNER flags it: a note containing "[noHole:<why>]" (map edge / spawn walls / the desk).
@@ -7565,7 +7886,7 @@ function playerKillFx(r, crit, weapon, dir, ex = {}) {
   if (weapon === 'nade' || weapon === 'nova') medals.push('explosive');
   if (near > 38 && weapon !== 'nade' && weapon !== 'nova') medals.push('longshot');
   if (near < 3 && weapon !== 'knife') medals.push('pointblank');
-  if ((P.collat || 0) > 1) medals.push('collateral');
+  if (ex.collat === 2) medals.push('collateral');   // exactly when this shot's 2nd kill lands (3rd+ only upgrades the callout)
   if ((weapon === 'sniper' || weapon === 'helix' || weapon === 'obelisk') && P.ads < .5 && near > 8) medals.push('noscope');
   if (!P.onGround && weapon !== 'nade') medals.push('airborne');
   const pts = Math.round(100 * (1 + G.combo * .5) * (crit ? 1.5 : 1)) + medals.length * 25 + (ex.wb ? 50 : 0); G.score += pts; G.kills++; if (crit) G.heads++;
