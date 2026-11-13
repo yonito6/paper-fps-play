@@ -3,6 +3,11 @@
 Blocky origami hand (owner sheet HAND OPEN / AIRPLANE-GRIP: square wrist block, wedge palm, three chunky 2-segment fingers, 2-segment thumb) + faceted forearm, beige carton edges, built on **Sector Nine's glove rig**:
 same bone names, same rest pose, same pose format, so `modules/hands.js` works with it unchanged (swap the file it loads).
 
+## Look (wp-hands2, 2026-11-13, owner: "Origami hands like ref1/ref3: chunky, white cuffs, contrast vs gun")
+- Hand (wrist block, palm, 3 fingers x 2, thumb x 2) = greige paper, colour sampled from her ref1 fingers (lit median 209,176,166; albedo HAND_GREIGE 0.84,0.77,0.71): contrasts with the blue (and red) guns.
+- Every finger segment + the back of the palm has a peaked fold ridge (ref3 knuckle blocks); thickness x1.18 (HAND_CHUNK).
+- Sleeve = team colour (ref3); white cuff band proud of the sleeve at the wrist + 2 white wrap bands up the forearm (ref1 wraps). Rig, bones, poses and grip sockets unchanged.
+
 ## Status
 | Item | Status |
 |---|---|

@@ -3818,7 +3818,7 @@ function desktownFromData(PM) {
     { const pen = wallClass(c); if (pen) { bx.pen = pen; m.userData.penBoxes = [bx]; m.userData.wall = pen; } }   // WALLBANG class (docs/MECHANICS.md)
     { const sm = dmask ? DESTRUCT.axesOf(ci) : 0;   // faces a slab answers on: this marks-only proxy must stay silent there (else it would shadow the slab)
       if (sm) m.raycast = function (rc, out) { const t = []; THREE.Mesh.prototype.raycast.call(this, rc, t); for (const hh of t) { const n = hh.face && hh.face.normal, ax = n ? (Math.abs(n.x) > .5 ? 0 : Math.abs(n.y) > .5 ? 1 : 2) : -1; if (ax < 0 || !(sm & (1 << ax))) out.push(hh); } }; }
-    m.updateMatrixWorld(); scene.add(m); world.meshes.push(m);
+    m.updateMatrixWorld(); scene.add(m); world.meshes.push(m); if (dmask) DESTRUCT.bind(ci, bx, m);
   }
   const gm = {}; root.traverse(o => { if (o.isMesh && o.material && o.material.name && !gm[o.material.name]) gm[o.material.name] = o.material; });
   const TB = new Map(), glMat = name => { const b = gm[name]; if (!b) return null; if (TB.has(b)) return TB.get(b); const c = b.clone(); c.vertexColors = false; c.lightMap = null; c.onBeforeCompile = THREE.Material.prototype.onBeforeCompile; c.userData = { tile: 2, paper: /paper/.test(name) ? 'cream' : 'kraft' }; c.color.multiplyScalar(.92); TB.set(b, c); return c; };   // (a Map, never userData: Material.clone JSON-copies userData)
@@ -7315,7 +7315,7 @@ const TEAR = (() => {
     if (slab) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(o.rx || 0, o.rot || 0, 0, 'YXZ'); } else if (o.floor) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(-Math.PI / 2, o.rot || 0, 0, 'YXZ'); } else { mesh.position.set(o.x, o.y + h / 2, o.z); mesh.rotation.y = o.rot || 0; }
     mesh.userData.surface = 'paper'; mesh.userData.dyn = true; mesh.userData.tear = id;
     scene.add(mesh); mesh.updateMatrixWorld(true); world.meshes.push(mesh); P_.mesh = mesh; if (typeof targetsDirty !== 'undefined') targetsDirty = true;
-    P_.cls = o.cls || 'P1'; P_.def = { id, w, h, cls: P_.cls, floor: !!o.floor, cuts: P_.cuts, flap: o.flap || null, collapse: slab ? false : o.collapse !== false, anchors: o.anchors, posts: o.posts };
+    P_.cls = o.cls || 'P1'; P_.def = { id, w, h, cls: P_.cls, floor: !!o.floor || !!o.slabFloor, cuts: P_.cuts, flap: o.flap || null, collapse: slab ? false : o.collapse !== false, anchors: o.anchors, posts: o.posts };
     P_.core = H.newPanel(P_.def); P_.hits = P_.core.hits;
     P_.flap = o.flap ? Object.assign({ open: false, k: 0, side: 1, sheet: null, mesh: null }, o.flap) : null;
     if (P_.flap) P_.flap.lines = P_.core.flap.lines.map(L => ({ a: [L.a[0] / 1000, L.a[1] / 1000], b: [L.b[0] / 1000, L.b[1] / 1000], len: L.len / 1000 }));
@@ -7350,6 +7350,7 @@ const TEAR = (() => {
     if (side) P_.lastSide = side; sync(P_); if (weapon !== 'knife-cut') markHoles(P_, h0, s0, side || 1, weapon, dir);
     redraw(P_);
     if (C.flap && C.flap.open && !flap0) { openFlap(P_); if (res !== 'collapse') res = 'flap'; }
+    if (P_.slab && P_.col) slabCollider(P_);   // (before the piece drops: its landing height must see the opening)
     C.knife.forEach((L, i) => { const was = k0[i] || 0; if (L.closed && !(was & 2)) dropPiece(P_, P_.knife[i], i); else if (L.flap && !(was & 1) && !L.closed) knifeFlap(P_, P_.knife[i], i); });
     if (P_.slab) return res;   // (a slab never collapses / splits its collider: the solid stays, only the picture + the rays open)
     if (C.collapsed) collapse(P_); else { syncPieces(P_); updateColliders(P_); }
@@ -7455,9 +7456,10 @@ const TEAR = (() => {
     const s = sheet(P_, polyGeo(pts, cu, cv, P_.t * .9), 'fall'), side = P_.lastSide || 1;
     s.g.position.copy(toWorld(P_, cu, cv, 0)); s.g.quaternion.setFromRotationMatrix(_inv.extractRotation(P_.mesh.matrixWorld));
     const n = new THREE.Vector3(0, 0, -side).transformDirection(P_.mesh.matrixWorld), rr = hrand(P_.id + 11, idx + 1);
-    s.vel = n.multiplyScalar(P_.floor ? .2 : .9).add(new THREE.Vector3(0, P_.floor ? -.5 : .4, 0)); s.spin = new THREE.Vector3((rr() - .5) * 3, (rr() - .5) * 3, (rr() - .5) * 2);
-    if (P_.floor) s.spin.multiplyScalar(.4);
-    s.ground = (typeof groundAt === 'function' ? groundAt(s.g.position.x, s.g.position.z, s.g.position.y - (P_.floor ? .6 : 0), .1) : R.groundY);
+    const fl = isFloorP(P_); if (fl && P_.slab) n.set(0, 0, 0);
+    s.vel = n.multiplyScalar(fl ? .2 : .9).add(new THREE.Vector3(0, fl ? -.5 : .4, 0)); s.spin = new THREE.Vector3((rr() - .5) * 3, (rr() - .5) * 3, (rr() - .5) * 2);
+    if (fl) s.spin.multiplyScalar(.4);
+    s.ground = (typeof groundAt === 'function' ? groundAt(s.g.position.x, s.g.position.z, s.g.position.y - (fl ? .6 : 0), .1) : R.groundY);
     if (typeof PAPER_MARKS !== 'undefined' && PAPER_MARKS.hideTear) PAPER_MARKS.hideTear(P_.id, (u, v) => inPolyM(pts, u, v));
     if (typeof PFX !== 'undefined') PFX.burst(s.g.position, { n: 18, cols: [P_.mat.color, PFX.TEAMC.cream], speed: 1.5, up: .5, size: [.05, .12] });
   }
@@ -7554,6 +7556,15 @@ const TEAR = (() => {
       if (P_.floor) { b.walk = true; b.tearFloor = P_.id; } world.colliders.push(b); return b; });
     if (typeof targetsDirty !== 'undefined') targetsDirty = true;
   }
+  // KNIFE on a map slab: the opening (>= .6 x 1.0 m) splits the collider round it, like a TEAR panel's (floor: you drop through; wall: you walk through). First face to open owns it.
+  const isFloorP = P_ => P_.floor || (P_.slab && P_.slabInfo && P_.slabInfo.axis === 1);
+  function slabCollider(P_) {
+    const st = P_.col; if (!st || (st.owner && st.owner !== P_)) return; const rs = H.solidRects(P_.core), key = rs === null ? '' : JSON.stringify(rs); if (key === st.key) return;
+    st.key = key; st.owner = rs === null ? null : P_; for (const b of st.cur) { const i = world.colliders.indexOf(b); if (i >= 0) world.colliders.splice(i, 1); }
+    const nb = rs === null ? [st.orig] : rs.map(r => { const b = new THREE.Box3(); for (const [u, v] of [[r[0], r[1]], [r[2], r[1]], [r[0], r[3]], [r[2], r[3]]]) for (const z of [-P_.t / 2, P_.t / 2]) b.expandByPoint(toWorld(P_, u / 1000, v / 1000, z));
+      b.walk = st.orig.walk; b.pen = st.orig.pen; return b; });
+    st.cur = nb; for (const b of nb) world.colliders.push(b); st.m.userData.penBoxes = rs === null ? st.pen : nb; TEAR.stats.splits = (TEAR.stats.splits || 0) + 1; if (typeof targetsDirty !== 'undefined') targetsDirty = true;
+  }
   function updateColliders(P_) {
     const rs = H.solidRects(P_.core); if (rs === null) return; const key = JSON.stringify(rs); if (key === P_.boxKey) return; P_.boxKey = key; setBoxes(P_, rs);
   }
@@ -7569,7 +7580,7 @@ const TEAR = (() => {
   function cut(mesh, pts, side) {
     const P_ = panels[mesh.userData.tear]; if (!P_ || P_.core.collapsed) return null; if (side) P_.lastSide = side;
     P_.live = null; P_.liveHome = null; const r = cutApply(P_, pts);
-    if (r) { const a = pts[pts.length - 1]; tearEvent(toWorld(P_, a[0], a[1], 0), 'knife', r.closed ? 'cut-open' : r.flap ? 'cut-flap' : 'cut'); }
+    if (r) { const a = pts[pts.length - 1]; tearEvent(toWorld(P_, a[0], a[1], 0), 'knife', r.closed ? 'cut-open' : r.flap ? 'cut-flap' : 'cut', P_.cls, { panel: P_.id, cut: pts.map(p => [Math.round(p[0] * 1000), Math.round(p[1] * 1000)]) }); }
     return r;
   }
   function setLive(P_, pts, home) { P_.live = pts && pts.length > 1 ? pts : null; P_.liveHome = pts ? home || pts[0] : null; redraw(P_); }
@@ -7606,7 +7617,7 @@ const TEAR = (() => {
   function reset() {
     for (const s of pool) release(s);
     for (const P_ of panels) { P_.core = H.newPanel(P_.def); P_.hits = P_.core.hits; P_.holes.length = 0; P_.slits.length = 0; P_.knife = []; P_.live = null; P_.gone = false; P_.boxKey = null; P_.pseen = []; P_.psheet = [];
-      if (P_.flap) { P_.flap.open = false; P_.flap.k = 0; P_.flap.sheet = null; P_.flap.mesh = null; } sync(P_); if (P_.slab) { if (P_.cv) redraw(P_); continue; } redraw(P_);
+      if (P_.flap) { P_.flap.open = false; P_.flap.k = 0; P_.flap.sheet = null; P_.flap.mesh = null; } sync(P_); if (P_.slab) { const st = P_.col; if (st && st.cur[0] !== st.orig) { for (const b of st.cur) { const i = world.colliders.indexOf(b); if (i >= 0) world.colliders.splice(i, 1); } world.colliders.push(st.orig); st.cur = [st.orig]; st.key = ''; st.owner = null; st.m.userData.penBoxes = st.pen; } if (P_.cv) redraw(P_); continue; } redraw(P_);
       const bx = new THREE.Box3().setFromObject(P_.mesh); if (P_.floor) { bx.walk = true; bx.tearFloor = P_.id; } for (const b of P_.boxes) { const i = world.colliders.indexOf(b); if (i >= 0) world.colliders.splice(i, 1); } world.colliders.push(bx); P_.boxes = [bx]; }
     TEAR.stats.holes = 0; TEAR.stats.flaps = 0; TEAR.stats.collapses = 0; TEAR.stats.pieces = 0; TEAR.stats.sags = 0; TEAR.stats.crumbs = 0; TEAR.stats.tornOff = 0;
   }
@@ -7621,7 +7632,9 @@ const TEAR = (() => {
   function floorOpen(id, x, y, z, r) { const P_ = panels[id]; if (!P_ || !P_.floor) return false; if (P_.core.collapsed) return true; _lp.set(x, y, z); const [u, v] = toLocal(P_, _lp);
     for (const [du, dv] of [[0, 0], [r * .6, 0], [-r * .6, 0], [0, r * .6], [0, -r * .6]]) if (!H.openAt(P_.core, u + du, v + dv)) return false; return true; }
   // (kind: hole / grow / flap / collapse / cut* / dent / crack / breach; cls: the panel's material class, so the sound can follow how thick it is)
-  function tearEvent(p, weapon, kind, cls) { try { dispatchEvent(new CustomEvent('foldiers:tear', { detail: { x: p.x, y: p.y, z: p.z, weapon, kind, cls: cls || 'P1' } })); } catch (e) {} }
+  function tearEvent(p, weapon, kind, cls, wire) { try { dispatchEvent(new CustomEvent('foldiers:tear', { detail: Object.assign({ x: p.x, y: p.y, z: p.z, weapon, kind, cls: cls || 'P1' }, wire || null) })); } catch (e) {} }
+  // ONLINE: a knife cut crosses the wire as ONE small event {panel, cut:[[u_mm,v_mm]..]} (<= ~120 points, ~0.5 kB; docs/HOLES_SYSTEM.md CUT event). A remote client replays it on its own copy of the panel (same shared core -> same opening).
+  function cutRemote(id, mm, side) { const P_ = panels[id]; if (!P_ || P_.core.collapsed || !Array.isArray(mm) || mm.length < 2 || mm.length > H.K.cutMaxPts + 2) return null; if (side) P_.lastSide = side; return cutApply(P_, mm.map(p => [p[0] / 1000, p[1] / 1000])); }
   function clear() {   // map unloaded (clearMap disposes the proxies; the merged meshes, sheets and atlas pages are ours)
     for (const gr of groups.values()) { if (gr.mesh) { gr.mesh.parent && gr.mesh.parent.remove(gr.mesh); gr.mesh.geometry.dispose(); } gr.m.dispose(); gr.d.dispose(); } groups.clear();
     for (const s of pool) { s.g.parent && s.g.parent.remove(s.g); s.m.geometry.dispose(); } pool.length = 0;
@@ -7644,7 +7657,7 @@ const TEAR = (() => {
   const renderStats = () => ({ merged: [...groups.values()].filter(g => g.mesh).length, pages: pages.length, panels: panels.length, sheets: pool.filter(s => s.busy).length, queued: upQ.size,
     atlasMB: +(pages.length * R.atlas * R.atlas * 2 / 1048576).toFixed(1) });
   const internals = { alloc, pages, holeHook, tearMaterials, upQ, ensureRaster };   // for 63-destructible.js (baked-mesh holes)
-  return { internals, R, panels, passed, add, hit, blast, apply, cut, cutApply, setLive, openEndNear, uvOf, sideOf, redraw, floorOpen, warmSheets, openAt, openAtWorld, update, reset, clear, replay, stateKey, flush, renderStats,
+  return { internals, R, panels, passed, add, hit, blast, apply, cut, cutApply, setLive, cutRemote, openEndNear, uvOf, sideOf, redraw, floorOpen, warmSheets, openAt, openAtWorld, update, reset, clear, replay, stateKey, flush, renderStats,
     thinK, maxLayers, passK, gunKey, stats: { holes: 0, flaps: 0, collapses: 0, uploads: 0, sheets: 0, wear: 0, breaches: 0, pieces: 0, sags: 0, crumbs: 0, tornOff: 0 } };
 })();
 /* ================= DESTRUCTIBLE BY DEFAULT (owner 2026-11-13: "everything needs to be punchable and holes can penetrate to destroy ... this is the base of the game") =================
@@ -7692,7 +7705,7 @@ const DESTRUCT = (() => {
         const f = FRAME[a], w = dim[f.u], h = dim[f.v], t = dim[a];
         if (Math.min(w, h) < .1 || w * h < .04) continue;                                 // a sliver edge: nobody can hit it squarely
         const ppm = Math.max(14, Math.min(48, Math.sqrt(90000 / (w * h))));               // big faces get a coarser mask (<= ~160k px)
-        const P_ = TEAR.add({ slab: true, cls, x: ctr[0], y: ctr[1], z: ctr[2], rx: f.rx, rot: f.ry, w, h, t: Math.max(.02, t), ppm, mat });
+        const P_ = TEAR.add({ slab: true, cls, x: ctr[0], y: ctr[1], z: ctr[2], rx: f.rx, rot: f.ry, w, h, t: Math.max(.02, t), ppm, mat, slabFloor: a === 1 });
         P_.slabInfo = { col: i, axis: a, cls }; P_.onRaster = writeHuv; P_.vlist = []; (slabsByCol.get(i) || slabsByCol.set(i, []).get(i))[a] = P_; masks[i] |= 1 << a; S.slabs++; any = true;
       }
       if (any) S.colliders++;
@@ -7779,10 +7792,12 @@ const DESTRUCT = (() => {
         h.setXY(vi, (P_.rect.x + Math.max(0, Math.min(P_.w, u)) * ppm) / Sz, (P_.rect.y + Math.max(0, Math.min(P_.h, v)) * ppm) / Sz); if (vi < lo) lo = vi; if (vi > hi) hi = vi; }
       if (hi - lo + 1 < h.count * .3) h.updateRange = { offset: lo * 2, count: (hi - lo + 1) * 2 }; else h.updateRange = { offset: 0, count: -1 }; h.needsUpdate = true; }
   }
+  // KNIFE (76-knife-slice.js): the map's real collider (+ its raycast proxy) of collider ci, so a big cut-out can split the solid round the opening (floor: you fall through; wall: you walk through)
+  function bind(ci, bx, m) { const L = slabsByCol && slabsByCol.get(ci); if (!L) return; const st = { orig: bx, m, pen: m.userData.penBoxes, cur: [bx], owner: null, key: '' }; for (const P_ of L) if (P_) P_.col = st; }
   const info = () => Object.assign({ pages: TEAR.internals.pages.length }, S);
   // slab axes present for a collider (the marks-only proxy must not answer on those faces)
   const axesOf = i => { const L = slabsByCol && slabsByCol.get(i); return L ? (L[0] ? 1 : 0) | (L[1] ? 2 : 0) | (L[2] ? 4 : 0) : 0; };
-  return { build, adopt, classOf, noHole, axesOf, info, S, AX };
+  return { build, adopt, bind, classOf, noHole, axesOf, info, S, AX };
 })();
 /* ================= deaths that match what killed you ================= */
 const DEATH_OF = { nova: 'blast', seeker: 'blast', nade: 'blast', breacher: 'blast', judge: 'blast', cryo: 'freeze', inferno: 'burn', arc: 'shock', helix: 'vapor', void: 'vapor',
