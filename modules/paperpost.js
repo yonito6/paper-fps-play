@@ -153,10 +153,13 @@ if (vUv.x >= ppRuler.x && vUv.x <= ppRuler.z && vUv.y >= ppRuler.y && vUv.y <= p
   // build the soft banners: a sheet sagging between its rod (top), curling at the hem, with a V cut; the emblem as a separate paper layer
   function buildSheets(groups) {
     const grp = new T.Group(); grp.name = 'art_banners'; const byTeam = { blue: [], red: [] }, embByTeam = { blue: [], red: [] };
+    const placed = [];   // WP-GFX: the print atlas has blue AND red banner quads in the same spot (both teams' banners built there = the two sheets z-fight: a blue/red flashing banner). One banner per spot.
     for (const gr of groups) {
       const w = Math.max(gr.max.x - gr.min.x, gr.max.z - gr.min.z), h = gr.max.y - gr.min.y; if (w < .4 || h < .6) continue;
       const n = gr.n.normalize(); const team = /blue/.test(gr.cell.k) ? 'blue' : 'red', emb = /boat/.test(gr.cell.k) ? 'boat' : 'crane';
       const centre = new T.Vector3((gr.min.x + gr.max.x) / 2, gr.max.y, (gr.min.z + gr.max.z) / 2).addScaledVector(n, .02);
+      if (placed.some(q => q.c.distanceTo(centre) < Math.max(.5, w * .6) && q.n.dot(n) > .7)) { BAN.dup = (BAN.dup || 0) + 1; continue; }
+      placed.push({ c: centre, n: n.clone() });
       const sheet = bannerSheet(w, h, gr.cx * 7.1 + gr.cz * 3.3), m = new T.Matrix4().makeRotationY(Math.atan2(n.x, n.z)).setPosition(centre);
       sheet.applyMatrix4(m); byTeam[team].push(sheet);
       const e = emblemSheet(w, h, emb === 'boat' ? 1 : 0); e.applyMatrix4(m); embByTeam[team].push(e);

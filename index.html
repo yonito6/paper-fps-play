@@ -790,6 +790,11 @@ body #pHint{position:absolute!important;left:calc(24px + env(safe-area-inset-lef
 body #pHint.on{opacity:1;transform:rotate(-.6deg)}body #pHint:empty{display:none}
 @media (max-width:700px){body #hud .corner.bl{bottom:calc(112px + env(safe-area-inset-bottom,0px))!important;left:16px!important}}
 @media (max-width:700px){body #pHint{top:calc(84px + env(safe-area-inset-top,0px));left:16px;max-width:calc(100vw - 32px)!important;font-size:15px!important}}
+/* ---- UI pass wp-ui: HUD scales with the screen (1440p / 4K), hint never runs under the score, kill-feed rows never touch ---- */
+body #pHint{box-sizing:border-box!important;width:max-content;max-width:min(440px,calc(50vw - 230px))!important}
+#kfeed{gap:10px!important}#kfeed .kf{flex:none}
+@media (min-width:2200px){#mxHud,#hud .corner.bl,#hud .corner.br,#pHint,#hud .corner.tr,#wxPlanes,#pause .sheet,#mend .sheet,#death .huge,#deathBy,#deathT,#kcCard,#kcBan,#kcSkip,#killcam .kc-top{zoom:1.5}#wxPlanes{bottom:98px!important}}
+@media (min-width:3400px){#mxHud,#hud .corner.bl,#hud .corner.br,#pHint,#hud .corner.tr,#wxPlanes,#pause .sheet,#mend .sheet,#death .huge,#deathBy,#deathT,#kcCard,#kcBan,#kcSkip,#killcam .kc-top{zoom:2.2}#wxPlanes{bottom:98px!important}}
 </style>
 
 <div id="game"></div>
@@ -3404,6 +3409,7 @@ let DESKTOWN_DATA = null;   // { D: data/paper/map_desktown.json, gltf } from th
 // loads the MAP agent's Desk Town (assets/paper/map/desktown.glb + data/paper/map_desktown.json) before the build; falls back to the
 // grey-box layout below when they are missing or broken. Also sets the map size, spawns, camps and the team spawn layout.
 async function desktownPreload(def) {
+  DISTRICT_DATA = await desktownDistrictLoad();
   if (window.__paperGreybox) { DESKTOWN_DATA = null; return; }
   const v = '?v=' + Date.now();
   const D = await fetch('data/paper/map_desktown.json' + v, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
@@ -3494,6 +3500,7 @@ function desktownBuild() {
   const L = DESKTOWN_LOOK, sky = { zen: L.zen, mid: L.mid, hor: L.hor, low: L.low, sunDir: L.sunDir, sunCol: L.sunCol, sunSize: 900, sunGlow: .45, cloud: [1, .99, .96], cloudAmt: .6 };
   themed({ sky, fog: [...L.fog, L.fogD], hemi: [L.hemiSky, L.hemiGround, DESKTOWN_DATA && DESKTOWN_DATA.lm ? L.hemiLM : L.hemi], sunLight: [L.sunHex, L.sun], accents: [[[1.4, 1.2, .9], 0, 10, 30]], build() {
     MAT.step = PM('kraft');
+    if (DISTRICT_DATA) try { desktownDistrictBuild(); } catch (e) { console.warn('district', e); }
     if (DESKTOWN_DATA) { desktownFromData(PM); return; }
     mFloor(PM('mat'), 0x8a6440);
     desktownLayout(PM);
@@ -3504,6 +3511,8 @@ function desktownBuild() {
     sun.position.copy(new THREE.Vector3(...L.sunDir).normalize()).multiplyScalar(90);
     Object.assign(sun.shadow.camera, { left: -62, right: 62, top: 62, bottom: -62, near: 10, far: 220 }); sun.shadow.camera.updateProjectionMatrix(); sun.shadow.bias = -.0003; sun.shadow.normalBias = .04;
   }
+  // ?district preview: the district sits at DISTRICT_ORIGIN, far from the v1 map -> move the sun's shadow frustum there (real game shadows)
+  if (sun && DISTRICT_DATA) { const O = DISTRICT_ORIGIN; sun.position.add(new THREE.Vector3(O[0], O[1], O[2])); sun.target.position.set(O[0], O[1], O[2]); if (!sun.target.parent) scene.add(sun.target); sun.target.updateMatrixWorld(); }
 }
 function desktownLayout(PM) {
   const kraft = PM('kraft'), cream = PM('cream'), white = PM('white'), wood = PM('wood'), corr = PM('corr'), black = PM('black', { rough: .5 }), stripes = PM('stripes'), win = PM('window'), note = PM('note');
@@ -3606,6 +3615,31 @@ function desktownBackdrop(PM) {
   // giant stationery on the desk, far away (reads as a miniature on a desk)
   add(new THREE.CylinderGeometry(9, 9, 34, 24), PM('kraft'), -78, 17, 30); add(new THREE.BoxGeometry(60, 6, 40), PM('red'), 70, 3, -40); add(new THREE.BoxGeometry(58, 5, 38), PM('blue'), 70, 8.5, -40);
   add(new THREE.BoxGeometry(160, 2, 8), PM('wood'), 0, 1, -112); add(new THREE.CylinderGeometry(1.2, 1.2, 90, 6), PM('yellow'), 50, 1.2, 90).rotation.z = Math.PI / 2;
+}
+
+/* ---- map v2 district preview (docs/MAP_ASSEMBLY.md section 2): ?district=<id> loads ONE district module's preview GLB
+   (render/paper/map/districts/run_district.py -> assets/paper/map/district_<id>.glb + data/paper/district_<id>.json) at an offset far
+   south of the v1 map, with its colliders, and exposes window.__district.hero (the module's hero camera) for the in-game score shot.
+   Without the query nothing changes. */
+const DISTRICT_ORIGIN = [0, 0, 400];
+let DISTRICT_DATA = null;
+async function desktownDistrictLoad() {
+  const m = /[?&]district=(\w+)/.exec(location.search); if (!m) return null;
+  try { const v = '?v=' + Date.now(), J = await fetch('data/paper/district_' + m[1] + '.json' + v, { cache: 'no-store' }).then(r => r.ok ? r.json() : null); if (!J) return null;
+    const gltf = await s2Gltf(false).loadAsync(J.glb + v); return { J, gltf }; }
+  catch (e) { console.warn('district', e); return null; }
+}
+function desktownDistrictBuild() {
+  const { J, gltf } = DISTRICT_DATA, O = DISTRICT_ORIGIN, root = gltf.scene;
+  root.position.set(O[0], O[1], O[2]);
+  root.traverse(o => { if (!o.isMesh) return; o.castShadow = o.receiveShadow = true; o.userData.noProbe = true;
+    const mm = o.material; if (mm) { mm.envMapIntensity = .35; if (mm.map) mm.map.anisotropy = 16; } });
+  scene.add(root); root.updateMatrixWorld(true);
+  for (const c of J.colliders) { const bx = new THREE.Box3(new THREE.Vector3(c[0] + O[0], c[1] + O[1], c[2] + O[2]), new THREE.Vector3(c[3] + O[0], c[4] + O[1], c[5] + O[2])); if (c[6] === 'walk') bx.walk = true; world.colliders.push(bx); }
+  const h = J.hero, p = h.p, yaw = (h.yaw_deg || 0) * Math.PI / 180, pit = (h.pitch_deg || 0) * Math.PI / 180;
+  const pos = [p[0] + O[0], p[1] + O[1], p[2] + O[2]], d = [-Math.sin(yaw) * Math.cos(pit), Math.sin(pit), -Math.cos(yaw) * Math.cos(pit)];
+  const hfov = 2 * Math.atan(18 / (h.mm || 24)), aspect = innerWidth / innerHeight, vfov = 2 * Math.atan(Math.tan(hfov / 2) / aspect) * 180 / Math.PI;
+  window.__district = { id: J.id, origin: O, meshes: root.children.length, hero: { pos, look: pos.map((v, i) => v + d[i] * 30), fov: vfov } };
 }
 /* ================= particles ================= */
 function makeParticles(max, additive) {
@@ -3764,7 +3798,9 @@ const PFX = (() => {
   const mat = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, color: 0xffffff });
   let mesh = null; const p = [];
   const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _s = new THREE.Vector3(), _pp = new THREE.Vector3(), _c = new THREE.Color();
-  let next = 0, live = 0;
+  let next = 0, live = 0, R = Math.random;   // R = Math.random, or a seeded generator while a kill effect spawns (deterministic from weapon/zone/dir/seed)
+  const mkRng = seed => { let a = (seed >>> 0) || 1; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; };
+  const useRng = fn => { R = fn || Math.random; };
   function init() {
     if (mesh) return mesh;
     mesh = new THREE.InstancedMesh(geo, mat, N); mesh.frustumCulled = false; mesh.castShadow = false; mesh.receiveShadow = false; mesh.userData.noProbe = true;
@@ -3776,23 +3812,23 @@ const PFX = (() => {
     if (!mesh) init();
     const q = p[next], i = next; next = (next + 1) % N;
     q.on = true; q.x = x; q.y = y; q.z = z; q.vx = vx; q.vy = vy; q.vz = vz; q.w = w; q.h = h; q.life = 0; q.max = life;
-    q.rx = Math.random() * 6.28; q.ry = Math.random() * 6.28; q.rz = Math.random() * 6.28; const sp = (o && o.spin) || 9;
-    q.ax = (Math.random() - .5) * sp; q.ay = (Math.random() - .5) * sp; q.az = (Math.random() - .5) * sp;
-    q.drag = (o && o.drag) || 2.2; q.fl = (o && o.flutter) ?? 1; q.ph = Math.random() * 6.28; q.g = (o && o.g) ?? 7;
+    q.rx = R() * 6.28; q.ry = R() * 6.28; q.rz = R() * 6.28; const sp = (o && o.spin) || 9;
+    q.ax = (R() - .5) * sp; q.ay = (R() - .5) * sp; q.az = (R() - .5) * sp;
+    q.drag = (o && o.drag) || 2.2; q.fl = (o && o.flutter) ?? 1; q.ph = R() * 6.28; q.g = (o && o.g) ?? 7;
     q.floor = (o && o.floor !== undefined) ? o.floor : (typeof groundAt === 'function' ? groundAt(x, z, y + .2, .05) : 0);
     mesh.setColorAt(i, col); if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   }
-  const rnd = (a, b) => a + Math.random() * (b - a);
+  const rnd = (a, b) => a + R() * (b - a);
   const TEAMC = { blue: new THREE.Color(0x2f4fb0), red: new THREE.Color(0xc0392b), white: new THREE.Color(0xf4efe4), cream: new THREE.Color(0xefe5cf), kraft: new THREE.Color(0xc89d68) };
   /* burst: a cloud of paper. o = { n, cols: [Color], speed, up, dir (Vector3, optional bias), size: [min,max], life, strips, spread } */
   function burst(pos, o = {}) {
     const n = o.n || 40, cols = o.cols || [TEAMC.white], sp = o.speed ?? 4, up = o.up ?? 2, sz = o.size || [.04, .1], life = o.life || 2.6, d = o.dir;
     for (let i = 0; i < n; i++) {
-      const a = Math.random() * 6.283, b = Math.acos(rnd(-1, 1)), s = sp * rnd(.3, 1);
+      const a = R() * 6.283, b = Math.acos(rnd(-1, 1)), s = sp * rnd(.3, 1);
       let vx = Math.sin(b) * Math.cos(a) * s, vy = Math.abs(Math.cos(b)) * s * .6 + up * rnd(.4, 1.2), vz = Math.sin(b) * Math.sin(a) * s;
       if (d) { vx += d.x * sp * rnd(.2, 1.1); vy += d.y * sp * .5; vz += d.z * sp * rnd(.2, 1.1); }
       const w = rnd(sz[0], sz[1]), h = o.strips ? w * rnd(5, 11) : w * rnd(.6, 1.4);
-      const c = cols[(Math.random() * cols.length) | 0];
+      const c = cols[(R() * cols.length) | 0];
       spawn(pos.x + rnd(-.1, .1) * (o.spread || 1), pos.y + rnd(-.1, .1) * (o.spread || 1), pos.z + rnd(-.1, .1) * (o.spread || 1), vx, vy, vz, w, h, c, life * rnd(.7, 1.3), o);
     }
   }
@@ -3825,7 +3861,7 @@ const PFX = (() => {
     if (dirty) mesh.instanceMatrix.needsUpdate = true;
   }
   function clear() { for (let i = 0; i < N; i++) if (p[i].on) { p[i].on = false; _m.makeScale(0, 0, 0); mesh.setMatrixAt(i, _m); } if (mesh) mesh.instanceMatrix.needsUpdate = true; }
-  return { init, spawn, burst, chips, puff, update, clear, TEAMC, get live() { return live; }, get mesh() { return mesh; } };
+  return { mkRng, useRng, state() { const o = []; for (let i = 0; i < N; i++) if (p[i].on) o.push(p[i]); return o; }, init, spawn, burst, chips, puff, update, clear, TEAMC, get live() { return live; }, get mesh() { return mesh; } };
 })();
 /* ================= persistent shot marks on EVERY surface (owner request 2026-11-11) ================= */
 // Every surface keeps its shot marks for the round. Tearable panels get REAL see-through holes (62-tearing.js); everything else
@@ -4953,6 +4989,7 @@ const PVM = (() => {
     if (state !== 'play' || P.dead) return;
     if (PLANES.S.steering) { PLANES.stopSteer(); return; }
     if (P.weapon === 'plane') { switchWeapon(lastGun()); return; }
+    if ((P.nades | 0) <= 0) { PLANES.S.want = !PLANES.S.want; PLANES.S.wantEnd = G.time + PLANES.R.regen + 3; return; }   // still folding: press G to queue the switch (progress shows on the HUD), again to cancel
     if (!P.store.plane) P.store.plane = { ammo: 0, reserve: 0 };
     switchWeapon('plane'); tip();
   }
@@ -7178,7 +7215,7 @@ function pickDeath(r, weapon, crit) {
   return k;
 }
 function startDeathFx(r, dir, crit, weapon) {
-  { const pk = r.deathKind = PAPER_DEATHS.kindOf(r, weapon, crit); PAPER_DEATHS.start(r, pk, dir); return; }   // Paper FPS: paper deaths by cause (66-paper-deaths.js)
+  { const pk = r.deathKind = PAPER_DEATHS.kindOf(r, weapon, crit); PAPER_DEATHS.start(r, pk, dir, r.deathSeed, weapon, crit); return; }   // Paper FPS: paper deaths by cause (66-paper-deaths.js)
   const k = r.deathKind = pickDeath(r, weapon, crit), A = r.act.death, col = r.color;
   if (!r.bodyCol) r.bodyCol = r.body.color.clone();
   r.root.rotation.order = 'YXZ'; r.deathSpin = 0; r.deathVy = 0; r.dfx = 0; r.shattered = false;
@@ -7450,13 +7487,18 @@ function explode(p, owner, weapon = 'nade') {
 
 /* ================= paper deaths: the body comes apart as paper, differently by cause (DESIGN.md) ================= */
 // kinds (PAPER_DEATHS.kindOf):           cause
-//   confetti  bursts into confetti        rifle / SMG / anything else (ref2)
-//   shred     shredded into strips        pump shotgun within 7 m
-//   crumple   head crumples + pops off    headshot (not the sniper)
-//   halve     cut in half along a fold    boomerang / paper cutter (knife)
-//   flatten   folds flat, blows away      paper-plane blast (any explosion)
-//   unfold    punched through, unfolds    sniper
-//             into a flat sheet that drifts down
+//   blast     torn cardboard chunks+confetti, thrown along the shot     shotgun (breacher/judge) within 7 m
+//   cut       clean cut: head pops off as a folded piece, body folds down  sniper headshot
+//   doll      crumples like a paper doll at the knee/waist, then flat       rifle / SMG body (anything else on the body too)
+//   crumple   head crumples into a paper ball and pops off                 non-sniper headshot
+//   halve     cut in half along a fold, halves slide apart                 knife
+//   crane     spins, folds into a paper plane that flutters away (rare)    boomerang
+//   shred     shreds + a scatter of strips                                 explosion (plane/nade/nova/seeker) or fall/hazard
+//   unfold    punched through, unfolds into a sheet that drifts down       sniper body shot
+//   confetti  generic confetti burst                                       fallback
+// DETERMINISM: everything random comes from a generator seeded by (weapon, zone, dir, seed): PAPER_DEATHS.plan() is the pure
+// description (kind + seed); start(r,k,dir,seed) seeds PFX with it, so every online player and the killcam see the same effect
+// (pass the same seed; when omitted it is hashed from weapon/zone/dir/position).
 // Driven only by the character's root transform, its material and one posed clone (halve), so any character model works
 // (Sector Nine soldier now, the CHARS agent's origami characters later). The clipping variant used by "halve" is compiled
 // behind the loading wipe at match start (warm), never mid-match.
@@ -7464,34 +7506,75 @@ const PAPER_DEATHS = (() => {
   // Material.clone() deep-copies userData through JSON (engine add-ons keep live objects there): copy around it, keep the shader hooks
   const cloneMat = m => { const ud = m.userData; m.userData = {}; let c; try { c = m.clone(); } finally { m.userData = ud; } c.userData = ud; c.onBeforeCompile = m.onBeforeCompile; c.customProgramCacheKey = m.customProgramCacheKey; return c; };
   const _p = new THREE.Vector3(), _q = new THREE.Vector3(), _m = new THREE.Matrix4();
+  const EXPLO = { plane: 1, nade: 1, nova: 1, seeker: 1, fall: 1, lava: 1, acid: 1, void: 1, mine: 1, rocket: 1 };
   const kindOf = (r, weapon, crit) => {
-    if (weapon === 'plane' || weapon === 'nade' || weapon === 'nova') return 'flatten';
-    if (weapon === 'sniper' || weapon === 'obelisk' || weapon === 'helix') return 'unfold';
-    if (weapon === 'boomerang' || weapon === 'knife') return 'halve';
+    if (EXPLO[weapon]) return 'shred';
+    if (weapon === 'sniper' || weapon === 'obelisk' || weapon === 'helix') return crit ? 'cut' : 'unfold';
+    if (weapon === 'boomerang') return 'crane';
+    if (weapon === 'knife' || weapon === 'ricochet') return 'halve';
+    if ((weapon === 'breacher' || weapon === 'judge') && (r.killDist ?? 99) < 7) return 'blast';
     if (crit) return 'crumple';
-    if (weapon === 'breacher' && (r.killDist ?? 99) < 7) return 'shred';
-    return 'confetti';
+    if (weapon === 'breacher' || weapon === 'judge') return 'confetti';
+    return 'doll';
   };
+  const hashSeed = (weapon, crit, dir, pos) => { let h = 2166136261; const mix = v => { h = Math.imul(h ^ (v | 0), 16777619); }; for (let i = 0; i < (weapon || '').length; i++) mix(weapon.charCodeAt(i)); mix(crit ? 1 : 0); if (dir) { mix(Math.round(dir.x * 100)); mix(Math.round(dir.z * 100)); } if (pos) { mix(Math.round(pos.x * 10)); mix(Math.round(pos.z * 10)); } return h >>> 0; };
+  // pure description of a kill's effect: all peers / the killcam call this with the same inputs and get the same answer
+  const plan = (r, weapon, crit, dir, seed) => ({ kind: kindOf(r, weapon, crit), seed: seed != null ? seed >>> 0 : hashSeed(weapon, crit, dir, r.root && r.root.position) });
+  const ease = t => t * t * (3 - 2 * t), snap = t => { const k = clamp(t, 0, 1), o = 1.4; return 1 + (o + 1) * Math.pow(k - 1, 3) + o * Math.pow(k - 1, 2); };   // snap = ease-out-back: paper folds over and settles
+  // pooled pieces (head fold / crumpled ball / paper plane): fixed meshes made at match warm-up, never per kill
+  const POOL = []; let GEO = null;
+  function mkGeo() {
+    const ico = new THREE.IcosahedronGeometry(.17, 0), pa = ico.attributes.position; for (let i = 0; i < pa.count; i++) pa.setXYZ(i, pa.getX(i) * (.8 + Math.sin(i * 7.1) * .2), pa.getY(i) * (.8 + Math.cos(i * 3.3) * .2), pa.getZ(i)); ico.computeVertexNormals();
+    const oct = new THREE.IcosahedronGeometry(.2, 0), po = oct.attributes.position; for (let i = 0; i < po.count; i++) po.setXYZ(i, po.getX(i) * 1.15, po.getY(i) * (i % 3 ? 1.1 : .55), po.getZ(i) * .6); oct.computeVertexNormals();   // a folded diamond: the clean-cut head
+    const A = [0, 0, .5], B = [-.3, .04, -.3], C = [.3, .04, -.3], K = [0, -.1, -.3], pos = [...A, ...B, ...K, ...A, ...K, ...C, ...A, ...C, ...B];
+    const pl = new THREE.BufferGeometry(); pl.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); pl.setAttribute('uv', new THREE.Float32BufferAttribute(new Array(18).fill(0), 2)); pl.computeVertexNormals();
+    return { ball: ico, head: oct, plane: pl };
+  }
+  function initPool() {
+    if (GEO) return; GEO = mkGeo();
+    for (let i = 0; i < 6; i++) { const m = new THREE.Mesh(GEO.ball, PAPER.mat('red', { tile: 0 })); m.visible = false; m.castShadow = true; m.userData.noProbe = true; m.frustumCulled = false; scene.add(m); POOL.push({ m, busy: false, v: new THREE.Vector3(), t: 0, kind: '' }); }
+  }
+  function piece(r, kind, at, scale) {
+    initPool(); const e = POOL.find(x => !x.busy); if (!e) return null;
+    e.busy = true; e.kind = kind; e.t = 0; e.m.geometry = GEO[kind]; e.m.material = PAPER.mat(r.mxTeam === 'def' ? 'red' : 'blue', { tile: 0 }); e.m.position.copy(at); e.m.rotation.set(0, 0, 0); e.m.scale.setScalar(scale || 1); e.m.visible = true; return e;
+  }
+  function release(e) { if (e) { e.busy = false; e.m.visible = false; } }
   const teamCols = r => { const t = r.mxTeam === 'def' ? PFX.TEAMC.red : r.mxTeam === 'atk' ? PFX.TEAMC.blue : (r.color ? r.color.clone() : PFX.TEAMC.red); return [t, t, t.clone().multiplyScalar(.82), PFX.TEAMC.white]; };
   const chest = r => _p.set(r.root.position.x, r.root.position.y + 1.1, r.root.position.z);
   const bodyMats = r => { const out = []; r.root.traverse(o => { if ((o.isSkinnedMesh || o.isMesh) && o.visible && o.material && !o.material.isSpriteMaterial && o.material !== (typeof HB !== 'undefined' && HB && HB.mat)) out.push(o); }); return out; };
-  function start(r, k, dir) {
-    const D = r.pd = { k, t: 0, dir: (dir || new THREE.Vector3(0, 0, 1)).clone().setY(0).normalize(), done: false, clone: null, vy: 0, spin: 0 };
-    const cols = teamCols(r), c = chest(r).clone();
-    r.act.death.timeScale = 1;
-    if (k === 'confetti') { PFX.burst(c, { n: 150, cols, speed: 5.5, up: 2.5, dir: D.dir, size: [.035, .1], life: 3 }); PFX.burst(c, { n: 14, cols, speed: 4, up: 2, strips: true, size: [.03, .05], dir: D.dir }); r.root.visible = false; D.done = true; }
-    else if (k === 'shred') { PFX.burst(c, { n: 110, cols, speed: 7.5, up: 1.5, dir: D.dir, strips: true, size: [.025, .045], life: 3.2, spread: 2 }); PFX.burst(c, { n: 60, cols, speed: 5, up: 2, dir: D.dir, life: 2.6 }); r.root.visible = false; D.done = true; }
-    else if (k === 'crumple') { PFX.burst(_q.copy(c).setY(c.y + .55), { n: 26, cols, speed: 2.5, up: 2, life: 1.6 }); const B = r.B; if (B && B.head) { B.head.getWorldPosition(_q); D.ball = ball(r, _q); } D.vy = 0; r.act.death.timeScale = .8; }
-    else if (k === 'flatten') { D.vy = 3.5; D.spin = (Math.random() < .5 ? -1 : 1) * 2.4; r.act.death.timeScale = .0001; PFX.burst(c, { n: 40, cols, speed: 4, up: 2, life: 2 }); }
-    else if (k === 'unfold') { PFX.burst(c, { n: 50, cols, speed: 9, up: .5, dir: D.dir, life: 2, size: [.03, .07] }); D.punch = c.clone(); r.act.death.timeScale = .0001; }
-    else if (k === 'halve') halve(r, D);
-  }
-  // the crumpled head: a small faceted paper ball in the team colour that pops up and off
-  let BALL_GEO = null;
-  function ball(r, at) {
-    if (!BALL_GEO) { BALL_GEO = new THREE.IcosahedronGeometry(.17, 0); const p = BALL_GEO.attributes.position; for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) * (.8 + Math.sin(i * 7.1) * .2), p.getY(i) * (.8 + Math.cos(i * 3.3) * .2), p.getZ(i)); BALL_GEO.computeVertexNormals(); }
-    const m = new THREE.Mesh(BALL_GEO, PAPER.mat(r.mxTeam === 'def' ? 'red' : 'blue', { tile: 0 })); m.position.copy(at); m.castShadow = true; m.userData.noProbe = true; scene.add(m);
-    return { m, v: new THREE.Vector3((Math.random() - .5) * 2, 4.5, (Math.random() - .5) * 2), s: 1 };
+  function start(r, k, dir, seed, weapon, crit) {
+    const sd = seed != null ? seed >>> 0 : hashSeed(weapon || k, crit, dir, r.root.position), R = PFX.mkRng(sd);
+    const D = r.pd = { k, t: 0, dir: (dir || _p.set(0, 0, 1)).clone().setY(0).normalize(), done: false, clone: null, vy: 0, spin: 0, seed: sd, R, piece: null, q0: null };
+    if (D.dir.lengthSq() < .5) D.dir.set(0, 0, 1);
+    D.axis = new THREE.Vector3(D.dir.z, 0, -D.dir.x); D.q0 = r.root.quaternion.clone();
+    const cols = teamCols(r), c = chest(r).clone(), rr = (a, b) => a + R() * (b - a), kraft = PFX.TEAMC.kraft, cream = PFX.TEAMC.cream;
+    r.act.death.timeScale = 1; PFX.useRng(R);
+    try {
+      if (k === 'confetti') { PFX.burst(c, { n: 110, cols, speed: 5, up: 2.2, dir: D.dir, size: [.035, .09], life: 3 }); PFX.burst(c, { n: 12, cols, speed: 4, up: 2, strips: true, size: [.03, .05], dir: D.dir }); r.root.visible = false; D.done = true; }
+      else if (k === 'blast') {   // shotgun: torn cardboard chunks + confetti, thrown along the shot, a few strips
+        const ck = [kraft, kraft.clone().multiplyScalar(.8), cream, cols[0]];
+        PFX.burst(c, { n: 18, cols: ck, speed: rr(6.5, 9), up: 1.4, dir: D.dir, size: [.1, .2], life: 4.2, drag: 1.5, spin: 16, spread: 1.4 });
+        PFX.burst(c, { n: 44, cols, speed: 7, up: 2, dir: D.dir, size: [.035, .085], life: 3.2, spread: 1.6 });
+        PFX.burst(c, { n: 10, cols, speed: 6, up: 1.6, strips: true, size: [.025, .04], dir: D.dir, life: 3 });
+        r.root.visible = false; D.done = true;
+      }
+      else if (k === 'shred') {   // explosion / fall: shreds + scattered strips, mostly radial
+        const d = D.dir.clone().multiplyScalar(.45);
+        PFX.burst(c, { n: 70, cols, speed: rr(6.5, 8.5), up: 3, dir: d, strips: true, size: [.025, .045], life: 3.4, spread: 2 });
+        PFX.burst(c, { n: 34, cols, speed: 5, up: 2.6, dir: d, life: 2.8, size: [.04, .09] }); r.root.visible = false; D.done = true;
+      }
+      else if (k === 'crumple' || k === 'cut') {
+        const B = r.B; if (B && B.head) B.head.getWorldPosition(_q); else _q.copy(c).setY(c.y + .55);
+        D.piece = piece(r, k === 'cut' ? 'head' : 'ball', _q, 1); if (D.piece) D.piece.v.set((R() - .5) * 2 + D.dir.x * 1.5, k === 'cut' ? rr(5, 6.5) : 4.5, (R() - .5) * 2 + D.dir.z * 1.5);
+        PFX.burst(_p.copy(c).setY(c.y + .55), { n: k === 'cut' ? 12 : 22, cols, speed: 2.5, up: 2, life: 1.6, strips: k === 'cut', size: k === 'cut' ? [.02, .035] : [.04, .1] });
+        D.tk = [rr(.28, .42), rr(.62, .8), rr(1.05, 1.3)]; D.sd = R() < .5 ? -1 : 1; D.yaw = rr(-.25, .25); D.ln = [rr(.3, .45), rr(.7, 1.0), 1.55];
+        r.act.death.timeScale = k === 'cut' ? .0001 : .8;
+      }
+      else if (k === 'doll') { r.act.death.timeScale = .0001; D.tk = [rr(.28, .42), rr(.62, .8), rr(1.05, 1.3)]; D.sd = R() < .5 ? -1 : 1; D.yaw = rr(-.25, .25); D.ln = [rr(.3, .45), rr(.7, 1.0), 1.55]; PFX.burst(c, { n: 8, cols, speed: 2, up: 1.5, life: 1.6 }); }
+      else if (k === 'crane') { r.act.death.timeScale = .0001; D.sd = R() < .5 ? -1 : 1; D.fl = rr(0, 6.28); PFX.burst(c, { n: 16, cols, speed: 3, up: 1.4, life: 1.8 }); }
+      else if (k === 'unfold') { PFX.burst(c, { n: 40, cols, speed: 8, up: .5, dir: D.dir, life: 2, size: [.03, .07] }); D.punch = c.clone(); r.act.death.timeScale = .0001; }
+      else if (k === 'halve') halve(r, D);
+    } finally { PFX.useRng(null); }
   }
   // cut in half along a fold: the original keeps the legs (clipped above the waist), a posed clone keeps the torso and slides off
   function halve(r, D) {
@@ -7508,25 +7591,56 @@ const PAPER_DEATHS = (() => {
       scene.add(g); D.clone = g; D.cv = D.dir.clone().multiplyScalar(1.4).setY(.6); D.rot = new THREE.Vector3(D.dir.z, 0, -D.dir.x).normalize();
     }
     r.act.death.timeScale = .0001;
+    if (D.warm) return;
     PFX.burst(_p.set(r.root.position.x, h, r.root.position.z), { n: 50, cols: teamCols(r), speed: 4, up: 1, strips: true, size: [.02, .035] });
     try { sfx.knifeHit(); } catch (e) {}
   }
-  function finish(r, D, n) { if (r.root.visible) PFX.burst(chest(r).clone(), { n: n || 60, cols: teamCols(r), speed: 3, up: 1.5, life: 2.2 }); r.root.visible = false; D.done = true; cleanup(r, D); }
+  function finish(r, D, n) { if (r.root.visible) { PFX.useRng(D.R); try { PFX.burst(chest(r).clone(), { n: Math.min(n || 40, 40), cols: teamCols(r), speed: 3, up: 1.5, life: 2.2 }); } finally { PFX.useRng(null); } } r.root.visible = false; D.done = true; cleanup(r, D); }
   function cleanup(r, D) {
     if (D.clone) { scene.remove(D.clone); D.clone.traverse(o => { if (o.isMesh && o.material && o.material.clippingPlanes) o.material.dispose(); }); D.clone = null; }
-    if (D.ball) { scene.remove(D.ball.m); D.ball = null; }
+    if (D.piece) { release(D.piece); D.piece = null; }
+    if (D.q0 && r.root) r.root.quaternion.copy(D.q0);
     for (const o of bodyMats(r)) if (o.material.clippingPlanes) o.material.clippingPlanes = null;
     r.root.scale.set(1, 1, 1);
+  }
+  const _up = new THREE.Vector3(0, 1, 0);
+  // paper doll: folds at the knee, then the waist, then lies flat as a sheet, snapping at each fold; tiny seeded variation per kill
+  function dollPose(r, D, t, p) {
+    const tk = D.tk, ln = D.ln, f1 = snap(t / tk[0]), f2 = snap((t - tk[0]) / (tk[1] - tk[0])), f3 = ease(clamp((t - tk[1]) / (tk[2] - tk[1]), 0, 1));
+    const lean = ln[0] * clamp(f1, 0, 1.15) + (ln[1] - ln[0]) * (t > tk[0] ? clamp(f2, 0, 1.15) : 0) + (ln[2] - ln[1]) * f3;
+    r.root.quaternion.copy(D.q0); r.root.rotateOnWorldAxis(_up, (D.yaw || 0) * f3); r.root.rotateOnWorldAxis(D.axis, lean);
+    const sy = 1 - .26 * clamp(f1, 0, 1.1) - .24 * (t > tk[0] ? clamp(f2, 0, 1.1) : 0);
+    r.root.scale.set(1 + .3 * f3, Math.max(.3, sy), Math.max(.05, 1 - .94 * f3));
+    if (t > 2.5) r.root.scale.multiplyScalar(1 - clamp((t - 2.5) / .6, 0, 1) * .98);   // folds away
   }
   // per frame; true = this death handles its own fade
   function update(r, dt) {
     const D = r.pd; if (!D) return false; D.t += dt; const t = D.t, p = r.root.position;
     if (D.done) return true;
-    if (D.k === 'crumple') {
-      const b = D.ball, B = r.B;
-      if (B && B.head) B.head.scale.setScalar(Math.max(.01, 1 - t * 6));
-      if (b) { b.v.y -= 12 * dt; b.m.position.addScaledVector(b.v, dt); b.m.rotation.x += dt * 9; b.m.rotation.z += dt * 6; const g = groundAt(b.m.position.x, b.m.position.z, b.m.position.y + .3, .1) + .12; if (b.m.position.y < g) { b.m.position.y = g; b.v.multiplyScalar(-.35); b.v.y = Math.abs(b.v.y); } }
-      if (t > 2.2) { if (B && B.head) B.head.scale.setScalar(1); finish(r, D, 70); }
+    if (D.k === 'crumple' || D.k === 'cut') {
+      const b = D.piece, B = r.B;
+      if (B && B.head) B.head.scale.setScalar(Math.max(.01, 1 - t * 8));
+      if (b) { b.v.y -= 12 * dt; b.m.position.addScaledVector(b.v, dt); b.m.rotation.x += dt * (D.k === 'cut' ? 5 : 9); b.m.rotation.z += dt * 6; const g = groundAt(b.m.position.x, b.m.position.z, b.m.position.y + .3, .1) + .12; if (b.m.position.y < g) { b.m.position.y = g; b.v.multiplyScalar(-.35); b.v.y = Math.abs(b.v.y); } if (t > 2.2) b.m.scale.setScalar(Math.max(.01, 1 - (t - 2.2) * 2.5)); }
+      if (D.k === 'cut') dollPose(r, D, Math.max(0, t - .12), p);   // the body folds down under the missing head
+      if (t > 2.7 || (D.k === 'crumple' && t > 2.2)) { if (B && B.head) B.head.scale.setScalar(1); finish(r, D, 40); }
+      return true;
+    }
+    if (D.k === 'doll') { dollPose(r, D, t, p); if (t > 3.3) finish(r, D, 40); return true; }
+    if (D.k === 'crane') {
+      if (t < 1) {   // spin + flatten into a sheet, then fold in on itself
+        const k = clamp(t / .55, 0, 1), f = clamp((t - .5) / .5, 0, 1);
+        r.root.quaternion.copy(D.q0); r.root.rotateOnWorldAxis(_up, D.sd * 12 * ease(clamp(t, 0, 1)));
+        r.root.scale.set(1 + k * .3 - f * .8, 1 - f * .6, Math.max(.05, 1 - k * .95)); p.y += (1.2 * Math.sin(Math.min(1, t) * 3.1)) * dt;
+      } else if (!D.piece) {
+        const e = piece(r, 'plane', chest(r), 1.5); if (!e) { finish(r, D, 40); return true; } D.piece = e; e.v.copy(D.dir).multiplyScalar(2.6).setY(1.6); r.root.visible = false;
+        PFX.useRng(D.R); try { PFX.burst(chest(r), { n: 14, cols: teamCols(r), speed: 2.5, up: 1.5, life: 1.6, strips: true, size: [.02, .035] }); } finally { PFX.useRng(null); } D.t = 1; D.pt = 0;
+      } else {
+        const e = D.piece; D.pt += dt; const m = e.m, pt = D.pt;   // glides, banks side to side, sinks, lands, folds away
+        e.v.y += (-1.1 + Math.sin(pt * 3 + D.fl) * 1.4) * dt; e.v.y = Math.max(e.v.y, -1.2); const gy = groundAt(m.position.x, m.position.z, m.position.y + .3, .1) + .04;
+        if (m.position.y > gy) { m.position.x += (e.v.x + Math.sin(pt * 2.4 + D.fl) * .7 * D.sd) * dt; m.position.y += e.v.y * dt; m.position.z += (e.v.z + Math.cos(pt * 2.4 + D.fl) * .7) * dt; e.v.x *= (1 - .3 * dt); e.v.z *= (1 - .3 * dt); m.rotation.set(-e.v.y * .15, Math.atan2(e.v.x, e.v.z), Math.sin(pt * 2.4 + D.fl) * .6); }
+        else { m.position.y = gy; m.rotation.x = 0; m.rotation.z *= .9; if (!D.land) D.land = pt; if (pt - D.land > 1.2) m.scale.setScalar(Math.max(.01, 1.5 - (pt - D.land - 1.2) * 3)); if (pt - D.land > 1.7) { D.done = true; cleanup(r, D); } }
+        if (pt > 6) { D.done = true; cleanup(r, D); }
+      }
       return true;
     }
     if (D.k === 'flatten') {   // squash flat along the blast, then a sheet blown away, tumbling
@@ -7554,16 +7668,23 @@ const PAPER_DEATHS = (() => {
   // compile the clipping variant of the character material before the match (behind the loading wipe)
   function warm() {
     try {
-      renderer.localClippingEnabled = true; const r = robots.find(x => x.root); if (!r) return;
-      const pl = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e4), list = bodyMats(r); for (const o of list) o.material.clippingPlanes = [pl];
-      const wv = r.root.visible; r.root.visible = true; try { renderer.compile(scene, camera); } finally { r.root.visible = wv; for (const o of list) o.material.clippingPlanes = null; }
-      if (BALL_GEO === null) ball(r, new THREE.Vector3(0, -40, 0)).m.visible = true;
+      renderer.localClippingEnabled = true; PFX.init(); initPool();
+      const rs = robots.filter(x => x.root); if (!rs.length) return;
+      const pl = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e4), list = [], vis = rs.map(x => x.root.visible);
+      for (const r of rs) for (const o of bodyMats(r)) list.push(o);   // every distinct body material (both teams), clipped variant
+      for (const o of list) o.material.clippingPlanes = [pl]; rs.forEach(x => { x.root.visible = true; });
+      try { renderer.compile(scene, camera); } finally { rs.forEach((x, i) => { x.root.visible = vis[i]; }); for (const o of list) o.material.clippingPlanes = null; }
+      // run the real halve path once per team on a robot (clone + clipped skinned materials), compiled behind the wipe, then undone
+      const seen = {}; for (const r of rs) { const key = r.mxTeam || 'x'; if (seen[key]) continue; seen[key] = 1;
+        const vv = r.root.visible, ts = r.act && r.act.death ? r.act.death.timeScale : 1; r.root.visible = true; const D = { k: 'halve', warm: true, dir: new THREE.Vector3(0, 0, 1) };
+        try { halve(r, D); renderer.compile(scene, camera); } finally { cleanup(r, D); r.root.visible = vv; if (r.act && r.act.death) r.act.death.timeScale = ts; } }
+      for (const team of ['def', 'atk']) for (const k of ['ball', 'head', 'plane']) { const e = piece({ mxTeam: team }, k, _q.copy(camera.position), 1); if (e) { try { renderer.compile(scene, camera); } finally { release(e); } } }
     } catch (e) { console.warn('paper deaths warm', e); }
   }
   /* self test (qa/paper/core.js): each death kind plays on a red bot and ends with the body gone */
   async function selfTest() {
     const out = {}, wait = ms => new Promise(r => setTimeout(r, ms));
-    const cases = [['confetti', 'carbine', false, 12], ['shred', 'breacher', false, 3], ['crumple', 'carbine', true, 12], ['halve', 'boomerang', false, 4], ['flatten', 'plane', false, 6], ['unfold', 'sniper', false, 20]];
+    const cases = [['doll', 'carbine', false, 12], ['blast', 'breacher', false, 3], ['crumple', 'carbine', true, 12], ['cut', 'sniper', true, 20], ['halve', 'knife', false, 4], ['crane', 'boomerang', false, 6], ['shred', 'plane', false, 6], ['unfold', 'sniper', false, 20]];
     window.__god = true;
     for (const [want, w, crit, dist] of cases) {
       const enemy = x => x.mxBot ? x.mxTeam === 'def' : true; let r = null;
@@ -7578,7 +7699,7 @@ const PAPER_DEATHS = (() => {
     }
     window.__god = false; return out;
   }
-  return { kindOf, start, update, reset, warm, selfTest };
+  return { kindOf, plan, hashSeed, start, update, reset, warm, selfTest };
 })();
 /* ================= PAPER PLANES: throw, steer, explode, shoot down, CATCH + RETURN (signature mechanic 2) ================= */
 // Rules (docs/MECHANICS.md "Paper planes"; numbers PLANES.R, mirrored in data/paper_weapons.json "plane"):
@@ -7606,10 +7727,10 @@ const TF = {
   park() { return typeof DESKTOWN_DATA !== 'undefined' && DESKTOWN_DATA ? new THREE.Vector3(40, 0, 25) : new THREE.Vector3(-26, 0, 38); },
 };
 const PLANES = (() => {
-  const R = { speed: 15, life: 7, hp: 25, hitR: .55, turn: 2.4, botTurn: 1.5, sink: .06, catchDist: 4.2, catchCone: Math.cos(1.0), catchBoost: 1.2, blastKill: 120, arm: .2, carry: 3, regen: 10, slowmo: .9, slowK: .3, catchSlow: .45 };
+  const R = { speed: 15, life: 7, hp: 25, hitR: .55, turn: 4.2, botTurn: 1.5, sink: .06, catchDist: 4.2, catchCone: Math.cos(1.0), catchBoost: 1.2, blastKill: 120, arm: .2, carry: 3, regen: 10, slowmo: .9, slowK: .3, catchSlow: .45 };
   const list = []; let seq = 0, geo = null, mats = {}, pipCam = null;
   const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _rc = new THREE.Raycaster(), _hits = []; _rc.plane = true;   // tear panels: a plane only fits through openings >= 45 cm (TEAR raycast reads this flag)
-  const S = { steering: null, stats: { thrown: 0, caught: 0, shotDown: 0, exploded: 0, returns: 0, botThrows: 0, botCatches: 0, botShotDown: 0 } };
+  const S = { steering: null, want: false, wantEnd: 0, stats: { thrown: 0, caught: 0, shotDown: 0, exploded: 0, returns: 0, botThrows: 0, botCatches: 0, botShotDown: 0 } };
   const teamOf = e => { if (!e) return null; if (e === PLAYER_ENT || e.isPlayer) return window.S9BotModes && S9BotModes.on ? S9BotModes.myTeam : 'me'; return e.mxTeam || (e.netId || e.name); };
   const enemies = (a, b) => a && b && a !== b && teamOf(a) !== teamOf(b);
   // a folded paper plane: two wings + a keel, flat-shaded, nose toward -Z
@@ -7619,35 +7740,36 @@ const PLANES = (() => {
     geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(v, 3)); geo.computeVertexNormals(); return geo;
   }
   const matFor = team => { const k = team === 'def' ? 'red' : team === 'atk' ? 'blue' : 'white'; return mats[k] || (mats[k] = PAPER.mat(k, { side: THREE.DoubleSide, tile: 0 })); };
-  function makeMesh(team) { const m = new THREE.Mesh(planeGeo(), matFor(team)); m.castShadow = true; m.userData.noProbe = true; m.rotation.order = 'YXZ'; return m; }
+  function makeMesh(team) { const m = new THREE.Mesh(planeGeo(), matFor(team)); m.castShadow = false; m.userData.noProbe = true; m.rotation.order = 'YXZ'; return m; }
   // compiled at load (warmShaders runs after the map is built): one hidden plane of each colour stays in the scene
   function warm() { for (const t of ['atk', 'def', null]) { const m = makeMesh(t); m.position.set(0, -50, 0); m.frustumCulled = false; scene.add(m); } if (!pipCam) pipCam = new THREE.PerspectiveCamera(70, 16 / 9, .05, 400); }
 
-  function spawn(owner, from, dir, steer) {
+  function spawn(owner, from, dir, steer, yaw0) {
     const p = { id: ++seq, owner, orig: owner, steer: steer || owner, pos: from.clone(), dir: dir.clone().normalize(), speed: R.speed, life: R.life, hp: R.hp, age: 0, caught: 0, launch: from.clone(), m: makeMesh(teamOf(owner)), roll: 0, dead: false, catchTried: new Set(), botTarget: null };
-    p.m.position.copy(p.pos); scene.add(p.m); list.push(p); S.stats.thrown++; orient(p, 0);
+    p.yw = Math.hypot(p.dir.x, p.dir.z) > .02 ? Math.atan2(-p.dir.x, -p.dir.z) : (yaw0 || 0); p.m.position.copy(p.pos); scene.add(p.m); list.push(p); S.stats.thrown++; orient(p, 0);
     try { sfx.nadeThrow(from.clone()); } catch (e) {}
     return p;
   }
-  function orient(p, turnRate) { p.roll = damp(p.roll, clamp(-turnRate * .35, -.9, .9), 6, 1 / 60); p.m.rotation.set(Math.asin(clamp(p.dir.y, -1, 1)), Math.atan2(-p.dir.x, -p.dir.z), p.roll); }
+  function orient(p, turnRate) { p.roll = damp(p.roll, clamp(-turnRate * .35, -.9, .9), 6, 1 / 60); p.m.rotation.set(Math.asin(clamp(p.dir.y, -1, 1)), Math.hypot(p.dir.x, p.dir.z) > .02 ? Math.atan2(-p.dir.x, -p.dir.z) : (p.yw || 0), p.roll); }
   // turn the direction by (yaw, pitch) radians (steering input), capped by the turn rate
   function turn(p, dyaw, dpitch, dt, cap) {
     const m = cap * dt; dyaw = clamp(dyaw, -m, m); dpitch = clamp(dpitch, -m, m);
-    let yaw = Math.atan2(-p.dir.x, -p.dir.z) + dyaw, pitch = clamp(Math.asin(clamp(p.dir.y, -1, 1)) + dpitch, -1.2, 1.2);
+    if (p.yw === undefined || Math.hypot(p.dir.x, p.dir.z) > .02) { p.yw = Math.atan2(-p.dir.x, -p.dir.z); }   // (straight up/down: keep the last heading)
+    let yaw = p.yw + dyaw, pitch = clamp(Math.asin(clamp(p.dir.y, -1, 1)) + dpitch, -1.55, 1.55); p.yw = yaw;
     p.dir.set(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)); return dyaw / Math.max(dt, 1e-4);
   }
   /* ---- the player ---- */
   function playerThrow() {
     if (state !== 'play' || P.dead || S.steering) return false;
     if ((P.nades | 0) <= 0) return false;
-    P.shield = 0; camera.getWorldDirection(_a); const from = _b.copy(camera.position).addScaledVector(_a, .7); from.y -= .1;
-    const d = _a.clone(); d.y += .06; const p = spawn(PLAYER_ENT, from, d, PLAYER_ENT);
+    P.shield = 0; camera.getWorldDirection(_a); const from = _b.copy(camera.position).addScaledVector(_a, .5);   // exactly along the crosshair: no offset, no lift
+    const d = _a.clone(); const p = spawn(PLAYER_ENT, from, d, PLAYER_ENT, P.yaw);
     if (P.nades === R.carry) P.nadeT = R.regen; P.nades--; springs.kickRot.v += 2;
     S.steering = p; adsHeld = false; mouseDown = false; return true;
   }
   function stopSteer() { S.steering = null; }
   // mouse movement while steering turns the plane instead of your view (wrapped look())
-  function steerLook(dx, dy) { const p = S.steering; if (!p || p.dead) { S.steering = null; return false; } p.inYaw = (p.inYaw || 0) - dx * .0021 * CFG.sens * 1.6; p.inPitch = (p.inPitch || 0) - dy * .0021 * CFG.sens * 1.6; return true; }
+  function steerLook(dx, dy) { const p = S.steering; if (!p || p.dead) { S.steering = null; return false; } p.inYaw = (p.inYaw || 0) - dx * .0021 * CFG.sens * 5; p.inPitch = (p.inPitch || 0) - dy * .0021 * CFG.sens * 5; return true; }
   function canCatch(e, p) {
     if (p.dead || p.age < .25 || !enemies(e, p.owner)) return false;
     const eye = entEye(e, _c), d = eye.distanceTo(p.pos); if (d > R.catchDist) return false;
@@ -7711,8 +7833,8 @@ const PLANES = (() => {
   function update(dt) {
     for (let i = list.length - 1; i >= 0; i--) {
       const p = list[i]; if (p.dead) { list.splice(i, 1); continue; }
-      p.age += dt; p.life -= dt; let tr = 0;
-      if (p.steer === PLAYER_ENT && S.steering === p) { const m = R.turn * dt, ay = clamp(p.inYaw || 0, -m, m), ap = clamp(p.inPitch || 0, -m, m); tr = turn(p, ay, ap, dt, R.turn); p.inYaw = ((p.inYaw || 0) - ay) * .9; p.inPitch = ((p.inPitch || 0) - ap) * .9; }   // input over the turn cap carries to the next steps (decaying)
+      p.age += dt; let tr = 0; if (!(p.steer === PLAYER_ENT && S.steering === p)) p.life -= dt;   // flying it yourself: no range limit (the clock starts when you let go)
+      if (p.steer === PLAYER_ENT && S.steering === p) { const m = R.turn * dt, ay = clamp(p.inYaw || 0, -m, m), ap = clamp(p.inPitch || 0, -m, m); tr = turn(p, ay, ap, dt, R.turn); p.inYaw = clamp((p.inYaw || 0) - ay, -1.2, 1.2); p.inPitch = clamp((p.inPitch || 0) - ap, -1.2, 1.2); }   // a flick is never thrown away: input over the turn cap carries to the next frames
       else if (p.steer && !p.steer.isPlayer && p.steer !== PLAYER_ENT) {   // bot homing: toward its target's chest (the original thrower for a caught plane)
         const tgt = p.botTarget && entAlive(p.botTarget) ? entChest(p.botTarget, _c) : p.botAt || null;
         if (tgt) { const want = _a.subVectors(tgt, p.pos).normalize(); const cy = Math.atan2(-p.dir.x, -p.dir.z), wy = Math.atan2(-want.x, -want.z); let dy = wy - cy; while (dy > Math.PI) dy -= 2 * Math.PI; while (dy < -Math.PI) dy += 2 * Math.PI;
@@ -7726,7 +7848,7 @@ const PLANES = (() => {
       if (p.age > R.arm && !boom) for (const e of entities()) { if (!entAlive(e) || e === p.owner && p.age < 1) continue; const c = entChest(e, _c); if (Math.hypot(c.x - p.pos.x, c.z - p.pos.z) < .55 && p.pos.y > c.y - 1.2 && p.pos.y < c.y + .75) { boom = true; break; } }
       if (p.pos.y < .05) boom = true;
       p.m.position.copy(p.pos); orient(p, tr);
-      if (Math.random() < .35) PFX.spawn(p.pos.x, p.pos.y, p.pos.z, 0, 0, 0, .015, .015, PFX.TEAMC.white, .5, { drag: 6, g: .5, flutter: .2 });
+      if (Math.random() < .2) PFX.spawn(p.pos.x, p.pos.y, p.pos.z, 0, 0, 0, .015, .015, PFX.TEAMC.white, .5, { drag: 6, g: .5, flutter: .2 });
       if (boom || p.life <= 0) pop(p, !boom && p.life <= 0 && false);
     }
     if (S.steering && (S.steering.dead || P.dead || state !== 'play')) S.steering = null;
@@ -7740,7 +7862,7 @@ const PLANES = (() => {
   const HCSS = [
     '#pPlane,#pPip,#pTip{display:none!important}',
     "#wxPlanes{position:absolute;right:26px;bottom:78px;display:flex;align-items:center;gap:6px;font:900 15px 'Nunito',system-ui,sans-serif;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.5);transition:transform .15s;transform-origin:right center}",
-    '#wxPlanes.sel{transform:scale(1.15)}#wxPlanes kbd{font:inherit;background:#fff;color:#2b2420;padding:1px 7px;border-radius:3px;margin-right:4px;box-shadow:0 2px 0 rgba(0,0,0,.3)}',
+    '#wxPlanes .fold{font-size:12px;letter-spacing:.04em;background:rgba(0,0,0,.45);padding:2px 7px;border-radius:3px}#wxPlanes.sel{transform:scale(1.15)}#wxPlanes kbd{font:inherit;background:#fff;color:#2b2420;padding:1px 7px;border-radius:3px;margin-right:4px;box-shadow:0 2px 0 rgba(0,0,0,.3)}',
     '#wxPlanes i{position:relative;width:30px;height:17px;display:block;filter:drop-shadow(0 2px 0 rgba(0,0,0,.35))}',
     "#wxPlanes i::before,#wxPlanes i::after{content:'';position:absolute;top:0;bottom:0;left:0;clip-path:polygon(0 50%,30px 0,16px 17px,13px 10px)}",
     '#wxPlanes i::before{right:0;background:rgba(255,255,255,.3)}#wxPlanes i::after{width:var(--f,100%);background:#fff}',
@@ -7763,8 +7885,9 @@ const PLANES = (() => {
   }
   let lastHud = '', lastSlots = '', lastFly = null, lastSel = null;
   function hud(dt) {
-    const n = P.nades | 0, f = n < R.carry ? clamp(1 - (P.nadeT || 0) / R.regen, 0, 1) : 1, key = n + ':' + Math.round(f * 20) + ':' + R.carry;
-    if (key !== lastSlots) { lastSlots = key; let h = '<kbd>G</kbd>'; for (let i = 0; i < R.carry; i++) h += '<i style="--f:' + (i < n ? 100 : i === n ? Math.round(f * 100) : 0) + '%"></i>'; hudEl('wxPlanes').innerHTML = h; }
+    const n = P.nades | 0, f = n < R.carry ? clamp(1 - (P.nadeT || 0) / R.regen, 0, 1) : 1, key = n + ':' + Math.round(f * 100) + ':' + R.carry + ':' + (S.want ? 1 : 0);
+    if (S.want) { if (state !== 'play' || P.dead || P.weapon === 'plane' || G.time > S.wantEnd) S.want = false; else if (n > 0 && !S.steering) { S.want = false; try { PVM.planeKey(); } catch (e) {} } }   // G pressed while folding: take the plane out the moment it is ready
+    if (key !== lastSlots) { lastSlots = key; let h = '<kbd>G</kbd>'; if (n < R.carry) h += '<span class="fold">' + (S.want && n === 0 ? 'SWITCH WHEN READY ' : 'FOLDING ') + Math.round(f * 100) + '%</span>'; for (let i = 0; i < R.carry; i++) h += '<i style="--f:' + (i < n ? 100 : i === n ? Math.round(f * 100) : 0) + '%"></i>'; hudEl('wxPlanes').innerHTML = h; }
     const sel = P.weapon === 'plane'; if (sel !== lastSel) { lastSel = sel; hudEl('wxPlanes').classList.toggle('sel', sel); }
     if (sel && (P.ammo !== n || P.reserve !== R.carry)) { P.ammo = n; P.reserve = R.carry; try { updateHud(); } catch (e) {} }
     const c = state === 'play' && !P.dead && !S.steering ? catchable(PLAYER_ENT) : null, t = c ? 'catch' : '';
@@ -7778,9 +7901,11 @@ const PLANES = (() => {
   function chaseCam(rdt) {
     const p = S.steering; if (!p || p.dead) { CH.on = false; return; }
     const want = _a.copy(p.pos).addScaledVector(p.dir, -CH.back); want.y += CH.up;
+    { const hl = Math.hypot(p.dir.x, p.dir.z); if (hl < .5) { const k = (.5 - hl) * CH.back * 1.2, yw = p.yw || 0; want.x += Math.sin(yw) * k; want.z += Math.cos(yw) * k; } }   // steep climb: sit a little behind it so the camera never looks straight along its own up axis
     // keep the camera out of walls: pull it toward the plane if something solid is between them
-    _rc.set(p.pos, _b.subVectors(want, p.pos).normalize()); _rc.far = CH.back + CH.up; _hits.length = 0; for (const m of world.meshes) { m.raycast(_rc, _hits); if (_hits.length) break; }
-    if (_hits.length) { _hits.sort((x, y) => x.distance - y.distance); want.copy(p.pos).addScaledVector(_b, Math.max(.3, _hits[0].distance - .2)); }
+    _b.subVectors(want, p.pos).normalize();   // (the wall ray runs every 2nd frame: the camera follows 10 frames behind anyway; saves ~0.1 ms/frame)
+    if ((CH.n = (CH.n | 0) + 1) & 1) { CH.clip = -1; _rc.set(p.pos, _b); _rc.far = CH.back + CH.up; _hits.length = 0; for (const m of world.meshes) { m.raycast(_rc, _hits); if (_hits.length) break; } if (_hits.length) { _hits.sort((x, y) => x.distance - y.distance); CH.clip = _hits[0].distance; } }
+    if (CH.clip >= 0) want.copy(p.pos).addScaledVector(_b, Math.max(.3, CH.clip - .2));
     const tg = _c.copy(p.pos).addScaledVector(p.dir, CH.look);
     if (!CH.on) { CH.on = true; CH.pos.copy(camera.position); CH.tgt.copy(tg); }
     const k = 1 - Math.exp(-CH.follow * Math.min(rdt, .1)); CH.pos.lerp(want, k); CH.tgt.lerp(tg, Math.min(1, k * 1.5));
@@ -7788,7 +7913,7 @@ const PLANES = (() => {
     P.fov = damp(P.fov, CH.fov, 6, rdt); if (Math.abs(camera.fov - P.fov) > .01) { camera.fov = P.fov; camera.updateProjectionMatrix(); }
   }
   function renderPip() {}   // (kept for the frame loop's call; the chase camera above replaced the picture-in-picture)
-  function reset() { for (const p of list) { p.dead = true; scene.remove(p.m); } list.length = 0; S.steering = null; P.nades = R.carry; P.nadeT = R.regen; }
+  function reset() { S.want = false; for (const p of list) { p.dead = true; scene.remove(p.m); } list.length = 0; S.steering = null; P.nades = R.carry; P.nadeT = R.regen; }
   // numbers from data/paper_weapons.json "plane" (Unity-portable): rules = R overrides (catchConeDeg in degrees), carry, regen, chase camera
   function config(pl) {
     const r = pl && pl.rules || {}; for (const k in r) if (k in R && typeof r[k] === 'number') R[k] = r[k];
