@@ -62,7 +62,7 @@
   };
 
   /* ---------------- paper wipe transitions ---------------- */
-  const wp = document.createElement('div'); wp.id = 'pwipe'; wp.innerHTML = '<div class="s l"></div><div class="s r"></div><div class="c"><img src="assets/brand/foldiers_logo_1024.webp" alt=""><div class="t"></div></div>'; document.body.appendChild(wp);
+  const wp = document.createElement('div'); wp.id = 'pwipe'; wp.innerHTML = '<div class="s l"></div><div class="s r"></div><div class="c"><img src="assets/brand/foldiers_logo_1024.webp" srcset="assets/brand/foldiers_logo_1024.webp 1024w, assets/brand/foldiers_logo_2048.webp 1890w" sizes="(max-width:700px) 70vw, 560px" width="1024" height="349" alt=""><div class="t"></div></div>'; document.body.appendChild(wp);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   U.wipe = async (fn, text) => {
     U.wipes++; wp.querySelector('.t').textContent = text || ''; wp.classList.add('on'); await sleep(400);
@@ -83,7 +83,7 @@
     const pic = c => (U.portraits && U.portraits[c.id]) ? `<img class="pic" src="${U.portraits[c.id]}" alt="">` : c.img ? `<img class="pic" src="${esc(c.img)}" alt="">` : `<svg class="pic" viewBox="0 0 64 64" aria-hidden="true">${c.svg || ''}</svg>`;
     const dname = { easy: 'Easy', normal: 'Normal', hard: 'Hard' };
     return `<div class="col">
-      <h1 class="logo-h"><img class="logo" src="assets/brand/foldiers_logo_1024.webp" width="1024" height="400" alt="${esc(title)}"></h1>
+      <h1 class="logo-h"><img class="logo" src="assets/brand/foldiers_logo_1024.webp" srcset="assets/brand/foldiers_logo_1024.webp 1024w, assets/brand/foldiers_logo_2048.webp 1890w" sizes="(max-width:700px) 92vw, 780px" width="1024" height="349" alt="${esc(title)}"></h1>
       <div class="board" role="dialog" aria-label="Main menu">
         <p class="tagline">${esc(g.tagline || 'Tear the map. Catch the plane. Fold the other team.')}</p>
         <div class="lab">Choose your Foldier</div>
@@ -208,7 +208,9 @@
   U.shrink = shrink;
   async function loadChars() {
     const ids = (U.chars || CHARS0).map(c => c.id), L = new THREE.GLTFLoader(), TL = new THREE.TextureLoader();
-    const tx = u => new Promise(res => TL.load(u, t => { t.flipY = false; t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; shrink(t, 1024); res(t); }, undefined, () => res(null)));
+    const K2 = typeof s2Ktx2 === 'function' ? s2Ktx2() : null;   // WP-S2: team atlases as KTX2 (BC7, 1.3 MB of GPU each instead of 5.3), PNG fallback
+    const tx = u => new Promise(res => { const png = () => TL.load(u, t => { t.flipY = false; t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; shrink(t, 1024); res(t); }, undefined, () => res(null));
+      if (!K2) return png(); K2.load(u.replace(/\.png$/, '.ktx2'), t => { t.flipY = false; t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; t.minFilter = THREE.LinearMipmapLinearFilter; res(t); }, undefined, png); });
     for (const id of ids) {
       try { const g = await L.loadAsync(`assets/paper/chars/${id}.glb`); if (!g || !g.scene) continue; g.scene.traverse(o => { if (o.isMesh && o.material) for (const k of ['map', 'normalMap', 'roughnessMap']) if (o.material[k]) shrink(o.material[k], 1024); }); U.charModels[id] = g; U.charTex[id] = { atk: await tx(`assets/paper/chars/${id}_blue.png`), def: await tx(`assets/paper/chars/${id}_red.png`) }; } catch (e) { console.warn('paper char', id, e); }
     }

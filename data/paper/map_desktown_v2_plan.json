@@ -1,0 +1,4026 @@
+{
+ "id": "desktown_v2",
+ "name": "Desk Town (v2 blockout plan)",
+ "version": 2,
+ "status": "PLAN (not built). Source: tools/level/map_v2_plan.py; doc docs/MAP_REDESIGN.md",
+ "units": "metres; game space: x right (blue -x west, red +x east), y up, z south (north = -z). rect = [x0, z0, x1, z1]; circle = [cx, cz, r]; points [x, y, z] or [x, y, z, lookYaw] (lookYaw = atan2(dx, dz))",
+ "mirror": "symmetric across x = 0: items with side \"blue\"/\"red\" are mirror copies; centre items have no side",
+ "bounds": [
+  -52,
+  -36,
+  52,
+  36
+ ],
+ "player": {
+  "height": 1.8,
+  "radius": 0.4,
+  "eye": 1.65,
+  "run": 5.6,
+  "sprint": 8.8
+ },
+ "levels_m": {
+  "ground": 0,
+  "book_base": 0.3,
+  "key_tops": 0.35,
+  "novel": 1.2,
+  "dictionary": 2.4,
+  "house_upper": 3.4,
+  "shop_upper_and_bridge": 4.2,
+  "attic": 6.8
+ },
+ "surfaces": {
+  "cutting_mat": {
+   "label": "Green cutting mat",
+   "sound": "soft rubbery pat, slight squeak on turns",
+   "hear_m": 28,
+   "material": "pm_mat (existing)",
+   "fallback": "rubber",
+   "colour": "#3f9f8a"
+  },
+  "coffee_stain": {
+   "label": "Dried coffee stain (sticky)",
+   "sound": "sticky peel \"tck-shlp\" on every step (loud: the centre gives you away)",
+   "hear_m": 36,
+   "material": "pm_mat + coffee-ring decal layer in the atlas",
+   "fallback": "water",
+   "colour": "#8a5a3a"
+  },
+  "book_cloth": {
+   "label": "Hardcover book tops",
+   "sound": "muffled dull thump, hollow board boom on plateau edges",
+   "hear_m": 22,
+   "material": "pm_bookcloth (NEW: cloth-bound board, 3 cover colours in one atlas)",
+   "fallback": "carpet",
+   "colour": "#7d4f8c"
+  },
+  "notebook_paper": {
+   "label": "Stacked notebook paper",
+   "sound": "dry paper crinkle + rustle",
+   "hear_m": 25,
+   "material": "pm_notebook (NEW: lined/grid paper sheets, curled edges)",
+   "fallback": "sand",
+   "colour": "#e9e3cf"
+  },
+  "keyboard_keys": {
+   "label": "Giant keyboard keys",
+   "sound": "plastic CLACK + key spring (loudest surface)",
+   "hear_m": 40,
+   "material": "pm_keys (NEW: cardboard keycaps with printed letters, one atlas)",
+   "fallback": "metal",
+   "colour": "#5d6470"
+  },
+  "felt_pad": {
+   "label": "Felt desk pad (quiet)",
+   "sound": "near-silent soft thud (the sneaky flank)",
+   "hear_m": 12,
+   "material": "pm_felt (NEW: dark blue-grey felt, fuzzy)",
+   "fallback": "carpet",
+   "colour": "#45557a"
+  },
+  "desk_wood": {
+   "label": "Wooden desk top",
+   "sound": "hollow wooden knock",
+   "hear_m": 30,
+   "material": "pm_wood (existing sw_wood -> own tiling material)",
+   "fallback": "wood",
+   "colour": "#b07a45"
+  },
+  "ruler_wood": {
+   "label": "Ruler bridges",
+   "sound": "hard wood + low bridge boom (height cue)",
+   "hear_m": 30,
+   "material": "ruler atlas cell (existing)",
+   "fallback": "wood",
+   "colour": "#e0b25a"
+  },
+  "cardboard_floor": {
+   "label": "Cardboard floors (inside buildings)",
+   "sound": "hollow cardboard boom, upstairs creak heard through the floor",
+   "hear_m": 28,
+   "material": "pm_kraft (existing)",
+   "fallback": "wood",
+   "colour": "#c9a26b"
+  }
+ },
+ "districts": [
+  {
+   "id": "blue_yard",
+   "name": "Blue Notebook Yard (spawn)",
+   "rect": [
+    -52,
+    -32,
+    -40,
+    32
+   ],
+   "y": 0,
+   "surface": "notebook_paper",
+   "mirror": true,
+   "note": "spawn yard on a stack of notebook pages; back wall = thick building row (no wallbangs into spawn); 3 exits N / mid / S",
+   "side": "blue"
+  },
+  {
+   "id": "red_yard",
+   "name": "Red Notebook Yard (spawn)",
+   "rect": [
+    40,
+    -32,
+    52,
+    32
+   ],
+   "y": 0,
+   "surface": "notebook_paper",
+   "mirror": true,
+   "note": "spawn yard on a stack of notebook pages; back wall = thick building row (no wallbangs into spawn); 3 exits N / mid / S",
+   "side": "red"
+  },
+  {
+   "id": "blue_heights",
+   "name": "Blue Book Heights",
+   "rect": [
+    -40,
+    -36,
+    -10,
+    -16
+   ],
+   "y": 0.3,
+   "surface": "book_cloth",
+   "mirror": true,
+   "note": "a giant lying atlas (top 0.3 m = one step) with book plateaus stacked on it: the long-range lane",
+   "side": "blue"
+  },
+  {
+   "id": "red_heights",
+   "name": "Red Book Heights",
+   "rect": [
+    10,
+    -36,
+    40,
+    -16
+   ],
+   "y": 0.3,
+   "surface": "book_cloth",
+   "mirror": true,
+   "note": "a giant lying atlas (top 0.3 m = one step) with book plateaus stacked on it: the long-range lane",
+   "side": "red"
+  },
+  {
+   "id": "blue_ramp",
+   "name": "Blue Notebook Ramp",
+   "rect": [
+    -40,
+    -16,
+    -26,
+    -6
+   ],
+   "y": 0,
+   "surface": "notebook_paper",
+   "mirror": true,
+   "note": "spawn-side connector between the north lane and Market Street; spiral notebook rings = low cover",
+   "side": "blue"
+  },
+  {
+   "id": "red_ramp",
+   "name": "Red Notebook Ramp",
+   "rect": [
+    26,
+    -16,
+    40,
+    -6
+   ],
+   "y": 0,
+   "surface": "notebook_paper",
+   "mirror": true,
+   "note": "spawn-side connector between the north lane and Market Street; spiral notebook rings = low cover",
+   "side": "red"
+  },
+  {
+   "id": "blue_ink",
+   "name": "Blue Ink Corner",
+   "rect": [
+    -14,
+    -16,
+    -4,
+    -6
+   ],
+   "y": 0,
+   "surface": "desk_wood",
+   "mirror": true,
+   "note": "under the ruler bridge: tape roll (hollow, you can stand inside), ink bottle, stamp",
+   "side": "blue"
+  },
+  {
+   "id": "red_ink",
+   "name": "Red Ink Corner",
+   "rect": [
+    4,
+    -16,
+    14,
+    -6
+   ],
+   "y": 0,
+   "surface": "desk_wood",
+   "mirror": true,
+   "note": "under the ruler bridge: tape roll (hollow, you can stand inside), ink bottle, stamp",
+   "side": "red"
+  },
+  {
+   "id": "blue_tapelane",
+   "name": "Blue Tape Lane",
+   "rect": [
+    -40,
+    6,
+    -30,
+    13
+   ],
+   "y": 0,
+   "surface": "cutting_mat",
+   "mirror": true,
+   "note": "open passage Market -> alley beside the corner house",
+   "side": "blue"
+  },
+  {
+   "id": "red_tapelane",
+   "name": "Red Tape Lane",
+   "rect": [
+    30,
+    6,
+    40,
+    13
+   ],
+   "y": 0,
+   "surface": "cutting_mat",
+   "mirror": true,
+   "note": "open passage Market -> alley beside the corner house",
+   "side": "red"
+  },
+  {
+   "id": "blue_alley",
+   "name": "Blue Window Alley (ref3)",
+   "rect": [
+    -40,
+    13,
+    -12,
+    19
+   ],
+   "y": 0,
+   "surface": "cutting_mat",
+   "mirror": true,
+   "note": "narrow street between the corner house (north) and the window house (south), ruler footbridge overhead",
+   "side": "blue"
+  },
+  {
+   "id": "red_alley",
+   "name": "Red Window Alley (ref3)",
+   "rect": [
+    12,
+    13,
+    40,
+    19
+   ],
+   "y": 0,
+   "surface": "cutting_mat",
+   "mirror": true,
+   "note": "narrow street between the corner house (north) and the window house (south), ruler footbridge overhead",
+   "side": "red"
+  },
+  {
+   "id": "blue_stampyard",
+   "name": "Blue Stamp Yard",
+   "rect": [
+    -40,
+    19,
+    -28,
+    29
+   ],
+   "y": 0,
+   "surface": "felt_pad",
+   "mirror": true,
+   "note": "quiet felt corner between the alley and the back road",
+   "side": "blue"
+  },
+  {
+   "id": "red_stampyard",
+   "name": "Red Stamp Yard",
+   "rect": [
+    28,
+    19,
+    40,
+    29
+   ],
+   "y": 0,
+   "surface": "felt_pad",
+   "mirror": true,
+   "note": "quiet felt corner between the alley and the back road",
+   "side": "red"
+  },
+  {
+   "id": "clock_square",
+   "name": "Clock Tower Square",
+   "rect": [
+    -10,
+    -36,
+    10,
+    -22
+   ],
+   "y": 0,
+   "surface": "desk_wood",
+   "mirror": false,
+   "note": "bare desk wood around the clock tower: north-lane centre"
+  },
+  {
+   "id": "bridge_street",
+   "name": "Bridge Street (ref2)",
+   "rect": [
+    -4,
+    -22,
+    4,
+    -6
+   ],
+   "y": 0,
+   "surface": "cutting_mat",
+   "mirror": false,
+   "note": "N-S street running UNDER the ruler bridge from Market Street to the clock tower"
+  },
+  {
+   "id": "market",
+   "name": "Market Street (ref1)",
+   "rect": [
+    -40,
+    -6,
+    40,
+    6
+   ],
+   "y": 0,
+   "surface": "cutting_mat",
+   "mirror": false,
+   "note": "the main street: awning shops, kiosks, bunting; the mid lane"
+  },
+  {
+   "id": "coffee_plaza",
+   "name": "Coffee Stain Plaza",
+   "circle": [
+    0,
+    0,
+    7
+   ],
+   "y": 0,
+   "surface": "coffee_stain",
+   "mirror": false,
+   "note": "a dried coffee ring around a giant paper coffee cup; sticky = loud = the risky centre (flag B)"
+  },
+  {
+   "id": "keyboard",
+   "name": "Keyboard Quarter",
+   "rect": [
+    -12,
+    6,
+    12,
+    24
+   ],
+   "y": 0,
+   "surface": "keyboard_keys",
+   "mirror": false,
+   "note": "a giant keyboard lying on the desk: keys = stepping terrain (0.35 m) + taller keys as cover; loudest ground"
+  },
+  {
+   "id": "cup_yard",
+   "name": "Pencil Cup Yard",
+   "rect": [
+    -12,
+    24,
+    12,
+    29
+   ],
+   "y": 0,
+   "surface": "desk_wood",
+   "mirror": false,
+   "note": "desk wood strip in front of the pencil cup tower"
+  },
+  {
+   "id": "back_road",
+   "name": "Felt Back Road",
+   "rect": [
+    -40,
+    29,
+    40,
+    36
+   ],
+   "y": 0,
+   "surface": "felt_pad",
+   "mirror": false,
+   "note": "quiet outer flank behind the window houses and the pencil cup"
+  }
+ ],
+ "buildings": [
+  {
+   "id": "blue_shop",
+   "name": "Blue Awning Shop (ref1)",
+   "rect": [
+    -26,
+    -16,
+    -14,
+    -6
+   ],
+   "mirror": true,
+   "ref": "ref1",
+   "storeys": [
+    {
+     "y": 0,
+     "h": 4.2,
+     "floor": "thick"
+    },
+    {
+     "y": 4.2,
+     "h": 3.4,
+     "floor": "thin (tearable: shoot down into the shop)"
+    }
+   ],
+   "roof": "flat + crenels 7.6 m (not walkable)",
+   "doors": [
+    {
+     "at": [
+      -20,
+      -6
+     ],
+     "face": "south",
+     "w": 4.0,
+     "storey": 0,
+     "note": "open shop front under the red/white awning (Market)"
+    },
+    {
+     "at": [
+      -14,
+      -11
+     ],
+     "face": "east",
+     "w": 1.4,
+     "storey": 0,
+     "note": "side door to Ink Corner"
+    },
+    {
+     "at": [
+      -20,
+      -16
+     ],
+     "face": "north",
+     "w": 1.4,
+     "storey": 1,
+     "note": "upper door from the outside Fold Stairs (Book Heights)"
+    },
+    {
+     "at": [
+      -14,
+      -10
+     ],
+     "face": "east",
+     "w": 1.6,
+     "storey": 1,
+     "note": "upper doorway onto the RULER BRIDGE (ref1 shot)"
+    }
+   ],
+   "windows": [
+    "2 upper windows south over Market (plane)",
+    "1 upper window west over Notebook Ramp"
+   ],
+   "stairs": "inside, along the west wall (ground -> 4.2)",
+   "tearable": "shop-front side panels, upper floor, upper south wall panels",
+   "side": "blue"
+  },
+  {
+   "id": "red_shop",
+   "name": "Red Awning Shop (ref1)",
+   "rect": [
+    14,
+    -16,
+    26,
+    -6
+   ],
+   "mirror": true,
+   "ref": "ref1",
+   "storeys": [
+    {
+     "y": 0,
+     "h": 4.2,
+     "floor": "thick"
+    },
+    {
+     "y": 4.2,
+     "h": 3.4,
+     "floor": "thin (tearable: shoot down into the shop)"
+    }
+   ],
+   "roof": "flat + crenels 7.6 m (not walkable)",
+   "doors": [
+    {
+     "at": [
+      20,
+      -6
+     ],
+     "face": "south",
+     "w": 4.0,
+     "storey": 0,
+     "note": "open shop front under the red/white awning (Market)"
+    },
+    {
+     "at": [
+      14,
+      -11
+     ],
+     "face": "west",
+     "w": 1.4,
+     "storey": 0,
+     "note": "side door to Ink Corner"
+    },
+    {
+     "at": [
+      20,
+      -16
+     ],
+     "face": "north",
+     "w": 1.4,
+     "storey": 1,
+     "note": "upper door from the outside Fold Stairs (Book Heights)"
+    },
+    {
+     "at": [
+      14,
+      -10
+     ],
+     "face": "west",
+     "w": 1.6,
+     "storey": 1,
+     "note": "upper doorway onto the RULER BRIDGE (ref1 shot)"
+    }
+   ],
+   "windows": [
+    "2 upper windows south over Market (plane)",
+    "1 upper window west over Notebook Ramp"
+   ],
+   "stairs": "inside, along the west wall (ground -> 4.2)",
+   "tearable": "shop-front side panels, upper floor, upper south wall panels",
+   "side": "red"
+  },
+  {
+   "id": "blue_corner",
+   "name": "Blue Corner House",
+   "rect": [
+    -30,
+    6,
+    -14,
+    13
+   ],
+   "mirror": true,
+   "storeys": [
+    {
+     "y": 0,
+     "h": 3.4,
+     "floor": "thick"
+    },
+    {
+     "y": 3.4,
+     "h": 3.2,
+     "floor": "thin (tearable)"
+    }
+   ],
+   "roof": "gable 8.4 m",
+   "doors": [
+    {
+     "at": [
+      -22,
+      6
+     ],
+     "face": "north",
+     "w": 1.4,
+     "storey": 0,
+     "note": "Market"
+    },
+    {
+     "at": [
+      -18,
+      13
+     ],
+     "face": "south",
+     "w": 1.4,
+     "storey": 0,
+     "note": "alley"
+    },
+    {
+     "at": [
+      -23.5,
+      13
+     ],
+     "face": "south",
+     "w": 1.4,
+     "storey": 1,
+     "note": "upper door onto the alley footbridge"
+    }
+   ],
+   "windows": [
+    "3 upper windows north (Market)",
+    "2 upper windows south (alley, plane-to-plane with the window house)"
+   ],
+   "stairs": "inside, east end",
+   "tearable": "ALL outer walls are thin card (the wallbang house) + upper floor",
+   "side": "blue"
+  },
+  {
+   "id": "red_corner",
+   "name": "Red Corner House",
+   "rect": [
+    14,
+    6,
+    30,
+    13
+   ],
+   "mirror": true,
+   "storeys": [
+    {
+     "y": 0,
+     "h": 3.4,
+     "floor": "thick"
+    },
+    {
+     "y": 3.4,
+     "h": 3.2,
+     "floor": "thin (tearable)"
+    }
+   ],
+   "roof": "gable 8.4 m",
+   "doors": [
+    {
+     "at": [
+      22,
+      6
+     ],
+     "face": "north",
+     "w": 1.4,
+     "storey": 0,
+     "note": "Market"
+    },
+    {
+     "at": [
+      18,
+      13
+     ],
+     "face": "south",
+     "w": 1.4,
+     "storey": 0,
+     "note": "alley"
+    },
+    {
+     "at": [
+      23.5,
+      13
+     ],
+     "face": "south",
+     "w": 1.4,
+     "storey": 1,
+     "note": "upper door onto the alley footbridge"
+    }
+   ],
+   "windows": [
+    "3 upper windows north (Market)",
+    "2 upper windows south (alley, plane-to-plane with the window house)"
+   ],
+   "stairs": "inside, east end",
+   "tearable": "ALL outer walls are thin card (the wallbang house) + upper floor",
+   "side": "red"
+  },
+  {
+   "id": "blue_winhouse",
+   "name": "Blue Window House (ref3)",
+   "rect": [
+    -28,
+    19,
+    -15,
+    29
+   ],
+   "mirror": true,
+   "ref": "ref3",
+   "storeys": [
+    {
+     "y": 0,
+     "h": 3.4,
+     "floor": "thick"
+    },
+    {
+     "y": 3.4,
+     "h": 3.4,
+     "floor": "thin (tearable)"
+    },
+    {
+     "y": 6.8,
+     "h": 2.6,
+     "floor": "thin (tearable) attic"
+    }
+   ],
+   "roof": "gable 11 m",
+   "doors": [
+    {
+     "at": [
+      -21,
+      19
+     ],
+     "face": "north",
+     "w": 1.4,
+     "storey": 0,
+     "note": "alley"
+    },
+    {
+     "at": [
+      -21,
+      29
+     ],
+     "face": "south",
+     "w": 1.4,
+     "storey": 0,
+     "note": "back road"
+    },
+    {
+     "at": [
+      -23.5,
+      19
+     ],
+     "face": "north",
+     "w": 1.4,
+     "storey": 1,
+     "note": "footbridge over the alley"
+    }
+   ],
+   "windows": [
+    "shuttered windows on every storey facing the alley (ref3, plane windows)",
+    "attic dormer facing the keyboard (sniper nest, 1 entrance + tearable floor = counter)"
+   ],
+   "stairs": "inside, stacked, south wall",
+   "tearable": "alley facade panels, shutters, both upper floors",
+   "side": "blue"
+  },
+  {
+   "id": "red_winhouse",
+   "name": "Red Window House (ref3)",
+   "rect": [
+    15,
+    19,
+    28,
+    29
+   ],
+   "mirror": true,
+   "ref": "ref3",
+   "storeys": [
+    {
+     "y": 0,
+     "h": 3.4,
+     "floor": "thick"
+    },
+    {
+     "y": 3.4,
+     "h": 3.4,
+     "floor": "thin (tearable)"
+    },
+    {
+     "y": 6.8,
+     "h": 2.6,
+     "floor": "thin (tearable) attic"
+    }
+   ],
+   "roof": "gable 11 m",
+   "doors": [
+    {
+     "at": [
+      21,
+      19
+     ],
+     "face": "north",
+     "w": 1.4,
+     "storey": 0,
+     "note": "alley"
+    },
+    {
+     "at": [
+      21,
+      29
+     ],
+     "face": "south",
+     "w": 1.4,
+     "storey": 0,
+     "note": "back road"
+    },
+    {
+     "at": [
+      23.5,
+      19
+     ],
+     "face": "north",
+     "w": 1.4,
+     "storey": 1,
+     "note": "footbridge over the alley"
+    }
+   ],
+   "windows": [
+    "shuttered windows on every storey facing the alley (ref3, plane windows)",
+    "attic dormer facing the keyboard (sniper nest, 1 entrance + tearable floor = counter)"
+   ],
+   "stairs": "inside, stacked, south wall",
+   "tearable": "alley facade panels, shutters, both upper floors",
+   "side": "red"
+  },
+  {
+   "id": "blue_hq",
+   "name": "Blue Pencil-Case HQ (CTF base)",
+   "rect": [
+    -52,
+    -6,
+    -45,
+    6
+   ],
+   "mirror": true,
+   "storeys": [
+    {
+     "y": 0,
+     "h": 3.6,
+     "floor": "thick"
+    }
+   ],
+   "roof": "open pencil-case lid propped at 60 deg (shade, not walkable)",
+   "doors": [
+    {
+     "at": [
+      -45,
+      0
+     ],
+     "face": "east",
+     "w": 4.0,
+     "storey": 0,
+     "note": "main mouth"
+    },
+    {
+     "at": [
+      -48.5,
+      -6
+     ],
+     "face": "north",
+     "w": 2.0,
+     "storey": 0,
+     "note": "north side"
+    },
+    {
+     "at": [
+      -48.5,
+      6
+     ],
+     "face": "south",
+     "w": 2.0,
+     "storey": 0,
+     "note": "south side"
+    }
+   ],
+   "windows": [],
+   "stairs": "-",
+   "tearable": "none (spawn: thick)",
+   "side": "blue"
+  },
+  {
+   "id": "red_hq",
+   "name": "Red Pencil-Case HQ (CTF base)",
+   "rect": [
+    45,
+    -6,
+    52,
+    6
+   ],
+   "mirror": true,
+   "storeys": [
+    {
+     "y": 0,
+     "h": 3.6,
+     "floor": "thick"
+    }
+   ],
+   "roof": "open pencil-case lid propped at 60 deg (shade, not walkable)",
+   "doors": [
+    {
+     "at": [
+      45,
+      0
+     ],
+     "face": "west",
+     "w": 4.0,
+     "storey": 0,
+     "note": "main mouth"
+    },
+    {
+     "at": [
+      48.5,
+      -6
+     ],
+     "face": "north",
+     "w": 2.0,
+     "storey": 0,
+     "note": "north side"
+    },
+    {
+     "at": [
+      48.5,
+      6
+     ],
+     "face": "south",
+     "w": 2.0,
+     "storey": 0,
+     "note": "south side"
+    }
+   ],
+   "windows": [],
+   "stairs": "-",
+   "tearable": "none (spawn: thick)",
+   "side": "red"
+  },
+  {
+   "id": "clock_tower",
+   "name": "Clock Tower (landmark)",
+   "rect": [
+    -4,
+    -36,
+    4,
+    -27
+   ],
+   "mirror": false,
+   "storeys": [
+    {
+     "y": 0,
+     "h": 4.2,
+     "floor": "thick"
+    },
+    {
+     "y": 4.2,
+     "h": 3.4,
+     "floor": "thin (tearable)"
+    }
+   ],
+   "roof": "tower shaft to 13 m, open belfry arches 13-16 m (plane route, not walkable), blue cone roof to 20 m, clock faces N/S/E/W",
+   "doors": [
+    {
+     "at": [
+      -4,
+      -31
+     ],
+     "face": "west",
+     "w": 1.4,
+     "storey": 0,
+     "note": "blue side (a central stair core blocks the door-to-door view)"
+    },
+    {
+     "at": [
+      4,
+      -31
+     ],
+     "face": "east",
+     "w": 1.4,
+     "storey": 0,
+     "note": "red side"
+    }
+   ],
+   "windows": [
+    "1st floor: south arch window over Bridge Street, west + east windows over both Book Heights (plane windows)"
+   ],
+   "stairs": "inside, two mirrored flights (west + east)",
+   "tearable": "ground-floor side panels, 1st floor"
+  },
+  {
+   "id": "pencil_cup",
+   "name": "Pencil Cup Tower (landmark)",
+   "circle": [
+    0,
+    29,
+    3.4
+   ],
+   "mirror": false,
+   "storeys": [
+    {
+     "y": 0,
+     "h": 3.4,
+     "floor": "thick"
+    },
+    {
+     "y": 3.4,
+     "h": 3.0,
+     "floor": "thin ring gallery"
+    }
+   ],
+   "roof": "open top 6.6 m, giant pencils / pen / scissors sticking out to 15 m (not walkable)",
+   "doors": [
+    {
+     "at": [
+      0,
+      25.6
+     ],
+     "face": "north",
+     "w": 1.6,
+     "storey": 0,
+     "note": "Cup Yard"
+    },
+    {
+     "at": [
+      0,
+      32.4
+     ],
+     "face": "south",
+     "w": 1.6,
+     "storey": 0,
+     "note": "Back Road"
+    }
+   ],
+   "windows": [
+    "4 punched windows on the ring gallery (N/E/S/W)",
+    "open top: plane \"chimney drop\" route"
+   ],
+   "stairs": "spiral ramp around the inside wall",
+   "tearable": "the whole tube wall is thin card: a see-through, shoot-through tower"
+  }
+ ],
+ "masses": [
+  {
+   "id": "blue_mass_nw",
+   "name": "Blue north-west block",
+   "rect": [
+    -14,
+    -22,
+    -10,
+    -16
+   ],
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_mass_nw",
+   "name": "Red north-west block",
+   "rect": [
+    10,
+    -22,
+    14,
+    -16
+   ],
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_mass_n",
+   "name": "Blue block beside Bridge Street",
+   "rect": [
+    -10,
+    -22,
+    -4,
+    -16
+   ],
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_mass_n",
+   "name": "Red block beside Bridge Street",
+   "rect": [
+    4,
+    -22,
+    10,
+    -16
+   ],
+   "mirror": true,
+   "side": "red"
+  }
+ ],
+ "outer_blocks": [
+  [
+   -52,
+   -40,
+   52,
+   -36
+  ],
+  [
+   -52,
+   36,
+   52,
+   40
+  ],
+  [
+   -56,
+   -40,
+   -52,
+   40
+  ],
+  [
+   52,
+   -40,
+   56,
+   40
+  ],
+  [
+   -52,
+   -36,
+   -40,
+   -32
+  ],
+  [
+   40,
+   -36,
+   52,
+   -32
+  ],
+  [
+   -52,
+   32,
+   -40,
+   36
+  ],
+  [
+   40,
+   32,
+   52,
+   36
+  ]
+ ],
+ "plateaus": [
+  {
+   "id": "blue_dictionary",
+   "name": "Dictionary (2 stacked books)",
+   "rect": [
+    -38,
+    -34,
+    -26,
+    -25
+   ],
+   "top": 2.4,
+   "mirror": true,
+   "surface": "book_cloth",
+   "access": "spine steps on the east side (0.3 m rise) + jump from the Novel",
+   "side": "blue"
+  },
+  {
+   "id": "red_dictionary",
+   "name": "Dictionary (2 stacked books)",
+   "rect": [
+    26,
+    -34,
+    38,
+    -25
+   ],
+   "top": 2.4,
+   "mirror": true,
+   "surface": "book_cloth",
+   "access": "spine steps on the east side (0.3 m rise) + jump from the Novel",
+   "side": "red"
+  },
+  {
+   "id": "blue_novel",
+   "name": "Novel",
+   "rect": [
+    -22,
+    -30,
+    -14,
+    -22
+   ],
+   "top": 1.2,
+   "mirror": true,
+   "surface": "book_cloth",
+   "access": "steps on the south + west sides",
+   "side": "blue"
+  },
+  {
+   "id": "red_novel",
+   "name": "Novel",
+   "rect": [
+    14,
+    -30,
+    22,
+    -22
+   ],
+   "top": 1.2,
+   "mirror": true,
+   "surface": "book_cloth",
+   "access": "steps on the south + west sides",
+   "side": "red"
+  }
+ ],
+ "bridges": [
+  {
+   "id": "ruler_bridge",
+   "name": "Ruler Bridge (ref1 + ref2)",
+   "rect": [
+    -14,
+    -11.6,
+    14,
+    -8.4
+   ],
+   "deck": 4.2,
+   "mirror": false,
+   "surface": "ruler_wood",
+   "note": "giant wooden ruler 28 m x 3.2 m; trusses at x +-9 (outside Bridge Street); clearance under = 3.6 m; thin card skirts under the rails (wallbang); 2 crates on deck at x +-5"
+  },
+  {
+   "id": "blue_footbridge",
+   "name": "Blue Alley Footbridge (ref3)",
+   "rect": [
+    -25,
+    13,
+    -22,
+    19
+   ],
+   "deck": 3.4,
+   "mirror": true,
+   "surface": "ruler_wood",
+   "note": "short ruler crossing the alley: corner-house upper floor <-> window-house 1st floor",
+   "side": "blue"
+  },
+  {
+   "id": "red_footbridge",
+   "name": "Red Alley Footbridge (ref3)",
+   "rect": [
+    22,
+    13,
+    25,
+    19
+   ],
+   "deck": 3.4,
+   "mirror": true,
+   "surface": "ruler_wood",
+   "note": "short ruler crossing the alley: corner-house upper floor <-> window-house 1st floor",
+   "side": "red"
+  }
+ ],
+ "stairs": [
+  {
+   "id": "blue_foldstairs",
+   "name": "Blue Fold Stairs",
+   "rect": [
+    -26,
+    -17.8,
+    -16,
+    -16
+   ],
+   "from_y": 0.3,
+   "to_y": 4.2,
+   "mirror": true,
+   "note": "outside cardboard staircase on the shop north wall: Book Heights -> shop upper door -> ruler bridge (13 steps)",
+   "side": "blue"
+  },
+  {
+   "id": "red_foldstairs",
+   "name": "Red Fold Stairs",
+   "rect": [
+    16,
+    -17.8,
+    26,
+    -16
+   ],
+   "from_y": 0.3,
+   "to_y": 4.2,
+   "mirror": true,
+   "note": "outside cardboard staircase on the shop north wall: Book Heights -> shop upper door -> ruler bridge (13 steps)",
+   "side": "red"
+  }
+ ],
+ "cover": [
+  {
+   "id": "coffee_cup",
+   "name": "Giant paper coffee cup",
+   "circle": [
+    0,
+    0.8,
+    2.8
+   ],
+   "h": 3.4,
+   "pen": "medium",
+   "mirror": false
+  },
+  {
+   "id": "ticket_booth",
+   "name": "Clock tower ticket booth (thin, wallbang)",
+   "rect": [
+    -2,
+    -27.5,
+    2,
+    -24.3
+   ],
+   "h": 2.6,
+   "pen": "thin",
+   "mirror": false
+  },
+  {
+   "id": "blue_bookend",
+   "name": "Bookend (tall, breaks the north line)",
+   "rect": [
+    -9,
+    -24.5,
+    -7,
+    -22
+   ],
+   "h": 3.0,
+   "pen": "thick",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_bookend",
+   "name": "Bookend (tall, breaks the north line)",
+   "rect": [
+    7,
+    -24.5,
+    9,
+    -22
+   ],
+   "h": 3.0,
+   "pen": "thick",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_busstop",
+   "name": "Bus-stop shelter (thin card, south kerb)",
+   "rect": [
+    -7.4,
+    4.2,
+    -5,
+    6
+   ],
+   "h": 2.6,
+   "pen": "thin",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_busstop",
+   "name": "Bus-stop shelter (thin card, south kerb)",
+   "rect": [
+    5,
+    4.2,
+    7.4,
+    6
+   ],
+   "h": 2.6,
+   "pen": "thin",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_postbox",
+   "name": "Post box (alley mouth)",
+   "rect": [
+    -14,
+    13,
+    -12.4,
+    14.6
+   ],
+   "h": 2.2,
+   "pen": "thin",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_postbox",
+   "name": "Post box (alley mouth)",
+   "rect": [
+    12.4,
+    13,
+    14,
+    14.6
+   ],
+   "h": 2.2,
+   "pen": "thin",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "fkey",
+   "name": "Function-key tower (centre of the keyboard)",
+   "rect": [
+    -1.5,
+    15,
+    1.5,
+    21.5
+   ],
+   "h": 2.2,
+   "pen": "medium",
+   "mirror": false
+  },
+  {
+   "id": "blue_towelroll",
+   "name": "Paper towel roll (back road)",
+   "circle": [
+    -19,
+    30.3,
+    1.3
+   ],
+   "h": 4.0,
+   "pen": "medium",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_towelroll",
+   "name": "Paper towel roll (back road)",
+   "circle": [
+    19,
+    30.3,
+    1.3
+   ],
+   "h": 4.0,
+   "pen": "medium",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_pinboard",
+   "name": "Cork pin board (back road)",
+   "rect": [
+    -10,
+    31.6,
+    -8,
+    36
+   ],
+   "h": 3.0,
+   "pen": "thick",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_pinboard",
+   "name": "Cork pin board (back road)",
+   "rect": [
+    8,
+    31.6,
+    10,
+    36
+   ],
+   "h": 3.0,
+   "pen": "thick",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_kiosk",
+   "name": "Market kiosk (touches the north kerb)",
+   "rect": [
+    -12,
+    -6,
+    -9.6,
+    -1.8
+   ],
+   "h": 2.6,
+   "pen": "thin",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_kiosk",
+   "name": "Market kiosk (touches the north kerb)",
+   "rect": [
+    9.6,
+    -6,
+    12,
+    -1.8
+   ],
+   "h": 2.6,
+   "pen": "thin",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_kiosk2",
+   "name": "Newspaper kiosk",
+   "rect": [
+    -30,
+    2.4,
+    -27.6,
+    5.4
+   ],
+   "h": 2.6,
+   "pen": "thin",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_kiosk2",
+   "name": "Newspaper kiosk",
+   "rect": [
+    27.6,
+    2.4,
+    30,
+    5.4
+   ],
+   "h": 2.6,
+   "pen": "thin",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_cratestack",
+   "name": "Crate stack (touches the south kerb)",
+   "rect": [
+    -22,
+    1.6,
+    -18.8,
+    6
+   ],
+   "h": 3.2,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_cratestack",
+   "name": "Crate stack (touches the south kerb)",
+   "rect": [
+    18.8,
+    1.6,
+    22,
+    6
+   ],
+   "h": 3.2,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_signboard",
+   "name": "Sticky-note sign board (wallbang)",
+   "rect": [
+    -36,
+    -4.2,
+    -33,
+    -4.0
+   ],
+   "h": 2.2,
+   "pen": "thin",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_signboard",
+   "name": "Sticky-note sign board (wallbang)",
+   "rect": [
+    33,
+    -4.2,
+    36,
+    -4.0
+   ],
+   "h": 2.2,
+   "pen": "thin",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_terrace",
+   "name": "Low crate terrace (ref1 camera, climbable 1.2 m)",
+   "rect": [
+    -6.6,
+    -3.2,
+    -3.8,
+    -1.0
+   ],
+   "h": 1.2,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_terrace",
+   "name": "Low crate terrace (ref1 camera, climbable 1.2 m)",
+   "rect": [
+    3.8,
+    -3.2,
+    6.6,
+    -1.0
+   ],
+   "h": 1.2,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_crate_m",
+   "name": "Crate",
+   "rect": [
+    -6.6,
+    -5.6,
+    -5.0,
+    -4.0
+   ],
+   "h": 1.6,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_crate_m",
+   "name": "Crate",
+   "rect": [
+    5.0,
+    -5.6,
+    6.6,
+    -4.0
+   ],
+   "h": 1.6,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_taperoll",
+   "name": "Tape roll (hollow)",
+   "circle": [
+    -9,
+    -12.5,
+    2.2
+   ],
+   "h": 1.8,
+   "pen": "medium",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_taperoll",
+   "name": "Tape roll (hollow)",
+   "circle": [
+    9,
+    -12.5,
+    2.2
+   ],
+   "h": 1.8,
+   "pen": "medium",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_bookmark1",
+   "name": "Bookmark screen (wallbang)",
+   "rect": [
+    -24,
+    -21,
+    -23.8,
+    -18
+   ],
+   "h": 2.6,
+   "pen": "thin",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_bookmark1",
+   "name": "Bookmark screen (wallbang)",
+   "rect": [
+    23.8,
+    -21,
+    24,
+    -18
+   ],
+   "h": 2.6,
+   "pen": "thin",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_bookmark2",
+   "name": "Bookmark screen (wallbang)",
+   "rect": [
+    -34,
+    -22,
+    -31,
+    -21.8
+   ],
+   "h": 2.6,
+   "pen": "thin",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_bookmark2",
+   "name": "Bookmark screen (wallbang)",
+   "rect": [
+    31,
+    -22,
+    34,
+    -21.8
+   ],
+   "h": 2.6,
+   "pen": "thin",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_eraser",
+   "name": "Eraser block (low)",
+   "rect": [
+    -8,
+    -25,
+    -5,
+    -23.6
+   ],
+   "h": 1.1,
+   "pen": "thick",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_eraser",
+   "name": "Eraser block (low)",
+   "rect": [
+    5,
+    -25,
+    8,
+    -23.6
+   ],
+   "h": 1.1,
+   "pen": "thick",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_rings",
+   "name": "Notebook spiral rings (low)",
+   "rect": [
+    -36,
+    -12,
+    -30,
+    -11
+   ],
+   "h": 1.0,
+   "pen": "thick",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_rings",
+   "name": "Notebook spiral rings (low)",
+   "rect": [
+    30,
+    -12,
+    36,
+    -11
+   ],
+   "h": 1.0,
+   "pen": "thick",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_ramp_crates",
+   "name": "Crates",
+   "rect": [
+    -33,
+    -9,
+    -30,
+    -7.4
+   ],
+   "h": 1.6,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_ramp_crates",
+   "name": "Crates",
+   "rect": [
+    30,
+    -9,
+    33,
+    -7.4
+   ],
+   "h": 1.6,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_fence1",
+   "name": "Alley fence screen (wallbang)",
+   "rect": [
+    -35,
+    13.2,
+    -34.8,
+    16
+   ],
+   "h": 2.4,
+   "pen": "thin",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_fence1",
+   "name": "Alley fence screen (wallbang)",
+   "rect": [
+    34.8,
+    13.2,
+    35,
+    16
+   ],
+   "h": 2.4,
+   "pen": "thin",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_fence2",
+   "name": "Alley fence screen (wallbang)",
+   "rect": [
+    -17.2,
+    16,
+    -17,
+    18.8
+   ],
+   "h": 2.4,
+   "pen": "thin",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_fence2",
+   "name": "Alley fence screen (wallbang)",
+   "rect": [
+    17,
+    16,
+    17.2,
+    18.8
+   ],
+   "h": 2.4,
+   "pen": "thin",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_alleycrates",
+   "name": "Crates",
+   "rect": [
+    -30,
+    17.2,
+    -28.4,
+    18.8
+   ],
+   "h": 1.6,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_alleycrates",
+   "name": "Crates",
+   "rect": [
+    28.4,
+    17.2,
+    30,
+    18.8
+   ],
+   "h": 1.6,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_enterkey",
+   "name": "Enter key (tall)",
+   "rect": [
+    -11,
+    9,
+    -8.4,
+    13
+   ],
+   "h": 1.4,
+   "pen": "medium",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_enterkey",
+   "name": "Enter key (tall)",
+   "rect": [
+    8.4,
+    9,
+    11,
+    13
+   ],
+   "h": 1.4,
+   "pen": "medium",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_keys_tall",
+   "name": "Raised key cluster",
+   "rect": [
+    -6,
+    13,
+    -3,
+    16
+   ],
+   "h": 2.0,
+   "pen": "medium",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_keys_tall",
+   "name": "Raised key cluster",
+   "rect": [
+    3,
+    13,
+    6,
+    16
+   ],
+   "h": 2.0,
+   "pen": "medium",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "spacebar",
+   "name": "Spacebar (long low wall, split by the F-key tower)",
+   "rect": [
+    -7,
+    21.5,
+    7,
+    23.0
+   ],
+   "h": 1.1,
+   "pen": "medium",
+   "mirror": false
+  },
+  {
+   "id": "blue_binderclip",
+   "name": "Binder clip",
+   "rect": [
+    -31,
+    32,
+    -28,
+    36
+   ],
+   "h": 2.4,
+   "pen": "thick",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_binderclip",
+   "name": "Binder clip",
+   "rect": [
+    28,
+    32,
+    31,
+    36
+   ],
+   "h": 2.4,
+   "pen": "thick",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_stickystack",
+   "name": "Sticky-note stacks",
+   "rect": [
+    -15,
+    29.6,
+    -12.6,
+    31.4
+   ],
+   "h": 1.4,
+   "pen": "thin",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_stickystack",
+   "name": "Sticky-note stacks",
+   "rect": [
+    12.6,
+    29.6,
+    15,
+    31.4
+   ],
+   "h": 1.4,
+   "pen": "thin",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_stampcrates",
+   "name": "Crate stack",
+   "rect": [
+    -36,
+    22,
+    -33,
+    25
+   ],
+   "h": 3.2,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_stampcrates",
+   "name": "Crate stack",
+   "rect": [
+    33,
+    22,
+    36,
+    25
+   ],
+   "h": 3.2,
+   "pen": "thin (crate)",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_yardwall_n",
+   "name": "Spawn screen wall (thick)",
+   "rect": [
+    -41,
+    -24,
+    -40.4,
+    -16
+   ],
+   "h": 3.0,
+   "pen": "thick",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_yardwall_n",
+   "name": "Spawn screen wall (thick)",
+   "rect": [
+    40.4,
+    -24,
+    41,
+    -16
+   ],
+   "h": 3.0,
+   "pen": "thick",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "blue_yardwall_s",
+   "name": "Spawn screen wall (thick)",
+   "rect": [
+    -41,
+    16,
+    -40.4,
+    24
+   ],
+   "h": 3.0,
+   "pen": "thick",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_yardwall_s",
+   "name": "Spawn screen wall (thick)",
+   "rect": [
+    40.4,
+    16,
+    41,
+    24
+   ],
+   "h": 3.0,
+   "pen": "thick",
+   "mirror": true,
+   "side": "red"
+  }
+ ],
+ "lanes": {
+  "north": {
+   "name": "North: Book Heights (long range, high ground)",
+   "colour": "#e07b00",
+   "purpose": "snipers + rifles, height fights, clock tower at the centre",
+   "path": [
+    [
+     -44,
+     0,
+     -12
+    ],
+    [
+     -38,
+     0.3,
+     -20
+    ],
+    [
+     -30,
+     2.4,
+     -28
+    ],
+    [
+     -22,
+     1.2,
+     -26
+    ],
+    [
+     -12,
+     0.3,
+     -26.2
+    ],
+    [
+     -8,
+     0,
+     -25.8
+    ],
+    [
+     -3,
+     0,
+     -23.3
+    ],
+    [
+     0,
+     0,
+     -23
+    ],
+    [
+     3,
+     0,
+     -23.3
+    ],
+    [
+     8,
+     0,
+     -25.8
+    ],
+    [
+     12,
+     0.3,
+     -26.2
+    ],
+    [
+     22,
+     1.2,
+     -26
+    ],
+    [
+     30,
+     2.4,
+     -28
+    ],
+    [
+     38,
+     0.3,
+     -20
+    ],
+    [
+     44,
+     0,
+     -12
+    ]
+   ]
+  },
+  "high": {
+   "name": "High: Fold Stairs + Ruler Bridge (4.2 m)",
+   "colour": "#d4a017",
+   "purpose": "fast elevated crossing over the centre, exposed on both sides",
+   "path": [
+    [
+     -44,
+     0,
+     -10
+    ],
+    [
+     -34,
+     0,
+     -14
+    ],
+    [
+     -26,
+     0.3,
+     -17
+    ],
+    [
+     -16,
+     4.2,
+     -17
+    ],
+    [
+     -14,
+     4.2,
+     -10
+    ],
+    [
+     14,
+     4.2,
+     -10
+    ],
+    [
+     16,
+     4.2,
+     -17
+    ],
+    [
+     26,
+     0.3,
+     -17
+    ],
+    [
+     34,
+     0,
+     -14
+    ],
+    [
+     44,
+     0,
+     -10
+    ]
+   ]
+  },
+  "mid": {
+   "name": "Mid: Market Street + Coffee Plaza",
+   "colour": "#1f9e3a",
+   "purpose": "medium range, most traffic, flag B / bomb rotations",
+   "path": [
+    [
+     -44,
+     0,
+     0
+    ],
+    [
+     -34,
+     0,
+     -1
+    ],
+    [
+     -16,
+     0,
+     0
+    ],
+    [
+     -6,
+     0,
+     -3.8
+    ],
+    [
+     0,
+     0,
+     -4.2
+    ],
+    [
+     6,
+     0,
+     -3.8
+    ],
+    [
+     16,
+     0,
+     0
+    ],
+    [
+     34,
+     0,
+     -1
+    ],
+    [
+     44,
+     0,
+     0
+    ]
+   ]
+  },
+  "south": {
+   "name": "South: Window Alley + Keyboard Quarter",
+   "colour": "#8e44ad",
+   "purpose": "close quarters, shotguns/SMG, houses + loud keys",
+   "path": [
+    [
+     -44,
+     0,
+     12
+    ],
+    [
+     -37,
+     0,
+     16
+    ],
+    [
+     -20,
+     0,
+     16
+    ],
+    [
+     -12,
+     0,
+     16.5
+    ],
+    [
+     -4,
+     0.35,
+     17.5
+    ],
+    [
+     0,
+     0.35,
+     18
+    ],
+    [
+     4,
+     0.35,
+     17.5
+    ],
+    [
+     12,
+     0,
+     16.5
+    ],
+    [
+     20,
+     0,
+     16
+    ],
+    [
+     37,
+     0,
+     16
+    ],
+    [
+     44,
+     0,
+     12
+    ]
+   ]
+  },
+  "flank": {
+   "name": "Flank: Felt Back Road (quiet)",
+   "colour": "#34495e",
+   "purpose": "slow silent flank behind the houses and the pencil cup",
+   "path": [
+    [
+     -44,
+     0,
+     22
+    ],
+    [
+     -38,
+     0,
+     30
+    ],
+    [
+     -14,
+     0,
+     32.5
+    ],
+    [
+     -4,
+     0,
+     34.2
+    ],
+    [
+     0,
+     0,
+     34.4
+    ],
+    [
+     4,
+     0,
+     34.2
+    ],
+    [
+     14,
+     0,
+     32.5
+    ],
+    [
+     38,
+     0,
+     30
+    ],
+    [
+     44,
+     0,
+     22
+    ]
+   ]
+  }
+ },
+ "connectors": [
+  {
+   "name": "Notebook Ramp: north <-> mid",
+   "pts_blue_half": [
+    [
+     -33,
+     -16
+    ],
+    [
+     -33,
+     -6
+    ]
+   ]
+  },
+  {
+   "name": "Awning shop (in front door, up the stairs, out on the bridge)",
+   "pts_blue_half": [
+    [
+     -20,
+     -6
+    ],
+    [
+     -20,
+     -12
+    ],
+    [
+     -14,
+     -10
+    ]
+   ]
+  },
+  {
+   "name": "Ink Corner side door / under the bridge: mid <-> Bridge Street",
+   "pts_blue_half": [
+    [
+     -14,
+     -11
+    ],
+    [
+     -4,
+     -14
+    ]
+   ]
+  },
+  {
+   "name": "Bridge Street: mid <-> clock square",
+   "pts_blue_half": [
+    [
+     0,
+     -6
+    ],
+    [
+     0,
+     -22
+    ]
+   ]
+  },
+  {
+   "name": "Tape Lane: mid <-> alley",
+   "pts_blue_half": [
+    [
+     -35,
+     6
+    ],
+    [
+     -35,
+     13
+    ]
+   ]
+  },
+  {
+   "name": "Corner house (through both doors): mid <-> alley",
+   "pts_blue_half": [
+    [
+     -22,
+     6
+    ],
+    [
+     -18,
+     13
+    ]
+   ]
+  },
+  {
+   "name": "Keyboard edge: mid <-> keyboard",
+   "pts_blue_half": [
+    [
+     -10,
+     6
+    ],
+    [
+     -8,
+     14
+    ]
+   ]
+  },
+  {
+   "name": "Footbridge (upper floors): corner house <-> window house",
+   "pts_blue_half": [
+    [
+     -23.5,
+     13
+    ],
+    [
+     -23.5,
+     19
+    ]
+   ]
+  },
+  {
+   "name": "Window house (both doors): alley <-> back road",
+   "pts_blue_half": [
+    [
+     -21,
+     19
+    ],
+    [
+     -21,
+     29
+    ]
+   ]
+  },
+  {
+   "name": "Sticky Lane gap: alley <-> back road",
+   "pts_blue_half": [
+    [
+     -13.5,
+     19
+    ],
+    [
+     -13.5,
+     29
+    ]
+   ]
+  },
+  {
+   "name": "Stamp Yard: alley <-> back road",
+   "pts_blue_half": [
+    [
+     -34,
+     19
+    ],
+    [
+     -34,
+     29
+    ]
+   ]
+  }
+ ],
+ "modes": {
+  "tdm": {
+   "label": "Team Deathmatch 4v4 .. 6v6",
+   "spawns": {
+    "blue": [
+     [
+      -46,
+      0,
+      -24,
+      1.5708
+     ],
+     [
+      -44,
+      0,
+      -20,
+      1.5708
+     ],
+     [
+      -46,
+      0,
+      -14,
+      1.5708
+     ],
+     [
+      -43,
+      0,
+      -8,
+      1.5708
+     ],
+     [
+      -42,
+      0,
+      -2.5,
+      1.5708
+     ],
+     [
+      -42,
+      0,
+      2.5,
+      1.5708
+     ],
+     [
+      -43,
+      0,
+      8,
+      1.5708
+     ],
+     [
+      -46,
+      0,
+      14,
+      1.5708
+     ],
+     [
+      -44,
+      0,
+      20,
+      1.5708
+     ],
+     [
+      -46,
+      0,
+      24,
+      1.5708
+     ]
+    ],
+    "red": [
+     [
+      46,
+      0,
+      -24,
+      -1.5708
+     ],
+     [
+      44,
+      0,
+      -20,
+      -1.5708
+     ],
+     [
+      46,
+      0,
+      -14,
+      -1.5708
+     ],
+     [
+      43,
+      0,
+      -8,
+      -1.5708
+     ],
+     [
+      42,
+      0,
+      -2.5,
+      -1.5708
+     ],
+     [
+      42,
+      0,
+      2.5,
+      -1.5708
+     ],
+     [
+      43,
+      0,
+      8,
+      -1.5708
+     ],
+     [
+      46,
+      0,
+      14,
+      -1.5708
+     ],
+     [
+      44,
+      0,
+      20,
+      -1.5708
+     ],
+     [
+      46,
+      0,
+      24,
+      -1.5708
+     ]
+    ]
+   },
+   "rule": "pick the spawn point in your yard with the most distance to visible/heard enemies (3 clusters N / mid / S); never spawn in sight of an enemy within 25 m; no forward spawns (yards are walled + thick)",
+   "size_note": "4v4: whole map (lanes are connected every 10-16 m so it never feels empty). 5v5-6v6: same map, best size. 2v2-3v3: optional \"small\" variant closes the back road + book heights with paper barricades."
+  },
+  "ffa": {
+   "label": "Free for all (up to 10)",
+   "spawns": {
+    "any": [
+     [
+      -44,
+      0,
+      -24,
+      1.5708
+     ],
+     [
+      -44,
+      0,
+      22,
+      1.5708
+     ],
+     [
+      44,
+      0,
+      -24,
+      -1.5708
+     ],
+     [
+      44,
+      0,
+      22,
+      -1.5708
+     ],
+     [
+      -30,
+      2.4,
+      -30,
+      1.5708
+     ],
+     [
+      30,
+      2.4,
+      -30,
+      -1.5708
+     ],
+     [
+      0,
+      0,
+      -31.5,
+      0.0
+     ],
+     [
+      -20,
+      4.2,
+      -12,
+      1.5708
+     ],
+     [
+      20,
+      4.2,
+      -12,
+      -1.5708
+     ],
+     [
+      -36,
+      0,
+      0,
+      1.5708
+     ],
+     [
+      36,
+      0,
+      0,
+      -1.5708
+     ],
+     [
+      -22,
+      0,
+      9.5,
+      3.1416
+     ],
+     [
+      22,
+      0,
+      9.5,
+      3.1416
+     ],
+     [
+      -21,
+      3.4,
+      24,
+      3.1416
+     ],
+     [
+      21,
+      3.4,
+      24,
+      3.1416
+     ],
+     [
+      0,
+      0,
+      26.5,
+      3.1416
+     ],
+     [
+      -34,
+      0,
+      32.5,
+      1.5708
+     ],
+     [
+      34,
+      0,
+      32.5,
+      -1.5708
+     ]
+    ]
+   },
+   "rule": "pick the free spawn farthest from all players (min 14 m and not in view)"
+  },
+  "dom": {
+   "label": "Domination (3 flags)",
+   "spawns": {
+    "blue": [
+     [
+      -46,
+      0,
+      -24,
+      1.5708
+     ],
+     [
+      -44,
+      0,
+      -20,
+      1.5708
+     ],
+     [
+      -46,
+      0,
+      -14,
+      1.5708
+     ],
+     [
+      -43,
+      0,
+      -8,
+      1.5708
+     ],
+     [
+      -42,
+      0,
+      -2.5,
+      1.5708
+     ],
+     [
+      -42,
+      0,
+      2.5,
+      1.5708
+     ],
+     [
+      -43,
+      0,
+      8,
+      1.5708
+     ],
+     [
+      -46,
+      0,
+      14,
+      1.5708
+     ],
+     [
+      -44,
+      0,
+      20,
+      1.5708
+     ],
+     [
+      -46,
+      0,
+      24,
+      1.5708
+     ]
+    ],
+    "red": [
+     [
+      46,
+      0,
+      -24,
+      -1.5708
+     ],
+     [
+      44,
+      0,
+      -20,
+      -1.5708
+     ],
+     [
+      46,
+      0,
+      -14,
+      -1.5708
+     ],
+     [
+      43,
+      0,
+      -8,
+      -1.5708
+     ],
+     [
+      42,
+      0,
+      -2.5,
+      -1.5708
+     ],
+     [
+      42,
+      0,
+      2.5,
+      -1.5708
+     ],
+     [
+      43,
+      0,
+      8,
+      -1.5708
+     ],
+     [
+      46,
+      0,
+      14,
+      -1.5708
+     ],
+     [
+      44,
+      0,
+      20,
+      -1.5708
+     ],
+     [
+      46,
+      0,
+      24,
+      -1.5708
+     ]
+    ]
+   },
+   "flags": [
+    {
+     "id": "A",
+     "p": [
+      -28,
+      0,
+      -1
+     ],
+     "r": 3.0,
+     "where": "Blue Market (by the newspaper kiosk)"
+    },
+    {
+     "id": "B",
+     "p": [
+      0,
+      0,
+      -4.0
+     ],
+     "r": 3.0,
+     "where": "Coffee Stain Plaza (north of the cup, mouth of Bridge Street, under the bunting)"
+    },
+    {
+     "id": "C",
+     "p": [
+      28,
+      0,
+      -1
+     ],
+     "r": 3.0,
+     "where": "Red Market (by the newspaper kiosk)"
+    }
+   ],
+   "rule": "capture 8 s, 1 point / s per flag; when a team holds 3 flags or its home flag is taken, spawns flip to the opposite clusters only if those are safe (CoD rule)"
+  },
+  "bomb": {
+   "label": "Search & Destroy / Demolition (2 sites)",
+   "note": "sites are on the DEFENDERS half; at half-time teams swap ends and the sites mirror (map is symmetric, both halves are built as sites)",
+   "attack_spawns": [
+    [
+     -46,
+     0,
+     -6,
+     1.5708
+    ],
+    [
+     -46,
+     0,
+     -3,
+     1.5708
+    ],
+    [
+     -46,
+     0,
+     0,
+     1.5708
+    ],
+    [
+     -46,
+     0,
+     3,
+     1.5708
+    ],
+    [
+     -46,
+     0,
+     6,
+     1.5708
+    ],
+    [
+     -43,
+     0,
+     -4.5,
+     1.5708
+    ]
+   ],
+   "defend_spawns": [
+    [
+     44,
+     0,
+     -6,
+     -1.5708
+    ],
+    [
+     44,
+     0,
+     -2,
+     -1.5708
+    ],
+    [
+     44,
+     0,
+     2,
+     -1.5708
+    ],
+    [
+     44,
+     0,
+     6,
+     -1.5708
+    ],
+    [
+     41,
+     0,
+     -9,
+     -1.5708
+    ],
+    [
+     41,
+     0,
+     9,
+     -1.5708
+    ]
+   ],
+   "sites_defender_half_east": [
+    {
+     "id": "A",
+     "p": [
+      18,
+      1.2,
+      -26
+     ],
+     "r": 3.2,
+     "where": "on the red Novel book plateau (north lane)",
+     "entries": [
+      "clock square (from the west)",
+      "red Fold Stairs / ruler bridge drop",
+      "red Notebook Ramp (defender side)"
+     ]
+    },
+    {
+     "id": "B",
+     "p": [
+      24,
+      0,
+      16
+     ],
+     "r": 3.2,
+     "where": "red Window Alley between the corner house and the window house (south lane)",
+     "entries": [
+      "alley from the keyboard (west)",
+      "red corner house (from Market)",
+      "red footbridge / window house upper floor",
+      "Sticky Lane from the back road"
+     ]
+    }
+   ],
+   "rules_ref": "data/modes.json demo: freeze 5, round 105 s, plant 3.2 s, bomb 40 s, defuse 7 s"
+  },
+  "ctf": {
+   "label": "Capture the Flag",
+   "spawns": {
+    "blue": [
+     [
+      -46,
+      0,
+      -24,
+      1.5708
+     ],
+     [
+      -44,
+      0,
+      -20,
+      1.5708
+     ],
+     [
+      -46,
+      0,
+      -14,
+      1.5708
+     ],
+     [
+      -43,
+      0,
+      -8,
+      1.5708
+     ],
+     [
+      -42,
+      0,
+      -2.5,
+      1.5708
+     ],
+     [
+      -42,
+      0,
+      2.5,
+      1.5708
+     ],
+     [
+      -43,
+      0,
+      8,
+      1.5708
+     ],
+     [
+      -46,
+      0,
+      14,
+      1.5708
+     ],
+     [
+      -44,
+      0,
+      20,
+      1.5708
+     ],
+     [
+      -46,
+      0,
+      24,
+      1.5708
+     ]
+    ],
+    "red": [
+     [
+      46,
+      0,
+      -24,
+      -1.5708
+     ],
+     [
+      44,
+      0,
+      -20,
+      -1.5708
+     ],
+     [
+      46,
+      0,
+      -14,
+      -1.5708
+     ],
+     [
+      43,
+      0,
+      -8,
+      -1.5708
+     ],
+     [
+      42,
+      0,
+      -2.5,
+      -1.5708
+     ],
+     [
+      42,
+      0,
+      2.5,
+      -1.5708
+     ],
+     [
+      43,
+      0,
+      8,
+      -1.5708
+     ],
+     [
+      46,
+      0,
+      14,
+      -1.5708
+     ],
+     [
+      44,
+      0,
+      20,
+      -1.5708
+     ],
+     [
+      46,
+      0,
+      24,
+      -1.5708
+     ]
+    ]
+   },
+   "flags": [
+    {
+     "team": "blue",
+     "p": [
+      -48.5,
+      0,
+      0
+     ],
+     "where": "inside the Blue Pencil-Case HQ (3 doors: east mouth, north, south)"
+    },
+    {
+     "team": "red",
+     "p": [
+      48.5,
+      0,
+      0
+     ],
+     "where": "inside the Red Pencil-Case HQ"
+    }
+   ],
+   "rule": "carrier cannot sprint or throw planes; dropped flag returns after 20 s; capture only with your flag at home; respawn 6 s; first to 3"
+  },
+  "hide_and_fold": {
+   "label": "Hide & Fold (prop hunt)",
+   "hider_start": [
+    [
+     -3,
+     0,
+     -6,
+     0
+    ],
+    [
+     3,
+     0,
+     -6,
+     0
+    ],
+    [
+     -6,
+     0,
+     0,
+     0
+    ],
+    [
+     6,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     7.5,
+     0
+    ],
+    [
+     -2,
+     0,
+     -10,
+     0
+    ],
+    [
+     2,
+     0,
+     -10,
+     0
+    ],
+    [
+     0,
+     0,
+     6.5,
+     0
+    ]
+   ],
+   "seeker_start": [
+    [
+     -46,
+     0,
+     -3,
+     1.5708
+    ],
+    [
+     -46,
+     0,
+     0,
+     1.5708
+    ],
+    [
+     -46,
+     0,
+     3,
+     1.5708
+    ],
+    [
+     46,
+     0,
+     -3,
+     -1.5708
+    ],
+    [
+     46,
+     0,
+     0,
+     -1.5708
+    ],
+    [
+     46,
+     0,
+     3,
+     -1.5708
+    ]
+   ],
+   "rule": "hiders start in the middle and get 30 s to fold into a prop; seekers wait inside both Pencil-Case HQs (doors closed, screen dark) then hunt from both ends; round 4 min; hiders crinkle every 20 s; seekers lose 5 HP per wrong-prop shot",
+   "hide_zones": [
+    "Ink Corners (inside the tape rolls)",
+    "Market shop interiors",
+    "Keyboard Quarter (between keys)",
+    "Window-house attics",
+    "Pencil-cup ring gallery",
+    "Clock tower 1st floor",
+    "Stamp Yards (crate stacks)",
+    "Book Heights between bookmark screens",
+    "Felt back road (sticky-note stacks)"
+   ]
+  }
+ },
+ "hide_props": [
+  {
+   "id": "crate_s",
+   "name": "Small cardboard crate",
+   "size": "0.8 x 0.8 x 0.8",
+   "decoys": 14
+  },
+  {
+   "id": "crate_m",
+   "name": "Cardboard crate",
+   "size": "1.2 x 1.2 x 1.2",
+   "decoys": 10
+  },
+  {
+   "id": "paper_cup",
+   "name": "Paper cup",
+   "size": "r0.45 x 1.0",
+   "decoys": 8
+  },
+  {
+   "id": "sticky_pad",
+   "name": "Sticky-note pad",
+   "size": "0.9 x 0.9 x 0.4",
+   "decoys": 10
+  },
+  {
+   "id": "tape_small",
+   "name": "Small tape roll",
+   "size": "r0.6 x 0.45",
+   "decoys": 6
+  },
+  {
+   "id": "eraser",
+   "name": "Eraser",
+   "size": "1.2 x 0.6 x 0.5",
+   "decoys": 6
+  },
+  {
+   "id": "sharpener",
+   "name": "Pencil sharpener",
+   "size": "0.7 x 0.5 x 0.6",
+   "decoys": 5
+  },
+  {
+   "id": "paper_lamp",
+   "name": "Paper lantern lamp",
+   "size": "r0.4 x 1.0",
+   "decoys": 6
+  },
+  {
+   "id": "crane",
+   "name": "Origami crane",
+   "size": "1.0 x 0.4 x 0.8",
+   "decoys": 6
+  },
+  {
+   "id": "paper_ball",
+   "name": "Crumpled paper ball",
+   "size": "r0.4",
+   "decoys": 10
+  },
+  {
+   "id": "envelope",
+   "name": "Envelope (leaning)",
+   "size": "1.2 x 0.1 x 0.8",
+   "decoys": 5
+  },
+  {
+   "id": "matchbox",
+   "name": "Matchbox",
+   "size": "0.9 x 0.6 x 0.5",
+   "decoys": 4
+  },
+  {
+   "id": "dice",
+   "name": "Paper dice",
+   "size": "0.7 cube",
+   "decoys": 4
+  },
+  {
+   "id": "glue_stick",
+   "name": "Glue stick",
+   "size": "r0.3 x 1.1",
+   "decoys": 5
+  },
+  {
+   "id": "highlighter",
+   "name": "Highlighter (lying)",
+   "size": "1.4 x 0.35 x 0.35",
+   "decoys": 5
+  },
+  {
+   "id": "binder_s",
+   "name": "Small binder clip",
+   "size": "0.8 x 0.5 x 0.6",
+   "decoys": 5
+  },
+  {
+   "id": "stapler",
+   "name": "Stapler",
+   "size": "1.4 x 0.4 x 0.5",
+   "decoys": 3
+  },
+  {
+   "id": "paper_boat",
+   "name": "Paper boat",
+   "size": "1.0 x 0.5 x 0.6",
+   "decoys": 5
+  },
+  {
+   "id": "small_book",
+   "name": "Small book",
+   "size": "1.0 x 0.7 x 0.25",
+   "decoys": 6
+  },
+  {
+   "id": "pin_box",
+   "name": "Push-pin box",
+   "size": "0.6 x 0.6 x 0.4",
+   "decoys": 4
+  },
+  {
+   "id": "keycap",
+   "name": "Loose keycap",
+   "size": "0.9 x 0.9 x 0.5",
+   "decoys": 8
+  },
+  {
+   "id": "cup_lid",
+   "name": "Coffee cup lid",
+   "size": "r0.45 x 0.15",
+   "decoys": 4
+  },
+  {
+   "id": "tent_card",
+   "name": "Folded tent card",
+   "size": "1.0 x 0.5 x 0.6",
+   "decoys": 4
+  },
+  {
+   "id": "pencil_stub",
+   "name": "Pencil stub",
+   "size": "1.2 x 0.25 x 0.25",
+   "decoys": 5
+  },
+  {
+   "id": "paper_fan",
+   "name": "Paper fan",
+   "size": "0.9 x 0.1 x 0.7",
+   "decoys": 3
+  }
+ ],
+ "plane_routes": [
+  {
+   "id": "market_skyway",
+   "name": "Market Skyway",
+   "pts": [
+    [
+     -36,
+     7,
+     0
+    ],
+    [
+     -12,
+     8,
+     -1
+    ],
+    [
+     0,
+     8.5,
+     0
+    ],
+    [
+     12,
+     8,
+     -1
+    ],
+    [
+     36,
+     7,
+     0
+    ]
+   ],
+   "note": "open sky over Market Street at 6-9 m; bunting must NOT collide with planes",
+   "mirror": false
+  },
+  {
+   "id": "under_ruler",
+   "name": "Under the Ruler",
+   "pts": [
+    [
+     0,
+     5.5,
+     -27
+    ],
+    [
+     0,
+     2.4,
+     -16
+    ],
+    [
+     0,
+     2.2,
+     -10
+    ],
+    [
+     0,
+     2.6,
+     -3
+    ]
+   ],
+   "note": "from the clock tower 1st-floor window down Bridge Street and UNDER the ruler bridge (3.6 m gap)",
+   "mirror": false
+  },
+  {
+   "id": "blue_win2win",
+   "name": "Window to window (ref3)",
+   "pts": [
+    [
+     -21,
+     5.0,
+     19
+    ],
+    [
+     -21,
+     5.2,
+     16
+    ],
+    [
+     -21,
+     5.0,
+     13
+    ]
+   ],
+   "note": "window house <-> corner house across the alley: the \"return to sender\" spot",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_win2win",
+   "name": "Window to window (ref3)",
+   "pts": [
+    [
+     21,
+     5.0,
+     19
+    ],
+    [
+     21,
+     5.2,
+     16
+    ],
+    [
+     21,
+     5.0,
+     13
+    ]
+   ],
+   "note": "window house <-> corner house across the alley: the \"return to sender\" spot",
+   "mirror": true,
+   "side": "red"
+  },
+  {
+   "id": "belfry",
+   "name": "Belfry shot",
+   "pts": [
+    [
+     -30,
+     6,
+     -29
+    ],
+    [
+     -12,
+     11,
+     -30
+    ],
+    [
+     0,
+     14.5,
+     -30
+    ],
+    [
+     12,
+     11,
+     -30
+    ],
+    [
+     30,
+     6,
+     -29
+    ]
+   ],
+   "note": "through the clock tower open belfry arches (13-16 m)",
+   "mirror": false
+  },
+  {
+   "id": "cup_chimney",
+   "name": "Cup chimney drop",
+   "pts": [
+    [
+     -14,
+     9,
+     22
+    ],
+    [
+     -4,
+     9.5,
+     27
+    ],
+    [
+     0,
+     7.5,
+     29
+    ],
+    [
+     0,
+     2.5,
+     29
+    ]
+   ],
+   "note": "dive into the pencil cup through its open top between the pencils",
+   "mirror": false
+  },
+  {
+   "id": "blue_heights_glide",
+   "name": "Heights glide",
+   "pts": [
+    [
+     -32,
+     4.4,
+     -29
+    ],
+    [
+     -24,
+     5.5,
+     -22
+    ],
+    [
+     -18,
+     6.5,
+     -15
+    ],
+    [
+     -12,
+     5.5,
+     -10
+    ]
+   ],
+   "note": "from the Dictionary over the shop roof onto the ruler bridge",
+   "mirror": true,
+   "side": "blue"
+  },
+  {
+   "id": "red_heights_glide",
+   "name": "Heights glide",
+   "pts": [
+    [
+     32,
+     4.4,
+     -29
+    ],
+    [
+     24,
+     5.5,
+     -22
+    ],
+    [
+     18,
+     6.5,
+     -15
+    ],
+    [
+     12,
+     5.5,
+     -10
+    ]
+   ],
+   "note": "from the Dictionary over the shop roof onto the ruler bridge",
+   "mirror": true,
+   "side": "red"
+  }
+ ],
+ "wallbangs": [
+  {
+   "where": "Awning shop front side panels",
+   "what": "Market <-> shop inside",
+   "class": "thin"
+  },
+  {
+   "where": "Awning shop upper floor",
+   "what": "shoot down into the shop / up at the bridge door",
+   "class": "thin floor"
+  },
+  {
+   "where": "Ruler bridge skirts",
+   "what": "bridge deck <-> Bridge Street + Ink Corner",
+   "class": "thin"
+  },
+  {
+   "where": "Market kiosks + sign board",
+   "what": "Market cover",
+   "class": "thin"
+  },
+  {
+   "where": "Corner house (all walls)",
+   "what": "Market <-> alley, the wallbang house",
+   "class": "thin"
+  },
+  {
+   "where": "Corner house upper floor",
+   "what": "up/down",
+   "class": "thin floor"
+  },
+  {
+   "where": "Window house alley facade + shutters",
+   "what": "alley <-> rooms (ref3 window)",
+   "class": "thin"
+  },
+  {
+   "where": "Window house 1st floor + attic floor",
+   "what": "counter the attic sniper from below",
+   "class": "thin floor"
+  },
+  {
+   "where": "Alley fence screens",
+   "what": "alley corners",
+   "class": "thin"
+  },
+  {
+   "where": "Bookmark screens",
+   "what": "Book Heights",
+   "class": "thin"
+  },
+  {
+   "where": "Tape roll",
+   "what": "Ink Corner",
+   "class": "medium"
+  },
+  {
+   "where": "Clock tower ground panels + 1st floor",
+   "what": "centre north",
+   "class": "medium / thin floor"
+  },
+  {
+   "where": "Pencil cup tube (centre)",
+   "what": "whole tower is see-through when shot",
+   "class": "thin"
+  },
+  {
+   "where": "Paper coffee cup (centre)",
+   "what": "flag B cover",
+   "class": "medium"
+  },
+  {
+   "where": "Raised keys + Enter key",
+   "what": "Keyboard Quarter",
+   "class": "medium"
+  },
+  {
+   "where": "Crates everywhere",
+   "what": "two skins",
+   "class": "crate"
+  },
+  {
+   "where": "Spawn yard walls, HQs, outer building row",
+   "what": "NO wallbangs into spawns",
+   "class": "thick"
+  }
+ ],
+ "knife_peeks": [
+  "Awning shop side panel facing Ink Corner (pre-scored dotted cut line at eye height)",
+  "Corner house alley door side panel",
+  "Window house attic wall facing the alley",
+  "Ruler bridge skirt next to the Fold Stairs",
+  "Pencil cup tube at 1.6 m (ring of scored circles)",
+  "Bookmark screens on Book Heights",
+  "Clock tower 1st floor side panels"
+ ],
+ "ref_cameras": [
+  {
+   "id": "ref1",
+   "p": [
+    -4.5,
+    2.9,
+    -2.0
+   ],
+   "look_at": [
+    -14,
+    4.6,
+    -10
+   ],
+   "note": "on the low crate terrace at the Market side of Bridge Street, looking NW at the blue shop UPPER doorway (awning below-left), ruler bridge running from that doorway to the right, clock tower behind, background giant pencil cup NE on the right"
+  },
+  {
+   "id": "ref2",
+   "p": [
+    -1.2,
+    1.65,
+    4.5
+   ],
+   "look_at": [
+    0,
+    3.5,
+    -26
+   ],
+   "note": "on Market Street at the coffee cup, looking N up Bridge Street UNDER the ruler bridge to the clock tower; Ink Corner tape roll left, background pencil cup right"
+  },
+  {
+   "id": "ref3",
+   "p": [
+    -38,
+    1.65,
+    16.5
+   ],
+   "look_at": [
+    -14,
+    3.0,
+    15.5
+   ],
+   "note": "west end of the blue Window Alley looking E: window house with shutters + banner on the RIGHT, footbridge ahead crossing the alley, background pencil cup ahead-left"
+  }
+ ],
+ "background": {
+  "pencil_cup_giant": {
+   "p": [
+    62,
+    0,
+    -56
+   ],
+   "h": 34,
+   "note": "non-playable desk prop, seen to the right/ahead in ref1/ref2/ref3"
+  },
+  "mug_giant": {
+   "p": [
+    -62,
+    0,
+    -56
+   ],
+   "h": 26,
+   "note": "mirror silhouette"
+  },
+  "ring": "paper skyline + books + keyboard edge + desk lamp ring outside the outer blocks, billboards/LOD, <= 12k tris"
+ },
+ "measured": {
+  "sightlines_max": {
+   "north (on the books: eye 1.65 above each top)": {
+    "max_m": 47.1,
+    "from": [
+     -39.5,
+     -32.5
+    ],
+    "to": [
+     6.5,
+     -22.5
+    ]
+   },
+   "mid (Market Street)": {
+    "max_m": 49.6,
+    "from": [
+     -39.5,
+     3.5
+    ],
+    "to": [
+     9.5,
+     -4.5
+    ]
+   },
+   "south (alley + keyboard)": {
+    "max_m": 35.1,
+    "from": [
+     -39.5,
+     17.5
+    ],
+    "to": [
+     -4.5,
+     19.5
+    ]
+   },
+   "Bridge Street (N-S)": {
+    "max_m": 42.7,
+    "from": [
+     -7.5,
+     -35.5
+    ],
+    "to": [
+     4.5,
+     5.5
+    ]
+   },
+   "flank (back road)": {
+    "max_m": 29.6,
+    "from": [
+     -39.5,
+     29.5
+    ],
+    "to": [
+     -10.5,
+     35.5
+    ]
+   },
+   "ruler bridge deck (4.2 m)": {
+    "max_m": 27.0,
+    "from": [
+     -13.5,
+     -11.1
+    ],
+    "to": [
+     13.5,
+     -10.1
+    ]
+   }
+  },
+  "lane_timings": {
+   "north": {
+    "spawn_to_spawn_m": 105.0,
+    "run_s": 18.8,
+    "sprint_s": 11.9,
+    "spawn_to_centre_run_s": 9.4,
+    "spawn_to_centre_sprint_s": 6.0
+   },
+   "high": {
+    "spawn_to_spawn_m": 102.7,
+    "run_s": 18.3,
+    "sprint_s": 11.7,
+    "spawn_to_centre_run_s": 9.2,
+    "spawn_to_centre_sprint_s": 5.8
+   },
+   "mid": {
+    "spawn_to_spawn_m": 89.6,
+    "run_s": 16.0,
+    "sprint_s": 10.2,
+    "spawn_to_centre_run_s": 8.0,
+    "spawn_to_centre_sprint_s": 5.1
+   },
+   "south": {
+    "spawn_to_spawn_m": 90.4,
+    "run_s": 16.1,
+    "sprint_s": 10.3,
+    "spawn_to_centre_run_s": 8.1,
+    "spawn_to_centre_sprint_s": 5.1
+   },
+   "flank": {
+    "spawn_to_spawn_m": 96.6,
+    "run_s": 17.2,
+    "sprint_s": 11.0,
+    "spawn_to_centre_run_s": 8.6,
+    "spawn_to_centre_sprint_s": 5.5
+   }
+  },
+  "objective_timings": {
+   "bomb: attackers -> site A (north lane)": {
+    "m": 75.1,
+    "run_s": 13.4,
+    "sprint_s": 8.5
+   },
+   "bomb: attackers -> site B (south lane)": {
+    "m": 76.7,
+    "run_s": 13.7,
+    "sprint_s": 8.7
+   },
+   "bomb: attackers -> site A via mid + Bridge Street": {
+    "m": 81.9,
+    "run_s": 14.6,
+    "sprint_s": 9.3
+   },
+   "bomb: defenders -> site A": {
+    "m": 35.7,
+    "run_s": 6.4,
+    "sprint_s": 4.1
+   },
+   "bomb: defenders -> site B": {
+    "m": 26.5,
+    "run_s": 4.7,
+    "sprint_s": 3.0
+   },
+   "bomb: defender rotate A <-> B (via ramp + Tape Lane)": {
+    "m": 56.6,
+    "run_s": 10.1,
+    "sprint_s": 6.4
+   },
+   "dom: spawn -> own flag (A or C)": {
+    "m": 14.1,
+    "run_s": 2.5,
+    "sprint_s": 1.6
+   },
+   "dom: spawn -> B": {
+    "m": 42.8,
+    "run_s": 7.6,
+    "sprint_s": 4.9
+   },
+   "ctf: flag -> flag via mid": {
+    "m": 98.7,
+    "run_s": 17.6,
+    "sprint_s": 11.2
+   },
+   "ctf: flag -> flag via south": {
+    "m": 113.6,
+    "run_s": 20.3,
+    "sprint_s": 12.9
+   },
+   "ctf: flag -> flag via north": {
+    "m": 129.5,
+    "run_s": 23.1,
+    "sprint_s": 14.7
+   }
+  }
+ }
+}

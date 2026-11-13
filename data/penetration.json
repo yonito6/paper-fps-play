@@ -36,12 +36,12 @@
   },
   "metal": {
    "code": 5,
-   "cost": 3.0,
+   "cost": 3,
    "max": 0.25
   },
   "sheet": {
    "code": 6,
-   "cost": 3.0,
+   "cost": 3,
    "max": 0.3,
    "flat": 0.1
   }
@@ -63,5 +63,141 @@
   "breacher": 0.25,
   "pistol": 0.2
  },
- "_paper": "Foldiers wallbang classes: card = thin cardboard (<= 20 cm: all guns, flat 10 cm path), card2 = double card (<= 45 cm: sniper + rifle; SMG and shotgun stop), crate = hollow box (two skins), wood = ruler / trusses; pencils, clips, metal, floors and thick blocks stop bullets. Tearable panels: real holes, bullets carry on at 60 % (TEAR.R.throughK)."
+ "_paper": "Foldiers wallbang classes: card = thin cardboard (<= 20 cm: all guns, flat 10 cm path), card2 = double card (<= 45 cm: sniper + rifle; SMG and shotgun stop), crate = hollow box (two skins), wood = ruler / trusses; pencils, clips, metal, floors and thick blocks stop bullets. Tearable panels: real holes, bullets carry on at 60 % (TEAR.R.throughK).",
+ "holes": {
+  "_note": "HOLES_SYSTEM.md B2: per-gun holes in thin card (P1). entry/exit = hole radius in mm; thinK = damage left per thin-card layer (flat, any angle); maxLayers = thin panels a bullet passes (the next one stops it). A ray through an EXISTING opening is not 'through' the panel: x1.0 and no new hole. Mirrored 1:1 by src/shared/holes-core.js GUNS (qa/paper/holes_core.test.js checks). oneShotDmg = a one-shot sniper's body damage after any card (110 x .92 = 101 kills through 1, x .85 = 93 does not through 2). crater = the one big shotgun crater per shot (mm).",
+  "oneShotDmg": 110,
+  "craterMM": 200,
+  "guns": {
+   "sniper": {
+    "id": 1,
+    "entry": 95,
+    "exit": 120,
+    "thinK": 0.92,
+    "maxLayers": 3,
+    "power": 1.3
+   },
+   "carbine": {
+    "id": 2,
+    "entry": 85,
+    "exit": 100,
+    "thinK": 0.7,
+    "maxLayers": 2,
+    "power": 0.7
+   },
+   "wasp": {
+    "id": 3,
+    "entry": 63,
+    "exit": 75,
+    "thinK": 0.55,
+    "maxLayers": 1,
+    "power": 0.3
+   },
+   "pistol": {
+    "id": 4,
+    "entry": 70,
+    "exit": 80,
+    "thinK": 0.5,
+    "maxLayers": 1,
+    "power": 0.2
+   },
+   "breacher": {
+    "id": 5,
+    "entry": 75,
+    "exit": 85,
+    "thinK": 0.5,
+    "maxLayers": 1,
+    "power": 0.25
+   },
+   "boomerang": {
+    "id": 6,
+    "entry": 126,
+    "exit": 126,
+    "thinK": 1,
+    "maxLayers": 1,
+    "power": 0
+   }
+  },
+  "alias": {
+   "obelisk": "sniper",
+   "helix": "sniper",
+   "rifle": "carbine",
+   "titan": "carbine",
+   "triad": "carbine",
+   "void": "carbine",
+   "smg": "wasp",
+   "judge": "pistol",
+   "shotgun": "breacher"
+  }
+ },
+ "wear": {
+  "_note": "PROGRESSIVE WEAR (owner 2026-11-12; HOLES_SYSTEM.md 'Progressive wear'). Classes: P0 paper, P1 thin card (open on the first hit), P2 double card, P3 laminated / thick board, P4 solid block. Only colliders the designer flags 'noHole' stay unholeable. shots[class][gun] = shots at ONE spot until a real see-through / shoot-through hole opens (the BREACH); each hit adds ceil(full / shots) wear to the grid cells (cell mm) within the gun's brush radius (mm); below full: dent, then crack at >= crack x full (marks only, still blocks). breachR = breach hole radius x the gun's entry radius. passK = the breaching bullet keeps thinK x passK of its damage; preK = damage leaking through an UNBREACHED thick wall (very strong guns only). knife = classes the cutter can cut. 'crater' = the one shotgun crater per shot, 'blast' = paper-plane blast. Mirrored 1:1 by src/shared/holes-core.js WEAR (qa/paper/holes_core.test.js checks). No decay (persistent all match).",
+  "full": 1000000,
+  "cell": 60,
+  "crack": 0.5,
+  "brush": {
+   "sniper": 40,
+   "carbine": 60,
+   "wasp": 55,
+   "pistol": 55,
+   "breacher": 50,
+   "boomerang": 60,
+   "crater": 100,
+   "blast": 140
+  },
+  "shots": {
+   "P2": {
+    "sniper": 1,
+    "carbine": 3,
+    "wasp": 5,
+    "pistol": 6,
+    "breacher": 12,
+    "boomerang": 3,
+    "crater": 2,
+    "blast": 1
+   },
+   "P3": {
+    "sniper": 3,
+    "carbine": 8,
+    "wasp": 14,
+    "pistol": 16,
+    "breacher": 30,
+    "boomerang": 8,
+    "crater": 5,
+    "blast": 2
+   },
+   "P4": {
+    "sniper": 6,
+    "carbine": 20,
+    "wasp": 35,
+    "pistol": 40,
+    "breacher": 72,
+    "boomerang": 20,
+    "crater": 12,
+    "blast": 3
+   }
+  },
+  "breachR": {
+   "P2": 0.8,
+   "P3": 0.65,
+   "P4": 0.55
+  },
+  "passK": {
+   "P0": 1,
+   "P1": 1,
+   "P2": 0.75,
+   "P3": 0.5,
+   "P4": 0.35
+  },
+  "preK": {
+   "P2": {
+    "sniper": 0.25
+   }
+  },
+  "knife": {
+   "P0": 1,
+   "P1": 1,
+   "P2": 1
+  }
+ }
 }

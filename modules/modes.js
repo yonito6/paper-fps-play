@@ -6,7 +6,7 @@
    beeps faster as it runs out, sides swap at halftime, first to 7 rounds. */
 (() => {
   'use strict';
-  const TEAM = { atk: { name: 'Blue team', css: '#3f64d8', col: [.18, .31, .69] }, def: { name: 'Red team', css: '#d6402f', col: [.75, .22, .17] } };
+  const TEAM = { atk: { name: 'Blue team', css: '#1f56c4', col: [.18, .31, .69] }, def: { name: 'Red team', css: '#c61e12', col: [.75, .22, .17] } };
   const REASON = { eliminated: 'Enemy team eliminated', defused: 'Charge defused', exploded: 'Charge detonated', time: 'Time ran out' };
   const MX = { v: null, teams: new Map(), off: 0, freezeEnd: 0, roundEnd: 0, carrier: null, kits: new Set(), bomb: null, act: null, holdE: false, pickT: 0, beepT: 0, layout: null, siteObjs: [], bombObj: null, carryObj: null, spec: null, allowRespawn: false, lastRound: 0, over: false };
   let LAYOUTS = null;
@@ -54,11 +54,10 @@
   const _pickSpawn = pickSpawn;
   pickSpawn = function (forEnt) {
     const L = layout(), t = myTeam();
-    if (forEnt === PLAYER_ENT && teamMode() && L && t) {
-      const pts = L[t], used = new Set([...robots].filter(r => member(r) && !r.dead).map(r => Math.round(r.root.position.x) + ',' + Math.round(r.root.position.z)));
-      const free = pts.filter(q => !used.has(Math.round(q[0]) + ',' + Math.round(q[1])));
-      const q = (free.length ? free : pts)[Math.floor(Math.random() * (free.length || pts.length))];
-      const c = nearestOk(cellOf(q[0], q[1]), 6); return new THREE.Vector3(cellX(c), NAV.h[c], cellZ(c));
+    if (forEnt === PLAYER_ENT && teamMode() && L && t && L[t]) {
+      // my team's base only; safest point (no enemy near / in sight), see pickSafeSpawn in 50-state-hud-match.js
+      const tOf = e => e === PLAYER_ENT ? t : MX.teams.get(e.netId) || null;
+      const v = pickSafeSpawn(forEnt, L[t], e => tOf(e) !== t); if (v) return v;
     }
     return _pickSpawn.apply(this, arguments);
   };

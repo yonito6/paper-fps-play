@@ -10,7 +10,7 @@
   'use strict';
   if (window.S9RoundFX) return;
 
-  const TEAM = { atk: { name: 'Blue team', css: '#3f64d8', side: 'Attack' }, def: { name: 'Red team', css: '#d6402f', side: 'Defend' } };
+  const TEAM = { atk: { name: 'Blue team', css: '#1f56c4', side: 'Attack' }, def: { name: 'Red team', css: '#c61e12', side: 'Defend' } };
   const REASON = {
     eliminated: { t: 'Enemy team eliminated', i: 'elim' }, defused: { t: 'Charge defused', i: 'defuse' },
     exploded: { t: 'Charge detonated', i: 'blast' }, time: { t: 'Time ran out', i: 'clock' }
@@ -473,8 +473,8 @@ html.rfx-cel #hud,html.rfx-cel #mxHud,html.rfx-cel #mxTip,html.rfx-cel #mxBar,ht
 .cel .pod .blk .wn{top:-15px}
 .cel .pod .rs{display:block;width:100%;height:10px;margin-top:3px;background:linear-gradient(180deg,var(--b),transparent);opacity:.32;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,10px 100%)}
 .cel .pod.p1 .rs{height:30px}.cel .pod.p2 .rs{height:20px}.cel .pod.p3 .rs{height:10px}
-.cel-note{display:flex;align-items:center;justify-content:center;gap:9px;max-width:min(660px,94%);padding:7px 18px 7px 12px;font:600 clamp(10px,1.05vw,12.5px)/1.35 var(--mono,monospace);letter-spacing:.07em;color:#cfeaf7;background:linear-gradient(90deg,rgba(61,200,255,.14),rgba(10,13,18,.85) 60%);border-left:3px solid #d6402f;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%);animation:rfxRise .45s 2.6s both;text-align:left}
-.cel-note i{flex:none;width:18px;height:18px;color:#d6402f;display:block}.cel-note i svg{width:100%;height:100%;display:block}
+.cel-note{display:flex;align-items:center;justify-content:center;gap:9px;max-width:min(660px,94%);padding:7px 18px 7px 12px;font:600 clamp(10px,1.05vw,12.5px)/1.35 var(--mono,monospace);letter-spacing:.07em;color:#cfeaf7;background:linear-gradient(90deg,rgba(61,200,255,.14),rgba(10,13,18,.85) 60%);border-left:3px solid #c61e12;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%);animation:rfxRise .45s 2.6s both;text-align:left}
+.cel-note i{flex:none;width:18px;height:18px;color:#c61e12;display:block}.cel-note i svg{width:100%;height:100%;display:block}
 @media (min-width:561px) and (max-height:820px){.cel .pod .cel-av{height:clamp(84px,15vh,150px)}.cel .pod.p1 .cel-av{height:clamp(96px,17vh,170px)}.cel .rfx-final,.rfx-final.cel{gap:6px}}
 @media (max-width:560px){.cel .cel-medal,.cel .cel-plate{width:78px}.cel .pod .blk{padding:22px 4px 10px}.cel .pod .blk .nm{font-size:13px;letter-spacing:.03em}.cel .pod .blk .nm em{display:block;margin:3px auto 0;width:max-content}.cel .pod .blk .st{font-size:8px;letter-spacing:.03em}.cel-note{font-size:10px;padding:6px 12px 6px 9px;letter-spacing:.03em}.cel .cel-head{gap:4px}.cel .pod .blk b{width:30px;height:34px;font-size:17px}}
 @media (prefers-reduced-motion:reduce){#rfx *{animation-duration:.01ms!important;animation-iteration-count:1!important}}`;
@@ -708,7 +708,7 @@ html.rfx-cel #hud,html.rfx-cel #mxHud,html.rfx-cel #mxTip,html.rfx-cel #mxBar,ht
       at(2500, () => SND.board());
     }
     cancelPending();
-    const el = put('final', cls, `<div class="cel-bg"></div><canvas class="rfx-conf"></canvas>${html}${skipHint()}`, 0, vars);
+    const el = put('final', cls, `<div class="cel-bg"></div><canvas class="rfx-conf"></canvas><img class="cel-logo" src="assets/brand/foldiers_logo_1024.webp" srcset="assets/brand/foldiers_logo_512.webp 512w, assets/brand/foldiers_logo_1024.webp 1024w, assets/brand/foldiers_logo_2048.webp 1890w" sizes="(max-width:540px) 56vw, 300px" width="1024" height="349" alt="Foldiers">${html}${skipHint()}`, 0, vars);
     let resolve; const promise = new Promise(r => { resolve = r; });
     CEL = { el, T, resolve, promise, stopAv: () => {}, place, result: ffa ? (win ? 'win' : 'place') : o.result, mode: o.mode, t0: now() };
     if (ST.pendCel) { const pc = ST.pendCel; ST.pendCel = null; clearTimeout(pc.dog); promise.then(pc.resolve); if (pc.sen) pc.sen.remove(); }
@@ -761,7 +761,7 @@ html.rfx-cel #hud,html.rfx-cel #mxHud,html.rfx-cel #mxTip,html.rfx-cel #mxBar,ht
     // drawn at reduced resolution (S) and scaled up by CSS: flakes are small, so it looks the same and costs a fraction
     const W = innerWidth, H = innerHeight, S = Math.min(1, 900 / Math.max(W, H)) * Math.min(1.5, devicePixelRatio || 1); cv.width = Math.round(W * S); cv.height = Math.round(H * S);
     const c = cv.getContext('2d');
-    const cols = team && TEAM[team] ? ['#ffd27a', '#ffffff', TEAM[team].css, TEAM[team].css, '#ff9a3c'] : ['#ffd27a', '#ffffff', '#ff9a3c', '#d6402f', '#f2b52b'];
+    const cols = team && TEAM[team] ? ['#ffd27a', '#ffffff', TEAM[team].css, TEAM[team].css, '#ff9a3c'] : ['#ffd27a', '#ffffff', '#ff9a3c', '#c61e12', '#f2b52b'];
     const P = Array.from({ length: Math.round((W < 600 ? 60 : 100) * amt) }, (_, i) => ({ x: W / 2 + (Math.random() - .5) * W * .3, y: H * .35, vx: (Math.random() - .5) * 14, vy: -6 - Math.random() * 9, r: Math.random() * 6.28, vr: (Math.random() - .5) * .4, w: 5 + Math.random() * 6, h: 3 + Math.random() * 4, c: cols[i % cols.length], d: Math.random() * 400 }));
     const t0 = now(); let last = t0;
     const step = () => {

@@ -67,7 +67,7 @@
     "red": "assets/paper/chars/trooper_red.png",
     "mask": "assets/paper/chars/trooper_mask.png"
    },
-   "tris": 1020,
+   "tris": 1230,
    "height_m": 1.824,
    "body_halfwidth_m": 0.215,
    "hitboxes": "shared (identical)",
@@ -86,7 +86,7 @@
     "red": "assets/paper/chars/scout_red.png",
     "mask": "assets/paper/chars/scout_mask.png"
    },
-   "tris": 1028,
+   "tris": 1216,
    "height_m": 1.98,
    "body_halfwidth_m": 0.19,
    "hitboxes": "shared (identical)",
@@ -105,7 +105,7 @@
     "red": "assets/paper/chars/marksman_red.png",
     "mask": "assets/paper/chars/marksman_mask.png"
    },
-   "tris": 998,
+   "tris": 1186,
    "height_m": 1.89,
    "body_halfwidth_m": 0.23,
    "hitboxes": "shared (identical)",
@@ -124,7 +124,7 @@
     "red": "assets/paper/chars/heavy_red.png",
     "mask": "assets/paper/chars/heavy_mask.png"
    },
-   "tris": 1028,
+   "tris": 1196,
    "height_m": 1.82,
    "body_halfwidth_m": 0.245,
    "hitboxes": "shared (identical)",

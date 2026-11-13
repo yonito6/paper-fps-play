@@ -19,7 +19,7 @@
 <meta name="twitter:title" content="Foldiers: tear the map, catch the plane">
 <meta name="twitter:description" content="A free paper-and-cardboard shooter in your browser.">
 <meta name="twitter:image" content="https://foldiers.com/assets/brand/og_image.jpg">
-<link rel="preload" as="image" href="assets/brand/foldiers_logo_1024.webp">
+<link rel="preload" as="image" href="assets/brand/foldiers_logo_1024.webp" imagesrcset="assets/brand/foldiers_logo_1024.webp 1024w, assets/brand/foldiers_logo_2048.webp 1890w" imagesizes="(max-width:700px) 88vw, 820px">
 <link rel="preload" as="image" href="assets/paper/materials/512/kraft_col.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -450,7 +450,7 @@ tr.me td{color:#ffd27a;background:rgba(255,154,60,.08)} td:nth-child(n+3),th:nth
 
 /* ---- settings panel (settings.js #s9set): a kraft desk, cream torn sections, blue tabs ---- */
 #s9set{--ink:#2b2219;--dim:#54412d;--line:rgba(43,34,25,.22);--sodium:#2c4fb8;--cyan:#2c4fb8;--alert:#c8372a;background:var(--face-kraft)!important;color:var(--k-ink)!important}
-#s9set .s9s-head .kicker{font-size:0!important;width:200px;height:78px;background:url(assets/brand/foldiers_logo_512.webp) left center/contain no-repeat;transform:rotate(-2deg)}
+#s9set .s9s-head .kicker{font-size:0!important;width:200px;height:78px;background:url(assets/brand/foldiers_logo_512.webp) left center/contain no-repeat;background-image:image-set(url(assets/brand/foldiers_logo_512.webp) 1x,url(assets/brand/foldiers_logo_1024.webp) 2x);transform:rotate(-2deg)}
 #s9set .s9s-head h2{font-family:var(--display)!important;font-style:italic;font-weight:400!important;color:#f3dcb3;text-shadow:1px 1px 0 #c9a06a,2px 2px 0 #ad8048,3px 3px 0 #8d6233,4px 5px 0 rgba(43,24,8,.4)}
 #s9set .s9s-tabs{border-bottom:0!important;gap:6px!important;padding-bottom:6px!important}
 #s9set .s9s-tab{font-family:var(--display)!important;font-style:italic;font-weight:400!important;color:var(--k-ink)!important;background:rgba(244,233,210,.6)!important;border:0!important;clip-path:polygon(0 4%,100% 0,97% 100%,3% 96%);padding:10px 16px 8px!important}
@@ -680,7 +680,121 @@ body #mend .ghost::before{background:var(--fcream)!important}
 body #mend .go::after,body #mend .ghost::after{inset:5px -5px -6px 4px!important;z-index:-2;background:var(--corr)!important;clip-path:var(--tearTab)}
 body #mend .go{font-size:32px!important;padding:12px 34px 14px!important}
 @media (max-width:520px){body #mend .sheet{padding:16px 12px 18px!important}body #mend #mendTitle{padding:6px 26px 12px!important}body #mend #mendBoard .mystats{grid-template-columns:repeat(3,minmax(0,1fr))}body #mend #mendBoard .mystats div:nth-child(n+7){display:none}}
-@media (max-height:720px){body #mend .mend-logo{display:none}}
+
+/* ======================================================================================================================
+   FOLDIERS SCREENS v3 (2026-11-12, UI redesign): the official logo's own colours everywhere + death / killcam / pause / end
+   laid out in ZONES that never collide (like CoD / Valorant / Apex / Fortnite):
+   - top centre = the team score only; top-left = the KILLCAM label; screen centre = the 3D view (your body / the killer), kept clear;
+   - death info = ONE stack in the lower-left: red "Folded!" tag, the killed-by card, a big blue respawn countdown;
+   - pause = dimmed + blurred game, every HUD / hint / feed hidden, one big centred kraft board with big buttons;
+   - end = the logo always on top, a blue (win) or red (loss) torn banner + backdrop.
+   Palette sampled from assets/brand/foldiers_logo_official.png (PIL median of each region).
+   ====================================================================================================================== */
+:root{
+  --logo-blue:#0b3f9a; --logo-blue-d:#013587; --logo-blue-hi:#0a4eae; --logo-red:#b11912; --logo-red-hi:#c61e12; --logo-red-d:#7a0f0a;
+  --logo-tan:#e7b484; --logo-cream:#f8d0a4; --logo-shadow:#120705;
+  --k-blue:var(--logo-blue); --k-blue-d:var(--logo-blue-d); --k-red:var(--logo-red); --k-red-d:var(--logo-red-d); --k-kraft:var(--logo-tan);
+  --k-ink:#22150c; --k-ink2:#4e3420;
+  --face-blue:linear-gradient(rgba(0,30,110,.45),rgba(0,30,110,.45)),var(--tx-blue) 0 0/240px,#0b3f9a;
+  --face-red:linear-gradient(rgba(140,8,4,.35),rgba(140,8,4,.35)),var(--tx-red) 0 0/240px,#b11912;
+  --fb:linear-gradient(rgba(0,30,110,.45),rgba(0,30,110,.45)),var(--tx-blue) 0 0/240px,#0b3f9a;
+  --fr:linear-gradient(rgba(140,8,4,.35),rgba(140,8,4,.35)),var(--tx-red) 0 0/240px,#b11912;
+}
+/* titles = the logo's letters: tan face, cream light edge, dark cardboard depth */
+.kraft-type,#pmenu .go b,#mend #mendTitle,#pause h2,#death .huge,#pwipe .t,#banner .huge,#mapload b{color:var(--logo-cream)!important;
+  text-shadow:1px 1px 0 #e7b484,2px 2px 0 #c89660,3px 3px 0 #9a6a38,4px 4px 0 #5e3a1a,5px 6px 0 rgba(18,7,5,.6),5px 9px 14px rgba(18,7,5,.4)!important}
+/* logos: GPU layer for the tilt = clean resampling (with srcset the 2x file reaches high-DPI screens) */
+.pb-logo,#pmenu .logo,#pwipe .c img,#mend .mend-logo,.cel-logo{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.pb-logo{transform:rotate(-2deg) translateZ(0)}#pmenu .logo{transform:rotate(-1.6deg) translateZ(0)}#pwipe .c img{transform:rotate(-2deg) translateZ(0)}#mend .mend-logo{transform:rotate(-2deg) translateZ(0)}
+
+/* ---- states: nothing but the score shows while dead; nothing at all while paused / at the end ---- */
+#hud:has(>#death:not([hidden]))>:not(#death):not(#killcam){visibility:hidden!important}
+body:has(#pause:not([hidden])) :is(#hud,#mxHud,#rfx,#pHint,#wxPlanes),body:has(#mend:not([hidden])) :is(#hud,#mxHud,#rfx,#pHint,#wxPlanes){visibility:hidden!important}
+#mxHud .sc.atk{--face:var(--face-blue)}#mxHud .sc.def{--face:var(--face-red)}
+
+/* ---- death: one stack in the lower-left, the centre stays the death-cam ---- */
+body #death{position:absolute!important;inset:auto auto calc(24px + env(safe-area-inset-bottom,0px)) calc(24px + env(safe-area-inset-left,0px))!important;display:flex!important;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:16px;width:max-content;max-width:min(600px,calc(100vw - 48px));padding:0!important;background:none!important}
+body #death[hidden]{display:none!important}
+body #death::before{content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;background:radial-gradient(ellipse 80% 75% at 50% 45%,rgba(122,15,10,0) 55%,rgba(122,15,10,.42)),linear-gradient(0deg,rgba(18,7,5,.45),rgba(18,7,5,0) 38%)}
+body #death.kc::before{display:none}
+body #death .huge{position:relative;isolation:isolate;font-size:clamp(40px,4.6vw,62px)!important;line-height:1!important;padding:8px 30px 14px 24px;margin:0 0 -4px 4px;transform:rotate(-3deg)}
+body #death .huge::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--fr);clip-path:var(--tearA)}
+body #death .huge::after{content:"";position:absolute;inset:5px -7px -8px 4px;z-index:-2;background:var(--corr);clip-path:var(--tearB)}
+body #deathBy{font:700 17px/1.3 var(--mono)!important;text-align:left;max-width:100%}
+body #deathT{position:relative;isolation:isolate;display:inline-block;font:400 clamp(24px,2.3vw,32px)/1 var(--display)!important;font-style:italic!important;letter-spacing:.02em!important;text-transform:uppercase;color:#fff!important;padding:10px 26px 13px 20px;transform:rotate(-1deg);text-shadow:0 2px 0 rgba(0,0,0,.35)!important;white-space:nowrap}
+body #deathT::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--fb);clip-path:var(--tearTab,var(--tearA))}
+body #deathT::after{content:"";position:absolute;inset:5px -6px -7px 4px;z-index:-2;background:var(--corr);clip-path:var(--tearTab,var(--tearB))}
+/* the killed-by card (killcam.js #kcCard on the death stack, #kcBan during the killcam): cream torn tag, readable sizes */
+body #kcCard,body #kcBan{max-width:min(600px,calc(100vw - 48px))!important;transform:rotate(-.6deg)}
+body #kcCard>div,body #kcBan>div{padding:10px 16px!important;gap:5px!important}
+body #kcCard small,body #kcBan small{font-size:13px!important;letter-spacing:.14em!important}
+body #kcCard b,body #kcBan b{font-size:28px!important;line-height:1.05;max-width:36vw}
+body #kcCard .kw,body #kcBan .kw span,body #kcCard span.hp,body #kcBan .kh span,body #kcBan .kd span,body #kcCard .kd span{font-size:16px!important;font-weight:700}
+body #kcCard .kw svg,body #kcBan .kw svg{width:44px!important;height:16px!important}
+body #kcCard em,body #kcBan em,body #kcCard .kf,body #kcBan .kf,body #kcCard .kf small,body #kcBan .kf small{font-size:13px!important}
+/* killcam: label in the top-left zone, info stack lower-left (same place as the death card), skip lower-right */
+body #killcam{box-shadow:inset 0 0 0 5px rgba(177,25,18,.8)!important;background:none!important}
+body #killcam .kc-top{position:absolute!important;left:calc(24px + env(safe-area-inset-left,0px))!important;top:calc(22px + env(safe-area-inset-top,0px))!important;right:auto!important;width:auto!important;max-width:calc(50vw - 150px);transform:rotate(-1.5deg)!important;padding:9px 18px 8px!important}
+body #killcam .kc-top b{font-size:24px!important}body #killcam .kc-top span{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}body #killcam .kc-top em{font-size:14px!important;min-width:0!important}
+body #kcBan{left:calc(24px + env(safe-area-inset-left,0px))!important;right:auto!important;bottom:calc(98px + env(safe-area-inset-bottom,0px))!important;transform:rotate(-.6deg)!important}
+body #kcSkip{right:calc(24px + env(safe-area-inset-right,0px))!important;bottom:calc(24px + env(safe-area-inset-bottom,0px))!important;left:auto!important;transform:none!important;font-size:15px!important;padding:12px 18px!important}
+body #kcDown{font-size:14px!important}
+@media (max-width:700px){
+  body #death{inset:auto auto calc(16px + env(safe-area-inset-bottom,0px)) 16px!important;max-width:calc(100vw - 32px);gap:12px}
+  body #death .huge{font-size:40px!important}
+  body #deathT{font-size:22px!important;padding:8px 18px 10px 16px}
+  body #kcCard,body #kcBan{max-width:calc(100vw - 32px)!important}
+  body #kcCard b,body #kcBan b{font-size:21px!important;max-width:34vw}
+  body #kcCard>div,body #kcBan>div{padding:8px 10px!important}
+  body #kcBan{left:16px!important;bottom:calc(76px + env(safe-area-inset-bottom,0px))!important}
+  body #killcam .kc-top{left:16px!important;top:calc(84px + env(safe-area-inset-top,0px))!important;max-width:calc(100vw - 160px)}
+  body #killcam .kc-top b{font-size:19px!important}body #killcam .kc-top em{display:none}
+  body #kcSkip{top:calc(84px + env(safe-area-inset-top,0px))!important;bottom:auto!important;right:16px!important;font-size:14px!important;padding:9px 12px!important}
+}
+
+/* ---- pause: dimmed + blurred game, one big centred kraft board, big buttons ---- */
+body #pause{background:rgba(18,9,4,.55)!important;-webkit-backdrop-filter:blur(6px) saturate(.85);backdrop-filter:blur(6px) saturate(.85);display:grid!important;place-items:center!important;padding:16px;box-sizing:border-box}
+body #pause[hidden]{display:none!important}
+body #pause .sheet{width:min(660px,calc(100vw - 32px))!important;max-height:calc(100vh - 32px);overflow:visible;padding:clamp(26px,4vh,44px) clamp(22px,4vw,48px)!important;gap:clamp(14px,2.4vh,22px)!important;justify-items:stretch}
+body #pause .kicker{font-size:15px!important;padding:8px 16px 7px}
+body #pause h2{font-size:clamp(46px,min(7vw,9vh),82px)!important;margin:0!important}
+body #pause .row{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px!important;align-items:stretch}
+body #pause .row>[hidden]{display:none!important}
+body #pause .go{grid-column:1/-1;font-size:clamp(34px,4.4vh,44px)!important;padding:16px 30px 19px!important;justify-self:stretch;text-align:center}
+body #pause .ghost{font-size:19px!important;padding:16px 16px 15px!important;justify-self:stretch;text-align:center;min-height:54px}
+body #pause .settings{display:none!important}
+@media (max-width:520px){body #pause .row{grid-template-columns:minmax(0,1fr)}body #pause .ghost{font-size:18px!important;min-height:50px;padding:13px 14px!important}}
+
+/* ---- end screen: logo always on top, blue win / red loss backdrop + banner ---- */
+body #mend .mend-logo{display:block!important;width:min(300px,62%)!important}
+body #mend.win{background:radial-gradient(ellipse at 50% 40%,rgba(10,78,174,.55),rgba(1,20,60,.9))!important}
+body #mend.lose{background:radial-gradient(ellipse at 50% 40%,rgba(177,25,18,.5),rgba(40,6,3,.9))!important}
+body #mend.draw{background:linear-gradient(100deg,rgba(1,40,110,.85) 50%,rgba(90,10,6,.85) 50%)!important}
+body #mend #mendBoard .mystats span,#mend .mend-score small,body #mend #mendKicker{font-size:13px!important}
+@media (max-height:800px){body #mend .mend-logo{width:min(220px,50%)!important}body #mend .sheet{gap:6px!important;padding-top:16px!important;padding-bottom:16px!important}body #mend #mendTitle{font-size:clamp(42px,8vh,64px)!important;padding:4px 40px 12px!important}#mend .mend-score{font-size:clamp(34px,6vh,48px)}}
+@media (max-height:720px){body #mend .mend-logo{width:min(180px,44%)!important}body #mend #mendStats{display:none}body #mend .mb1,body #mend .mb2{display:none}}
+/* online celebration (roundfx), when it shows: the same logo + paper palette instead of the old dark look */
+body #rfx .rfx-final .cel-bg{background:radial-gradient(ellipse 70% 60% at 50% 42%,var(--glow),rgba(18,9,4,.9) 70%)!important}
+body #rfx .rfx-final.win .cel-bg{background:radial-gradient(ellipse 70% 60% at 50% 42%,rgba(10,78,174,.5),rgba(1,20,60,.92) 72%)!important}
+body #rfx .rfx-final.lose .cel-bg{background:radial-gradient(ellipse 70% 60% at 50% 42%,rgba(177,25,18,.45),rgba(40,6,3,.92) 72%)!important}
+body #rfx .cel-logo{display:block;position:relative;width:min(300px,56vw);height:auto;transform:rotate(-2deg) translateZ(0);margin-bottom:-4px;filter:drop-shadow(0 8px 10px rgba(18,7,5,.5))}
+body #rfx .rfx-final h2{font-family:var(--display)!important;font-style:italic;font-weight:400!important;letter-spacing:.01em!important;color:var(--logo-cream)!important;text-shadow:1px 1px 0 #e7b484,2px 2px 0 #c89660,3px 3px 0 #9a6a38,4px 4px 0 #5e3a1a,6px 8px 0 rgba(18,7,5,.55)!important}
+body #rfx .cel-band{background:var(--fb)!important;clip-path:var(--tearA)}body #rfx .rfx-final.lose .cel-band{background:var(--fr)!important;opacity:1}
+body #rfx .cel-band b{color:#fff!important;font-family:var(--display);font-style:italic;font-weight:400}
+/* pause buttons: torn paper (same build as the end card buttons) at any width */
+body #pause .go,body #pause .ghost{border-image:none!important}
+body #pause .go::before,body #pause .ghost::before{inset:0!important;z-index:-1;clip-path:var(--tearTab);-webkit-mask-box-image:none!important;mask:none!important}
+body #pause .go::before{background:var(--fb)!important}body #pause .ghost::before{background:var(--fcream)!important}
+body #pause .go::after,body #pause .ghost::after{display:block!important;inset:5px -5px -6px 4px!important;z-index:-2;background:var(--corr)!important;clip-path:var(--tearTab);border:0!important;border-image:none!important}
+body #pause .go{transform:rotate(-1deg)}body #pause .go:hover{transform:rotate(-1deg) translateY(-2px) scale(1.02)}
+body #mxHud .mid .rd{font-size:13px!important}
+/* HUD pieces that the 9-slice group made position:relative (they fell into the page flow: the HP card became a strip across the top) */
+body #hud .corner.bl{position:absolute!important}
+/* tutorial hints: a cream tag in the upper-left zone, only while a hint is on, never over the score or the centre */
+body #pHint{position:absolute!important;left:calc(24px + env(safe-area-inset-left,0px));top:calc(24px + env(safe-area-inset-top,0px));max-width:min(440px,calc(50vw - 190px))!important;opacity:0;transform:translateY(-8px) rotate(-.6deg);transition:opacity .25s,transform .25s;pointer-events:none}
+body #pHint.on{opacity:1;transform:rotate(-.6deg)}body #pHint:empty{display:none}
+@media (max-width:700px){body #hud .corner.bl{bottom:calc(112px + env(safe-area-inset-bottom,0px))!important;left:16px!important}}
+@media (max-width:700px){body #pHint{top:calc(84px + env(safe-area-inset-top,0px));left:16px;max-width:calc(100vw - 32px)!important;font-size:15px!important}}
 </style>
 
 <div id="game"></div>
@@ -818,7 +932,7 @@ body #mend .go{font-size:32px!important;padding:12px 34px 14px!important}
       <button class="go" id="btnResume">Resume</button>
       <button class="ghost" id="btnArsenal2">Arsenal</button>
       <button class="ghost" id="btnLobby" hidden>Back to room lobby</button>
-      <button class="ghost" id="btnQuit">Abandon run</button>
+      <button class="ghost" id="btnQuit">Leave match</button>
     </div>
     <div class="settings" id="setPause"></div>
   </div>
@@ -826,7 +940,7 @@ body #mend .go{font-size:32px!important;padding:12px 34px 14px!important}
 
 <div class="overlay" id="mend" hidden>
   <div class="sheet">
-    <img class="mend-logo" src="assets/brand/foldiers_logo_512.webp" width="512" height="200" alt="Foldiers"><i class="bh h2 mb1"></i><i class="bh h3 mb2"></i>
+    <img class="mend-logo" src="assets/brand/foldiers_logo_1024.webp" srcset="assets/brand/foldiers_logo_512.webp 512w, assets/brand/foldiers_logo_1024.webp 1024w, assets/brand/foldiers_logo_2048.webp 1890w" sizes="(max-width:520px) 62vw, 300px" width="1024" height="349" alt="Foldiers"><i class="bh h2 mb1"></i><i class="bh h3 mb2"></i>
     <div class="kicker" id="mendKicker">Match over</div>
     <h2 id="mendTitle">Victory</h2>
     <div id="mendScore" class="mend-score" hidden></div>
@@ -855,7 +969,7 @@ body #mend .go{font-size:32px!important;padding:12px 34px 14px!important}
 <div id="pboot" role="status" aria-label="Loading Foldiers">
   <div class="s l"></div><div class="s r"></div>
   <div class="pb-c">
-    <img class="pb-logo" src="assets/brand/foldiers_logo_1024.webp" width="1024" height="400" alt="Foldiers">
+    <img class="pb-logo" src="assets/brand/foldiers_logo_1024.webp" srcset="assets/brand/foldiers_logo_1024.webp 1024w, assets/brand/foldiers_logo_2048.webp 1890w" sizes="(max-width:700px) 88vw, 820px" width="1024" height="349" alt="Foldiers">
     <div class="pb-bar"><i id="pbFill"></i><img class="pb-plane" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 22'%3E%3Cpath d='M1 11 L39 1 L22 21 L18 13Z' fill='%23fff7ea'/%3E%3Cpath d='M18 13 L39 1' stroke='%23c8372a' stroke-width='1.6'/%3E%3C/svg%3E" alt=""></div>
     <div id="loading">Loading 0%</div>
     <div class="pb-tip" id="pbTip">Shoot thin cardboard to tear holes you can see and shoot through.</div>
@@ -891,6 +1005,7 @@ if (navigator.webdriver) { let plEl = null; const plFire = () => setTimeout(() =
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/ShaderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/libs/meshopt_decoder.js"></script>
 <script src="modules/papermat_ktx2.js"></script>
 <script src="modules/papermat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/utils/SkeletonUtils.js"></script>
@@ -1060,6 +1175,330 @@ function resize() {
 }
 addEventListener('resize', resize);
 
+/* holes-core.js  --  PURE, deterministic hole model for Foldiers panels (docs/HOLES_SYSTEM.md parts B + C1/C2).
+ * No three.js, no DOM, no Math.random, no Date. Runs in the browser game (attaches window.HOLES) and in Node (module.exports),
+ * so the future server can replay the exact same hits. State = fold(applyHit, newPanel, hits).
+ *
+ * Units: panel-local u (width) / v (up) are stored as INTEGER MILLIMETRES (radius too). Public "metre" helpers quantise first.
+ * Hit events (the only mutating input, also the wire format):
+ *   hole  : [u_mm, v_mm, side(+1|-1), gunId]          knife : ['cut', [[u_mm,v_mm],...]]        blast : ['blast', u_mm, v_mm, side, r_mm]
+ * Shapes (petals, jitter) are NEVER state: starShape(panelId, holeIndex) is a pure function used at draw time.
+ * Step 3 lives here too: spreadSample() = seeded (matchSeed, shooterId, shotSeq, pellet) spread, replaces Math.random in the shot path.
+ * The browser copy src/game/03-holes-core.js is a byte copy of this file (the build only reads src/game); the test checks they match.
+ * Spec: docs/HOLES_SYSTEM.md. Do not add Math.random() here.
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(); else root.HOLES = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+  // ---- constants (mm). Values from HOLES_SYSTEM B3/B4 and today's TEAR.R (mergeD .36, slitK .75, 48, grow 1.08/.32, crease .2/.7)
+  const K = {
+    rayK: 0.9, drawK: 0.95,            // ray passes inside 0.9 r; the drawn star never has an inner radius below 0.95 r (B4.4)
+    mergeD: 360, slitK: 0.75, maxHoles: 48, maxSlits: 192,
+    growK: 1.08, growMax: 320, rimClip: 1.15,
+    crSeg: 200, crReach: 200, crNeed: 0.7,
+    cutR: 22, cutMaxPts: 256, cutCloseD: 220, cutCloseArea: 20000 /* mm^2 = .02 m^2 */, cutJoinD: 90, flapLenK: 1.8, flapGap: 80,
+    planeClear: 225, splitW: 600, splitH: 1000,          // planes pass openings >= 45 cm across; colliders split round openings >= .6 x 1.0 m
+    collapseOpen: 0.55, collapseFlapHoles: 24, collapseEdges: 3, edgeTouch: 30, gridMM: 80,
+    flapTime: 0.45, flapAngle: 1.9, collapseFall: 0.6, collapseFade: 4,
+  };
+  // ---- per-gun table (B2). id = u8 on the wire. entry/exit radius in mm. 'rifle'/'smg'/'shotgun' are class aliases of the game ids.
+  const GUNS = {
+    sniper:    { id: 1, entry: 95,  exit: 120, thinK: 0.92, maxLayers: 3, power: 1.3 },
+    carbine:   { id: 2, entry: 85,  exit: 100, thinK: 0.70, maxLayers: 2, power: 0.7 },
+    wasp:      { id: 3, entry: 63,  exit: 75,  thinK: 0.55, maxLayers: 1, power: 0.3 },
+    pistol:    { id: 4, entry: 70,  exit: 80,  thinK: 0.50, maxLayers: 1, power: 0.2 },
+    breacher:  { id: 5, entry: 75,  exit: 85,  thinK: 0.50, maxLayers: 1, power: 0.25 },   // per pellet; the crater is a 'blast' event
+    boomerang: { id: 6, entry: 126, exit: 126, thinK: 1.0,  maxLayers: 1, power: 0 },      // v1 keeps today's round hole (r .09 x 1.4); slit later
+  };
+  GUNS.rifle = GUNS.carbine; GUNS.smg = GUNS.wasp; GUNS.shotgun = GUNS.breacher;
+  const CRATER_R = 200;                                   // one 0.20 m crater per shotgun shot
+  // ---- PROGRESSIVE WEAR (owner 2026-11-12: "thick elements will take time to penetrate until you can see through them too, and normal
+  // walls can faster, of course depends on the gun"). Mirrors data/penetration.json "wear" (the test checks). Every hit on a P2+ panel adds
+  // wear to the cells of a panel-local grid round the hit (cell 60 mm, brush radius per gun); a cell at FULL wear = BREACH: a real hole
+  // (entry r x breachR) opens there and from then on it is a normal hole (grows, merges, see == shoot). Below full: dent -> crack (marks
+  // only, still blocks). shots[class][gun] = shots at ONE spot to breach; each hit adds ceil(FULL / shots) so the Nth shot breaches exactly.
+  // Knife cuts: P0-P2 only. P1 (thin card) / P0 (paper) open on the first hit as before. Persistent all match (no decay).
+  const WEAR = {
+    full: 1000000, cell: 60, crack: 0.5,
+    brush: { sniper: 40, carbine: 60, wasp: 55, pistol: 55, breacher: 50, boomerang: 60, crater: 100, blast: 140 },
+    shots: {
+      P2: { sniper: 1, carbine: 3, wasp: 5, pistol: 6, breacher: 12, boomerang: 3, crater: 2, blast: 1 },
+      P3: { sniper: 3, carbine: 8, wasp: 14, pistol: 16, breacher: 30, boomerang: 8, crater: 5, blast: 2 },
+      P4: { sniper: 6, carbine: 20, wasp: 35, pistol: 40, breacher: 72, boomerang: 20, crater: 12, blast: 3 },
+    },
+    breachR: { P2: 0.8, P3: 0.65, P4: 0.55 },             // breach hole radius = the gun's entry radius x this (crater / blast: their own r)
+    passK: { P0: 1, P1: 1, P2: 0.75, P3: 0.5, P4: 0.35 },   // the BREACHING bullet carries on with thinK x passK (later ones pass the hole at x1)
+    preK: { P2: { sniper: 0.25 } },                        // damage that leaks through an UNBREACHED thick wall (very strong guns only)
+    knife: { P0: 1, P1: 1, P2: 1 },                         // the cutter only cuts paper / thin / double card
+  };
+  const THICK = { P2: 1, P3: 1, P4: 1 };
+  const GUN_BY_ID = {}; for (const k of ['sniper', 'carbine', 'wasp', 'pistol', 'breacher', 'boomerang']) GUN_BY_ID[GUNS[k].id] = GUNS[k];
+  const blastRadius = (distM, reachM) => Math.round(220 + 300 * (1 - Math.abs(distM) / (reachM || 1.8)));   // paper plane blast (mm)
+
+  // ---- integer helpers
+  const q = (m) => Math.round(m * 1000);                  // metres -> mm
+  const clamp = (x, a, b) => x < a ? a : x > b ? b : x;
+  function hash32(a, b, c, d) {                           // murmur-style mix of four 32-bit ints -> uint32
+    let h = 0x9e3779b9 ^ (a | 0);
+    const xs = [b | 0, c | 0, d | 0];
+    for (let i = 0; i < 3; i++) { h = Math.imul(h ^ ((xs[i] + 0x7f4a7c15) | 0), 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16; }
+    return h >>> 0;
+  }
+  function strId(s) {                                     // shooter ids may be numbers or strings (FNV-1a for strings)
+    if (typeof s === 'number') return s | 0;
+    let h = 0x811c9dc5; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return h | 0;
+  }
+  // today's draw-time generator (kept so the star look stays the same): seeded LCG
+  function hrand(a, b) { let s = (Math.imul(a, 73856093) ^ Math.imul(b, 19349663)) >>> 0; return function () { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
+
+  // ---- STEP 3: seeded spread. Stateless: the same (matchSeed, shooterId, shotSeq, pellet) gives the same disc sample on every client.
+  // Returns { a: angle 0..2pi, m: radius fraction 0..1 (sqrt => uniform over the disc: same distribution as the old Math.random code) }.
+  function spreadSample(matchSeed, shooterId, shotSeq, pellet) {
+    const h0 = hash32(matchSeed, strId(shooterId), shotSeq, pellet | 0), h1 = hash32(h0, 0x51ed270b, shotSeq, 1);
+    const f0 = (h0 >>> 8) / 16777216, f1 = (h1 >>> 8) / 16777216;     // 24-bit floats in [0,1)
+    return { a: f0 * 6.283, m: Math.sqrt(f1) };
+  }
+  // plain 0..1 draw for other shot-path chances: idx = which draw of this shot
+  function shotRand(matchSeed, shooterId, shotSeq, idx) { return (hash32(matchSeed, strId(shooterId), shotSeq, 0x1000 + (idx | 0)) >>> 8) / 16777216; }
+
+  // ---- panel
+  // def: { id, w, h (metres), cls:'P0'|'P1', floor, cuts:[[u0,v0,u1,v1] metres], flap:{u0,v0,u1,v1,hinge} metres, collapse (default true), maxHoles }
+  function newPanel(def) {
+    const P = {
+      id: def.id | 0, w: q(def.w), h: q(def.h), cls: def.cls || 'P1', floor: !!def.floor, tags: def.tags || [],
+      collapse: def.collapse !== false, maxHoles: Math.min(def.maxHoles || K.maxHoles, K.maxHoles),
+      cuts: (def.cuts || []).map(c => [q(c[0]), q(c[1]), q(c[2]), q(c[3])]),
+      flap: null, holes: [], slits: [], knife: [], collapsed: false, openFrac: 0, hits: [], wear: new Map(), breaches: 0,
+    };
+    if (def.flap) {
+      const f = { u0: q(def.flap.u0), v0: q(def.flap.v0), u1: q(def.flap.u1), v1: q(def.flap.v1), hinge: def.flap.hinge || 'bottom', open: false, side: 1, segs: null, lines: null, len: 0 };
+      const E = { bottom: [f.u0, f.v0, f.u1, f.v0], top: [f.u0, f.v1, f.u1, f.v1], left: [f.u0, f.v0, f.u0, f.v1], right: [f.u1, f.v0, f.u1, f.v1] };
+      f.lines = ['bottom', 'top', 'left', 'right'].filter(k => k !== f.hinge).map(k => { const e = E[k]; return { a: [e[0], e[1]], b: [e[2], e[3]], len: Math.hypot(e[2] - e[0], e[3] - e[1]) }; });
+      f.len = f.lines.reduce((s, l) => s + l.len, 0); f.segs = new Array(Math.max(1, Math.ceil(f.len / K.crSeg))).fill(0);
+      P.flap = f;
+    }
+    return P;
+  }
+  const isPanel = (P) => !!(P && P.holes);
+  const segD2 = (u, v, a, b) => { const ax = b[0] - a[0], ay = b[1] - a[1], L2 = ax * ax + ay * ay || 1e-9, k = clamp(((u - a[0]) * ax + (v - a[1]) * ay) / L2, 0, 1), dx = u - a[0] - ax * k, dy = v - a[1] - ay * k; return dx * dx + dy * dy; };
+  function inPoly(pts, u, v) { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const xi = pts[i][0], yi = pts[i][1], xj = pts[j][0], yj = pts[j][1]; if ((yi > v) !== (yj > v) && u < (xj - xi) * (v - yi) / ((yj - yi) || 1e-9) + xi) c = !c; } return c; }
+
+  // ---- the single sight/shot/sound opening test (B4). mm in. A ray PASSES the panel iff this is true.
+  function openAtMM(P, u, v) {
+    if (u < 0 || v < 0 || u > P.w || v > P.h) return false;
+    if (P.collapsed) return true;
+    for (const c of P.cuts) if (u > c[0] && u < c[2] && v > c[1] && v < c[3]) return true;
+    const f = P.flap; if (f && f.open && u > f.u0 && u < f.u1 && v > f.v0 && v < f.v1) return true;
+    for (const h of P.holes) { const r = h.r * K.rayK; if ((u - h.u) * (u - h.u) + (v - h.v) * (v - h.v) < r * r) return true; }
+    for (const L of P.knife) { if ((L.closed || L.flap) && inPoly(L.pts, u, v)) return true; for (let i = 1; i < L.pts.length; i++) if (segD2(u, v, L.pts[i - 1], L.pts[i]) < K.cutR * K.cutR * K.rayK * K.rayK) return true; }
+    for (const s of P.slits) { const r = s.r * K.rayK; if (segD2(u, v, s.a, s.b) < r * r) return true; }
+    return false;
+  }
+  // plane pass rule (C5): a paper plane only fits through an opening >= 45 cm across (flaps, cut-outs, craters), never a bullet hole
+  function passAtMM(P, u, v, clear) {
+    const c = clear === undefined ? K.planeClear : clear;
+    return openAtMM(P, u, v) && openAtMM(P, u - c, v) && openAtMM(P, u + c, v) && openAtMM(P, u, v - c) && openAtMM(P, u, v + c);
+  }
+  // collider split (C5): the solid rectangles (mm, panel-local [u0,v0,u1,v1]) left round every big opening (open flap, closed /
+  // flap knife cut whose box is >= splitW x splitH). null = no big opening (keep the whole box); [] = collapsed (no collider).
+  function bigOpenings(P) {
+    if (P.collapsed) return null; const out = [], f = P.flap;
+    if (f && f.open) out.push([f.u0, f.v0, f.u1, f.v1]);
+    for (const L of P.knife) if (L.closed || L.flap) { let a = 1e9, b = 1e9, c = -1e9, d = -1e9; for (const q of L.pts) { a = Math.min(a, q[0]); b = Math.min(b, q[1]); c = Math.max(c, q[0]); d = Math.max(d, q[1]); } out.push([a, b, c, d]); }
+    const w = P.floor ? K.splitW : K.splitW, h = P.floor ? K.splitW : K.splitH;
+    return out.filter(r => r[2] - r[0] >= w && r[3] - r[1] >= h);
+  }
+  function solidRects(P) {
+    if (P.collapsed) return [];
+    const ops = bigOpenings(P); if (!ops || !ops.length) return null;
+    let rs = [[0, 0, P.w, P.h]];
+    for (const o of ops) { const nx = [];
+      for (const r of rs) {
+        if (o[2] <= r[0] || o[0] >= r[2] || o[3] <= r[1] || o[1] >= r[3]) { nx.push(r); continue; }
+        const iu0 = Math.max(r[0], o[0]), iu1 = Math.min(r[2], o[2]);
+        if (o[0] > r[0]) nx.push([r[0], r[1], o[0], r[3]]);
+        if (o[2] < r[2]) nx.push([o[2], r[1], r[2], r[3]]);
+        if (o[1] > r[1]) nx.push([iu0, r[1], iu1, o[1]]);
+        if (o[3] < r[3]) nx.push([iu0, o[3], iu1, r[3]]);
+      }
+      rs = nx.filter(r => r[2] - r[0] > 20 && r[3] - r[1] > 20); }
+    return rs;
+  }
+  const openAt = (P, uM, vM) => openAtMM(P, uM * 1000, vM * 1000);     // metres in (what the game's ray code has)
+
+  // ---- drawn star (draw-time only; pure). radius factor in [1.0, 1.35] => inner radius >= r (>= 0.95 r required)
+  function starShape(panelId, holeIndex) {
+    const rr = hrand(panelId + 1, holeIndex + 1), petals = 5 + Math.floor(rr() * 4), rot = rr() * 6.283, amp = 0.15 + rr() * 0.2, jit = [];
+    for (let i = 0; i < 8; i++) jit.push(0.8 + rr() * 0.2);
+    return { petals, rot, amp, jit };
+  }
+  function starRadius(shape, angle, r) {
+    const w = 0.5 + 0.5 * Math.cos(shape.petals * (angle - shape.rot)), j = shape.jit[(((angle / 6.283 * 8) % 8) + 8) % 8 | 0];
+    return r * (1 + shape.amp * w * w * j);                            // >= r always
+  }
+  // is (u,v) inside what is DRAWN as open? (holes use their star; everything else matches the ray test but with drawK for discs/slits)
+  function drawnOpenMM(P, u, v) {
+    if (u < 0 || v < 0 || u > P.w || v > P.h) return false;
+    if (P.collapsed) return true;
+    for (const c of P.cuts) if (u > c[0] && u < c[2] && v > c[1] && v < c[3]) return true;
+    const f = P.flap; if (f && f.open && u > f.u0 && u < f.u1 && v > f.v0 && v < f.v1) return true;
+    for (const h of P.holes) {
+      const dx = u - h.u, dy = v - h.v, d2 = dx * dx + dy * dy, r = h.r * K.drawK;
+      if (d2 < r * r) return true;
+      if (d2 < h.r * h.r * 1.9 && Math.sqrt(d2) < starRadius(starShape(P.id, h.i), Math.atan2(dy, dx) + Math.PI, h.r)) return true;
+    }
+    for (const L of P.knife) { if ((L.closed || L.flap) && inPoly(L.pts, u, v)) return true; for (let i = 1; i < L.pts.length; i++) if (segD2(u, v, L.pts[i - 1], L.pts[i]) < K.cutR * K.cutR * K.drawK * K.drawK) return true; }
+    for (const s of P.slits) { const r = s.r * K.drawK; if (segD2(u, v, s.a, s.b) < r * r) return true; }
+    return false;
+  }
+
+  // ---- hit creation (C2): world hit -> wire events. uM/vM in metres (panel-local), side +1/-1, weapon = game id or class alias.
+  // Returns { hits:[event...], shapeSeed }. opts.crater=true adds the one-per-shot shotgun crater. Deterministic given the inputs.
+  function makeHits(P, uM, vM, side, weapon, seed, opts) {
+    const g = GUNS[weapon] || GUNS.carbine, u = clamp(q(uM), 0, P.w), v = clamp(q(vM), 0, P.h), s = side < 0 ? -1 : 1;
+    const hits = [[u, v, s, g.id]];
+    if (opts && opts.crater && g === GUNS.breacher) hits.push(['blast', u, v, s, CRATER_R]);
+    return { hits, shapeSeed: hash32(seed | 0, P.id, u, v) };
+  }
+  function makeBlast(P, uM, vM, side, rM) { return ['blast', clamp(q(uM), 0, P.w), clamp(q(vM), 0, P.h), side < 0 ? -1 : 1, q(rM)]; }
+
+  // ---- apply one event. Returns 'hole' | 'grow' | 'flap' | 'collapse' | 'cut' | 'cut-open' | null. Mutates P.
+  function applyHit(P, hit) {
+    if (P.collapsed) return null;
+    let out;
+    if (hit[0] === 'cut') out = WEAR.knife[P.cls] ? applyCut(P, hit[1]) : null;
+    else if (THICK[P.cls]) out = applyWear(P, hit);
+    else if (hit[0] === 'blast') out = applyHole(P, hit[1], hit[2], hit[3], hit[4]);
+    else { const g = GUN_BY_ID[hit[3]] || GUNS.carbine; out = applyHole(P, hit[0], hit[1], hit[2], g.entry); }
+    P.hits.push(hit);
+    if (out && checkCollapse(P)) return 'collapse';
+    return out;
+  }
+  function applyHole(P, u, v, side, r) {
+    u = clamp(Math.round(u), 0, P.w); v = clamp(Math.round(v), 0, P.h); r = Math.round(r);
+    let res = 'hole', best = null, bd = 1e18;
+    for (const h of P.holes) { const d = Math.hypot(h.u - u, h.v - v); if (d < bd) { bd = d; best = h; } }
+    if (best && (bd < best.r * K.rimClip || P.holes.length >= P.maxHoles)) {           // 1b grow (rim clip) or cap: no new hole
+      best.r = Math.min(K.growMax, Math.max(best.r, Math.round(best.r * K.growK), r)); res = 'grow';   // never smaller than the new hit (a crater over a pellet hole = crater size)
+    } else {
+      for (const h of P.holes) { const d = Math.hypot(h.u - u, h.v - v); if (d < K.mergeD && d > 0.1 && P.slits.length < K.maxSlits) P.slits.push({ a: [h.u, h.v], b: [u, v], r: Math.round(Math.min(h.r, r) * K.slitK), i: P.slits.length }); }
+      P.holes.push({ u, v, r, side, i: P.holes.length });
+    }
+    const f = P.flap;
+    if (f && !f.open) {
+      let off = 0;
+      for (const L of f.lines) {
+        const ax = L.b[0] - L.a[0], ay = L.b[1] - L.a[1], k = clamp(((u - L.a[0]) * ax + (v - L.a[1]) * ay) / (L.len * L.len), 0, 1);
+        const d = Math.hypot(u - L.a[0] - ax * k, v - L.a[1] - ay * k);
+        if (d < K.crReach) { const at = off + k * L.len; for (let s = 0; s < f.segs.length; s++) if (Math.abs((s + 0.5) * K.crSeg - at) < K.crReach + r) f.segs[s] = 1; }
+        off += L.len;
+      }
+      let n = 0; for (const s of f.segs) n += s;
+      if (n / f.segs.length >= K.crNeed) { f.open = true; f.side = side; res = 'flap'; }
+    }
+    return res;
+  }
+  // a knife cut. A cut that STARTS within cutJoinD of the free end of an earlier open cut CONTINUES it (released early, carried on
+  // later: same line). Closed (end back near the start, area >= .02 m2) = the piece falls out. An open cut that bends round an
+  // area (path >= 1.8 x the gap between its ends: a U, a C, 3 sides of a box) = a FLAP hinged on that gap: the opening is the polygon, the sheet hangs.
+  // thick panel hit: add wear round it; the cell that reaches FULL breaches = a real hole opens. Returns 'breach' | 'crack' | 'dent'.
+  const gunName = (id) => { for (const k of ['sniper', 'carbine', 'wasp', 'pistol', 'breacher', 'boomerang']) if (GUNS[k].id === id) return k; return 'carbine'; };
+  function applyWear(P, hit) {
+    const blast = hit[0] === 'blast', u = clamp(Math.round(blast ? hit[1] : hit[0]), 0, P.w), v = clamp(Math.round(blast ? hit[2] : hit[1]), 0, P.h), side = blast ? hit[3] : hit[2];
+    if (openAtMM(P, u, v)) return null;                                   // through an opening: no card there
+    const key = blast ? (hit[4] === CRATER_R ? 'crater' : 'blast') : gunName(hit[3]), n = (WEAR.shots[P.cls] || {})[key] || 1, add = Math.ceil(WEAR.full / n);
+    const br = WEAR.brush[key] || 50, c = WEAR.cell, i0 = Math.floor((u - br) / c), i1 = Math.floor((u + br) / c), j0 = Math.floor((v - br) / c), j1 = Math.floor((v + br) / c);
+    let top = 0;
+    for (let i = Math.max(0, i0); i <= i1; i++) for (let j = Math.max(0, j0); j <= j1; j++) {
+      const cx = clamp(u, i * c, (i + 1) * c), cy = clamp(v, j * c, (j + 1) * c);       // the brush touches the cell
+      if ((cx - u) * (cx - u) + (cy - v) * (cy - v) > br * br) continue;
+      const k = j * 4096 + i, w = Math.min(WEAR.full, (P.wear.get(k) || 0) + add); P.wear.set(k, w); if (w > top) top = w;
+    }
+    if (top < WEAR.full) return top >= WEAR.full * WEAR.crack ? 'crack' : 'dent';
+    const r = blast ? hit[4] : Math.round(GUNS[key].entry * (WEAR.breachR[P.cls] || 1));
+    applyHole(P, u, v, side, r); P.breaches++; return 'breach';
+  }
+  const wearAt = (P, uM, vM) => (P.wear.get(Math.floor(vM * 1000 / WEAR.cell) * 4096 + Math.floor(uM * 1000 / WEAR.cell)) || 0) / WEAR.full;
+  // damage multiplier a bullet keeps going through this panel after the hit result res (-1 = stopped). B2 + progressive wear.
+  function passK(P, weapon, res) {
+    const g = GUNS[weapon] || GUNS.carbine;
+    if (P.cls === 'P0') return 1; if (!THICK[P.cls]) return g.thinK;
+    if (res === 'breach') return g.thinK * WEAR.passK[P.cls];
+    const pk = (WEAR.preK[P.cls] || {})[weapon]; return pk ? pk : -1;
+  }
+  function applyCut(P, pts) {
+    if (!pts || pts.length < 2) return null;
+    let p = pts.slice(0, K.cutMaxPts).map(a => [clamp(Math.round(a[0]), 0, P.w), clamp(Math.round(a[1]), 0, P.h)]), L = null;
+    const s = p[0], d = (a) => Math.hypot(a[0] - s[0], a[1] - s[1]);
+    for (const M of P.knife) { if (M.closed || M.pts.length >= K.cutMaxPts) continue;
+      if (d(M.pts[M.pts.length - 1]) < K.cutJoinD) { L = M; break; }
+      if (d(M.pts[0]) < K.cutJoinD) { M.pts.reverse(); L = M; break; } }
+    if (L) { L.pts = L.pts.concat(p.slice(1)).slice(0, K.cutMaxPts); p = L.pts; } else { L = { pts: p, closed: false, flap: false }; P.knife.push(L); }
+    const e = p[p.length - 1], s0 = p[0]; let area = 0, len = 0; for (let i = 0, j = p.length - 1; i < p.length; j = i++) area += (p[j][0] + p[i][0]) * (p[j][1] - p[i][1]);
+    for (let i = 1; i < p.length; i++) len += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]);
+    const gap = Math.hypot(e[0] - s0[0], e[1] - s0[1]); area = Math.abs(area / 2);
+    L.closed = p.length >= 4 && gap < K.cutCloseD && area >= K.cutCloseArea;
+    L.flap = !L.closed && p.length >= 4 && gap >= K.flapGap && len >= K.flapLenK * gap && area >= K.cutCloseArea;
+    return L.closed ? 'cut-open' : L.flap ? 'cut-flap' : 'cut';
+  }
+  // B3 stage 4. open fraction on a fixed grid (deterministic); only when the panel's collapse tag is true.
+  function openFraction(P) {
+    const g = K.gridMM, nx = Math.max(1, Math.floor(P.w / g)), ny = Math.max(1, Math.floor(P.h / g)); let n = 0;
+    for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) if (openAtMM(P, (i + 0.5) * P.w / nx, (j + 0.5) * P.h / ny)) n++;
+    return n / (nx * ny);
+  }
+  function knifeEdges(P) {
+    let m = 0; const t = K.edgeTouch;
+    for (const L of P.knife) for (const a of L.pts) { if (a[0] <= t) m |= 1; if (a[0] >= P.w - t) m |= 2; if (a[1] <= t) m |= 4; if (a[1] >= P.h - t) m |= 8; }
+    return (m & 1) + ((m >> 1) & 1) + ((m >> 2) & 1) + ((m >> 3) & 1);
+  }
+  function checkCollapse(P) {
+    if (!P.collapse || P.collapsed) return false;
+    const flapHoles = !!(P.flap && P.flap.open && P.holes.length >= K.collapseFlapHoles), edges = knifeEdges(P) >= K.collapseEdges;
+    P.openFrac = openFraction(P);
+    if (P.openFrac >= K.collapseOpen || flapHoles || edges) { P.collapsed = true; return true; }
+    return false;
+  }
+
+  // ---- deterministic state dump + replay. Same events => identical string (D1).
+  function serialize(P) {
+    const f = P.flap;
+    return JSON.stringify([P.id, P.collapsed ? 1 : 0,
+      P.holes.map(h => [h.u, h.v, h.r, h.side, h.i]), P.slits.map(s => [s.a[0], s.a[1], s.b[0], s.b[1], s.r, s.i]),
+      P.knife.map(L => [L.closed ? 1 : L.flap ? 2 : 0, L.pts]), f ? [f.open ? 1 : 0, f.side, f.segs.join('')] : null, [...P.wear.entries()].sort((a, b) => a[0] - b[0])]);
+  }
+  function replay(def, hits) { const P = newPanel(def); for (const h of hits) applyHit(P, h); return P; }
+  const replayKey = (def, hits) => serialize(replay(def, hits));
+
+  return { K, GUNS, GUN_BY_ID, CRATER_R, WEAR, THICK, applyWear, wearAt, passK, blastRadius, q, hash32, strId, hrand, spreadSample, shotRand, newPanel, isPanel, openAt, openAtMM, passAtMM, bigOpenings, solidRects,
+    drawnOpenMM, starShape, starRadius, makeHits, makeBlast, applyHit, openFraction, checkCollapse, serialize, replay, replayKey };
+});
+// 04-seeded-spread.js  --  STEP 3 of docs/HOLES_SYSTEM.md: thin adapter between the game's shot path and the pure HOLES core (03-holes-core.js).
+// Replaces Math.random() in the SPREAD of player + bot shots with hash(matchSeed, shooterId, shotSeq, pellet) so any client (and later the
+// server) rebuilds the same shot from the same inputs. Same distribution as before: angle uniform 0..2pi, radius = sqrt(uniform) * spread.
+// Usage in a fire function:  const seq = SPREAD.begin(shooter);  const s = SPREAD.sample(shooter, seq, pelletIndex);  a = s.a, m = s.m * spread.
+// Online: call SPREAD.newMatch(roomSeed) when the room starts so every client shares the seed (offline it is re-rolled per page load / match).
+const SPREAD = (() => {
+  const seqs = new Map(), ids = new WeakMap(); let seed = 0, nextId = 1;
+  const roll = () => ((Date.now() ^ Math.floor(performance.now() * 1000)) | 0) >>> 0;   // offline seed only; online the room seed replaces it
+  seed = roll();
+  // stable shooter key: the player = 'p'; a bot/entity gets its netId/id/name if it has one, else a per-object counter
+  const key = (e) => {
+    if (e === undefined || e === null) return 'p';
+    if (typeof e === 'string' || typeof e === 'number') return e;
+    if (e.isPlayer) return (typeof NET !== 'undefined' && NET.room && NET.room.myId) || 'p';
+    if (e.netId !== undefined && e.netId !== null) return e.netId;
+    let k = ids.get(e); if (k === undefined) { k = 'b' + (nextId++); ids.set(e, k); } return k;
+  };
+  return {
+    get seed() { return seed; },
+    newMatch(s) { seed = (s === undefined ? roll() : s | 0) >>> 0; seqs.clear(); },
+    begin(shooter) { const k = key(shooter), n = (seqs.get(k) || 0) + 1; seqs.set(k, n); return n; },   // one call per trigger pull
+    sample(shooter, seq, pellet) { return HOLES.spreadSample(seed, key(shooter), seq, pellet || 0); },
+    rand(shooter, seq, idx) { return HOLES.shotRand(seed, key(shooter), seq, idx || 0); },
+  };
+})();
 /* ================= procedural textures ================= */
 const maxAniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
 function makePerm() { const p = new Uint8Array(512); const b = []; for (let i = 0; i < 256; i++) b.push(i); for (let i = 255; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } for (let i = 0; i < 512; i++) p[i] = b[i & 255]; return p; }
@@ -1485,6 +1924,29 @@ function updateAlien(t, dt) {
 // load (no files to download): kraft cardboard with fibres, cream paper, team papers, the green cutting mat with its grid and
 // numbers, the wooden ruler, corrugated edges, team banners. PAPER.mat(kind) returns a cached material (one shader program per
 // material type, compiled at load by warmShaders: never mid-match). Unity port: the same looks can be baked to PNG from here.
+// WP-S2: texture dedupe. Every gun / character GLB embeds its own copy of the same atlas (6 mags = 6 x atlas_blue...), and each copy is
+// a separate GPU texture. After a GLB is parsed its textures are matched by role + size + a pixel fingerprint and the copies are swapped
+// for ONE shared texture (identical pixels = identical look). Runs once per GLB at load, never mid-match.
+const TEXDEDUP = (() => {
+  const pool = new Map(), cv = document.createElement('canvas'); cv.width = cv.height = 32; const cx = cv.getContext('2d', { willReadFrequently: true });
+  const fp = im => { try { cx.clearRect(0, 0, 32, 32); cx.drawImage(im, 0, 0, 32, 32); const d = cx.getImageData(0, 0, 32, 32).data; let h = 2166136261; for (let i = 0; i < d.length; i++) h = Math.imul(h ^ d[i], 16777619); return h >>> 0; } catch (e) { return null; } };
+  const KEYS = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap'];
+  function share(root) { let n = 0; root.traverse(o => { if (!o.material) return; for (const m of [].concat(o.material)) for (const k of KEYS) { const t = m[k]; if (!t || !t.image || !(t.image.width > 255) || t.isCompressedTexture) continue;
+    const f = fp(t.image); if (f === null) continue; const id = [k === 'map' || k === 'emissiveMap' ? 's' : 'l', t.image.width, t.image.height, t.flipY ? 1 : 0, t.wrapS, t.wrapT, t.encoding, f, t.repeat.x, t.repeat.y, t.offset.x, t.offset.y].join('|');
+    const q = pool.get(id); if (!q) pool.set(id, t); else if (q !== t) { m[k] = q; m.needsUpdate = true; n++; } } }); return n; }
+  return { share, pool };
+})();
+if (window.THREE && THREE.GLTFLoader && !THREE.GLTFLoader.prototype.__texdedup) { const P0 = THREE.GLTFLoader.prototype.parse; THREE.GLTFLoader.prototype.__texdedup = true;
+  THREE.GLTFLoader.prototype.parse = function (data, path, onLoad, onError) { return P0.call(this, data, path, g => { try { if (g && g.scene) TEXDEDUP.share(g.scene); } catch (e) { console.warn('texdedup', e); } onLoad(g); }, onError); }; }
+// WP-S2: ONE shared KTX2 (Basis/UASTC -> BC7 on desktop, 1 byte per pixel) loader for the map GLB + the full lightmap
+let _s2k = undefined;
+function s2Ktx2() { if (_s2k !== undefined) return _s2k; _s2k = null; try { if (THREE.KTX2Loader && typeof renderer !== 'undefined') _s2k = new THREE.KTX2Loader().setTranscoderPath('https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/libs/basis/').detectSupport(renderer); } catch (e) { console.warn('[s2] ktx2', e); } return _s2k; }
+function s2Gltf(ktx) { const L = new THREE.GLTFLoader(); if (window.MeshoptDecoder) L.setMeshoptDecoder(MeshoptDecoder); if (ktx) { const k = s2Ktx2(); if (k) L.setKTX2Loader(k); } return L; }
+function s2LM(file, v, ktx) {   // lightmap as KTX2 (flipY false orientation = first row is v0 = same as the PNG path), else the PNG twin
+  const k = s2Ktx2(), cfg = t => { t.flipY = false; t.encoding = THREE.LinearEncoding; t.anisotropy = 4; t.minFilter = (t.mipmaps && t.mipmaps.length > 1) || t.generateMipmaps ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter; return t; };
+  return new Promise(res => { const png = () => new THREE.TextureLoader().load('assets/paper/map/' + file + '.png' + v, t => { t.generateMipmaps = true; res(cfg(t)); }, undefined, () => res(null));
+    if (!k || !ktx) return png(); k.load('assets/paper/map/' + file + '.ktx2' + v, t => res(cfg(t)), undefined, png); });
+}
 const PAPER = (() => {
   const cache = {}, texCache = {};
   let seed = 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
@@ -1639,10 +2101,12 @@ function artLibMat(kind, o) {
 // decoded (a texture swap, no shader change); the print / cutting-mat materials of the GLB get the same rule through a chained hook.
 const ART_LM = { tex: null, scale: 0, applied: false };
 function artLoadFullLM() {
-  if (!ART_LOOK.bakeFull || ART_LM.tex) return; const hi = ART.tier === 'high', v = '?v=' + Date.now();
+  if (!ART_LOOK.bakeFull || ART_LM.tex) return;
+  if (DESKTOWN_DATA && DESKTOWN_DATA.lmFull && DESKTOWN_DATA.lm) { ART_LM.tex = DESKTOWN_DATA.lm; ART_LM.scale = DESKTOWN_DATA.lmScale; artApplyFullLM(); return; }   // (already loaded by desktownPreload as KTX2)
+  const hi = ART.tier === 'high', v = '?v=' + Date.now();
   const metaP = fetch('render/paper/map/bake_meta.json' + v).then(r => r.ok ? r.json() : null).catch(() => null);
   new THREE.TextureLoader().load('assets/paper/map/' + (hi ? 'lm_full.png' : 'lm_full_2k.png') + v, async t => {
-    const meta = await metaP; t.flipY = false; t.encoding = THREE.LinearEncoding; t.generateMipmaps = true; t.anisotropy = 4; t.minFilter = THREE.LinearMipmapLinearFilter;
+    const meta = await metaP; t.flipY = false; t.encoding = THREE.LinearEncoding; t.generateMipmaps = true; t.anisotropy = 4; t.minFilter = THREE.LinearMipmapLinearFilter;   // (low tiers only: High loads lm_full.ktx2 in desktownPreload)
     ART_LM.tex = t; ART_LM.scale = (meta && meta.lm_full && meta.lm_full.scale) || 2.5;
     artApplyFullLM();
   }, undefined, () => console.warn('[art] lm_full.png missing: the live sun stays'));
@@ -1734,6 +2198,10 @@ function artSkyMaterial(k) {
 // the cutting mat texture: the MAP's teal (50,144,125) -> the refs' muted sage (118,142,128); grid lines stay. 1024 px is plenty for a 10 m tile.
 function artCuttingMat(mat) {
   const t = mat.map, im = t && t.image; if (!im || !im.width || t.userData.artMat) return; t.userData.artMat = 1;
+  if (t.isCompressedTexture) {   // WP-S2: the KTX2 map has no pixels to read: the 1k JPG twin is graded the same way and swapped in (same sRGB map slot, no shader change)
+    const img = new Image(); img.onload = () => { const T2 = new THREE.Texture(img); Object.assign(T2, { flipY: t.flipY, encoding: t.encoding, wrapS: t.wrapS, wrapT: t.wrapT, anisotropy: t.anisotropy, minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter, generateMipmaps: true });
+      mat.map = T2; artCuttingMat(mat); setTimeout(() => { try { t.dispose(); } catch (e) {} }, 500); };
+    img.src = 'assets/paper/map/tex/mat_diff_1k.jpg'; return; }
   const S = 1024, c = document.createElement('canvas'); c.width = c.height = S; const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0, S, S);
   const id = g.getImageData(0, 0, S, S), d = id.data, { desat, target } = ART_LOOK.mat;
   // target-based: whatever the MAP's mat colour is, its mean lands on the refs' sage (robust to map rebuilds); grid lines keep their contrast
@@ -2810,14 +3278,19 @@ async function desktownPreload(def) {
   const v = '?v=' + Date.now();
   const D = await fetch('data/paper/map_desktown.json' + v, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   if (!D || !Array.isArray(D.colliders)) { DESKTOWN_DATA = null; return; }
-  const gltf = await new THREE.GLTFLoader().loadAsync('assets/paper/map/desktown.glb' + v).catch(e => { console.warn('desktown.glb', e); return null; });
+  // WP-S2: High = desktown_ktx2.glb (meshopt + KTX2 textures: 5.8 MB file, ~40 MB GPU); fallback desktown_webp.glb; Performance tiers = the half-size _perf
+  const hi0 = !window.S9GFX || /high|ultra/.test(S9GFX.tier || 'high'), kk = !!(window.MeshoptDecoder && s2Ktx2());
+  let gltf = null; for (const f of (hi0 && kk ? ['desktown_ktx2', 'desktown_webp'] : [hi0 ? 'desktown_webp' : 'desktown_perf'])) { gltf = await s2Gltf(f.endsWith('ktx2')).loadAsync('assets/paper/map/' + f + '.glb' + v).catch(e => { console.warn(f, e); return null; }); if (gltf) break; }
   if (!gltf) { DESKTOWN_DATA = null; return; }
   // baked light (MAP agent, render/paper/map/bake_meta.json): sky + lamps + sun bounce, used together with the live sun
   const hi = !window.S9GFX || /high|ultra/.test(S9GFX.tier || 'high');
   const meta = await fetch('render/paper/map/bake_meta.json' + v).then(r => r.ok ? r.json() : null).catch(() => null);
-  const lm = await new Promise(res => new THREE.TextureLoader().load('assets/paper/map/' + (hi ? 'lm.png' : 'lm_2k.png') + v, t => res(t), undefined, () => res(null)));
-  if (lm) { lm.flipY = false; lm.encoding = THREE.LinearEncoding; lm.generateMipmaps = true; lm.anisotropy = 4; }
-  DESKTOWN_DATA = { D, gltf, lm: lm && lm.image && lm.image.width >= 512 ? lm : null, lmScale: (meta && meta.lm && meta.lm.scale) || DESKTOWN_LOOK.lmScale };
+  const full = hi && ART_LOOK.bakeFull && kk && !/s2nolm/.test(location.search);   // High: the full bake straight away as KTX2 (no 16 MB sky-only lm.png first)
+  let lm = full ? await s2LM('lm_full', v, true) : null; const lmFull = !!lm;
+  if (!lm) { lm = await new Promise(res => new THREE.TextureLoader().load('assets/paper/map/' + (hi ? 'lm.png' : 'lm_2k.png') + v, t => res(t), undefined, () => res(null)));
+    if (lm) { lm.flipY = false; lm.encoding = THREE.LinearEncoding; lm.generateMipmaps = true; lm.anisotropy = 4; } }
+  const lmw = lm && (lm.image && lm.image.width || (lm.mipmaps && lm.mipmaps[0] && lm.mipmaps[0].width) || 0);
+  DESKTOWN_DATA = { D, gltf, lm: lm && lmw >= 512 ? lm : null, lmFull: lmFull && lmw >= 512, lmScale: lmFull ? ((meta && meta.lm_full && meta.lm_full.scale) || 2.5) : (meta && meta.lm && meta.lm.scale) || DESKTOWN_LOOK.lmScale };
   const b = D.bounds || [-48, 0, -28, 48, 30, 34]; def.size = Math.ceil(2 * Math.max(Math.abs(b[0]), Math.abs(b[2]), Math.abs(b[3]), Math.abs(b[5])) + 2);
   const sp = D.spawns || {}, pts = t => (sp[t] || []).map(s => [s.p[0], s.p[2]]);
   def.spawns = [...pts('blue'), ...pts('red')];
@@ -2870,8 +3343,9 @@ function desktownFromData(PM) {
       if (horiz) { const v = clamp((cr[1] + cr[3]) / 2, .2, .9) * h; flap = { u0: w * .06, u1: w * .94, v0: Math.min(h * .06, v - .3), v1: v, hinge: 'bottom' }; }
       else { const u = clamp((cr[0] + cr[2]) / 2, .2, .9) * w; flap = { u0: w * .06, u1: u, v0: h * .06, v1: h * .94, hinge: 'left' }; } }
     const fl = Math.abs(n[1]) > .9;
-    if (fl) { TEAR.add({ floor: true, x: t.centre[0], y: t.centre[1], z: t.centre[2], w, h, t: Math.min(.08, t.t || .06), rot: t.yaw || 0, mat: glMat(/paper/.test(t.mat || '') ? 'pm_paper' : 'pm_kraft') || PM('kraft') }); continue; }
-    TEAR.add({ x: t.centre[0], y: t.centre[1] - h / 2, z: t.centre[2], w, h, t: Math.min(.08, t.t || .06), rot: Math.atan2(n[0], n[2]), mat: glMat(/paper/.test(t.mat || '') ? 'pm_paper' : 'pm_kraft') || PM(/paper/.test(t.mat || '') ? 'cream' : 'kraft'), flap });
+    const cls = t.cls || 'P1', th = cls === 'P1' || cls === 'P0' ? Math.min(.08, t.t || .06) : Math.min(.45, t.t || .2);   // (HOLES_SYSTEM progressive wear: P2+ = thick, wears before it opens)
+    if (fl) { TEAR.add({ floor: true, cls, x: t.centre[0], y: t.centre[1], z: t.centre[2], w, h, t: th, rot: t.yaw || 0, mat: glMat(/paper/.test(t.mat || '') ? 'pm_paper' : 'pm_kraft') || PM('kraft') }); continue; }
+    TEAR.add({ cls, x: t.centre[0], y: t.centre[1] - h / 2, z: t.centre[2], w, h, t: th, rot: Math.atan2(n[0], n[2]), mat: glMat(/paper/.test(t.mat || '') ? 'pm_paper' : 'pm_kraft') || PM(/paper/.test(t.mat || '') ? 'cream' : 'kraft'), flap });
   }
   if (typeof PAPER !== 'undefined' && PAPER.onMapBuilt) try { PAPER.onMapBuilt(root); } catch (e) { console.warn('onMapBuilt', e); }   // look hook (ART director)
 }
@@ -3228,20 +3702,30 @@ const PFX = (() => {
 // gets a paper-world mark from one atlas: cardboard = puncture with torn lips + corrugation inside + dent ring, paper props =
 // frayed puncture, wood (ruler) = splinter chip, plastic/metal (scissors, binder clip) = scuff, cutting mat = nick. Shotgun =
 // a cluster (one mark per pellet), sniper = clean through-hole, boomerang = slash cut, plane blast = scorched-ink crumple.
+// Bullet HOLES are one recognisable family, the ref1 torn star (owner: "real and diverse, but always the same"), from an atlas rendered
+// in headless Blender (render/paper/hits/make_hits.py -> assets/paper/hits/): rows SOLID (thick card: petals curled out, brown fluted
+// recess), EXIT / ENTRY (the two faces of a hole torn through thin card, one shared star opening that is cut see-through). Smart:
+// petal colour = the VISIBLE surface at the hit (surface grid), thin banner paper glows through the tear, grazing hits stretch along
+// the bullet path, cell up = world up on walls (the atlas light is from the top), mirror / tilt / size / cell from the hit-point hash.
 // ONE InstancedMesh (one draw call, compiled at load), ring buffer of R.max marks: the oldest is reused, the R.fade oldest
-// shrink away first (bounded, no hitches). Deterministic: rotation and size come from a hash of the hit point, never random.
+// shrink away first (bounded, no hitches). Deterministic: cell, rotation and size come from a hash of the hit point, never random.
 const PAPER_MARKS = (() => {
   const R = { max: 900, fade: 40 };
   const CELLS = { card: 0, paper: 1, wood: 2, scuff: 3, through: 4, slash: 5, blast: 6, mat: 7 };
   const SIZE = { card: .16, paper: .13, wood: .17, scuff: .2, through: .1, slash: .5, blast: 2.2, mat: .12 };
-  let im = null, cellAttr = null, idx = 0, count = 0;
-  const born = new Float32Array(R.max).fill(-1), base = [];
-  const o = new THREE.Object3D(), _n = new THREE.Vector3();
+  // torn-hole decals (hits atlas, assets/paper/hits/): plane size per gun for a hole in thick card (ref1: ~10 cm opening, ~30 cm of petals)
+  const HOLE = { size: .42, clean: .3, gun: { carbine: 1, wasp: .85, pistol: .85, breacher: .62 }, star: 6, cells: null /* hits.json: coreR, coreMax, core polygon */,
+    tearMax: .13,   // bigger tear holes (shotgun slug, blasts, grown holes) keep the mask's ragged rim instead
+    rowV: { proc: .75, solid: .5, exit: .25, entry: 0 },   // atlas rows (v offset): these procedural marks, SOLID, EXIT, ENTRY hole cells
+    tint: { cream: [.87, .67, .45], kraft: [.55, .31, .12] } };   // fallbacks = the paper / kraft materials' mean colour / .74
+  let im = null, cellAttr = null, idx = 0, count = 0, colTex = null, nrmTex = null;
+  const born = new Float32Array(R.max).fill(-1), base = [], tearOf = [];
+  const o = new THREE.Object3D(), _n = new THREE.Vector3(), _p = new THREE.Vector3(), _c = new THREE.Color(), _m = new THREE.Matrix4(), _s = new THREE.Matrix4();
   const hash = (x, y, z, k) => { let h = Math.imul((x * 1000) | 0, 73856093) ^ Math.imul((y * 1000) | 0, 19349663) ^ Math.imul((z * 1000) | 0, 83492791) ^ Math.imul(k | 0, 2654435761); h = Math.imul(h ^ (h >>> 15), 2246822507); h ^= h >>> 13; return (h >>> 0) / 4294967296; };
   function atlas() {
-    const c = document.createElement('canvas'); c.width = 1024; c.height = 512; const g = c.getContext('2d');
+    const c = document.createElement('canvas'); c.width = 2048; c.height = 1024; const g = c.getContext('2d');   // top row: these 8 cells; rows 2-4: the hits atlas (solid / exit / entry)
     let s = 12345; const r = (a, b) => { s = (s * 16807) % 2147483647; return a + (s / 2147483647) * (b - a); };
-    const cell = (i, fn) => { g.save(); g.translate((i % 4) * 256 + 128, Math.floor(i / 4) * 256 + 128); g.beginPath(); g.rect(-128, -128, 256, 256); g.clip(); fn(); g.restore(); };
+    const cell = (i, fn) => { g.save(); g.translate(i * 256 + 128, 128); g.beginPath(); g.rect(-128, -128, 256, 256); g.clip(); fn(); g.restore(); };
     const jag = (n, r0, r1) => { g.beginPath(); for (let i = 0; i <= n; i++) { const a = i / n * 6.283, rr = i % 2 ? r0 : r1 * r(.85, 1.15); const x = Math.cos(a) * rr, y = Math.sin(a) * rr; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath(); };
     // 0 cardboard puncture: dent ring, torn light lips, dark hole with corrugation stripes inside
     cell(0, () => { let gr = g.createRadialGradient(0, 0, 30, 0, 0, 110); gr.addColorStop(0, 'rgba(60,35,15,.35)'); gr.addColorStop(1, 'rgba(60,35,15,0)'); g.fillStyle = gr; g.fillRect(-128, -128, 256, 256);
@@ -3267,14 +3751,31 @@ const PAPER_MARKS = (() => {
     cell(7, () => { g.strokeStyle = 'rgba(210,240,230,.5)'; g.lineWidth = 6; g.beginPath(); g.arc(0, 0, 40, 0, 6.283); g.stroke(); g.fillStyle = 'rgba(8,30,25,.95)'; jag(10, 16, 28); g.fill(); });
     return c;
   }
+  // normal atlas, same layout: flat for the procedural row, the rendered hole normals below
+  function flatNormals() { const c = document.createElement('canvas'); c.width = 1024; c.height = 512; const g = c.getContext('2d'); g.fillStyle = 'rgb(128,128,255)'; g.fillRect(0, 0, 1024, 512); return c; }
+  function loadHits() {
+    const load = (src, tex, w, y, h) => { const img = new Image(); img.onload = () => { const g = tex.image.getContext('2d'); g.clearRect(0, y, w, h); g.drawImage(img, 0, y, w, h); tex.needsUpdate = true; PAPER_MARKS.stats.hitsLoaded++; }; img.src = src; };
+    load('assets/paper/hits/hits_col.png', colTex, 2048, 256, 768); load('assets/paper/hits/hits_nrm.png', nrmTex, 1024, 128, 384);
+    try { fetch('assets/paper/hits/hits.json').then(r => r.json()).then(j => { HOLE.cells = j.cells; PAPER_MARKS.stats.hitsLoaded++; }).catch(() => {}); } catch (e) {}
+  }
   function init() {
     if (im) return im;
-    const t = new THREE.CanvasTexture(atlas()); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8;
-    const m = new THREE.MeshStandardMaterial({ map: t, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, roughness: .92, metalness: 0, envMapIntensity: .3 });
-    m.onBeforeCompile = sh => { sh.vertexShader = 'attribute vec2 aCell;\n' + sh.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n  vUv = vUv * vec2(.25, .5) + aCell;'); };
-    m.customProgramCacheKey = () => 'paperMarks1'; m.userData.s9g = 1; m.userData.gm = 999;   // keep the graphics add-ons off this shader (atlas cells)
+    colTex = new THREE.CanvasTexture(atlas()); colTex.encoding = THREE.sRGBEncoding; colTex.anisotropy = 8;
+    nrmTex = new THREE.CanvasTexture(flatNormals()); nrmTex.anisotropy = 4;
+    const m = new THREE.MeshStandardMaterial({ map: colTex, normalMap: nrmTex, normalScale: new THREE.Vector2(1, 1), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, roughness: .92, metalness: 0, envMapIntensity: .3 });
+    // aCell.xy = atlas cell offset (x + 2 = mirrored: flips u, so no instance ever has a mirrored matrix); aCell.z = opening radius (cell widths): > 0 on tearable card = the star opening (transparent in the atlas) shows the
+    // real hole shows; < 0 on thin team paper (banners) = the opening glows (light through the paper); 0 = a hole in thick card
+    m.onBeforeCompile = sh => {
+      sh.vertexShader = 'attribute vec3 aCell;\nvarying float vOpen;\nvarying vec2 vLoc;\n' + sh.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n  float hFl = step(1.5, aCell.x); vec2 hU = vec2(mix(vUv.x, 1. - vUv.x, hFl), vUv.y); vLoc = hU - .5; vUv = hU * vec2(.125, .25) + vec2(aCell.x - 2. * hFl, aCell.y); vOpen = aCell.z;');
+      sh.fragmentShader = 'varying float vOpen;\nvarying vec2 vLoc;\n' + sh.fragmentShader
+        .replace('#include <map_fragment>', 'float hGlow = 0.;\n{ vec4 hc = texture2D(map, vUv); if (vOpen < 0. && length(vLoc) < -vOpen) hGlow = 1. - hc.a; }\n#include <map_fragment>\n diffuseColor = mix(diffuseColor, vec4(.95, .85, .65, 1.), hGlow);')
+        .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += hGlow * vec3(.5, .42, .3);');
+    };
+    m.customProgramCacheKey = () => 'paperMarks3'; m.userData.s9g = 1; m.userData.gm = 999;   // keep the graphics add-ons off this shader (atlas cells)
     im = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), m, R.max); im.frustumCulled = false; im.renderOrder = 1; im.receiveShadow = true; im.userData.noProbe = true;
-    cellAttr = new THREE.InstancedBufferAttribute(new Float32Array(R.max * 2), 2); im.geometry.setAttribute('aCell', cellAttr);
+    cellAttr = new THREE.InstancedBufferAttribute(new Float32Array(R.max * 3), 3); im.geometry.setAttribute('aCell', cellAttr);
+    im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(R.max * 3).fill(1), 3);   // petal tint; exists from load (no recompile later)
+    loadHits();
     o.position.set(0, -50, 0); o.scale.setScalar(0); o.updateMatrix(); for (let i = 0; i < R.max; i++) im.setMatrixAt(i, o.matrix);
     scene.add(im); return im;
   }
@@ -3290,21 +3791,132 @@ const PAPER_MARKS = (() => {
     if (pk === 'cream' || pk === 'white' || pk === 'note' || pk === 'yellow' || pk === 'blue' || pk === 'red' || pk === 'window' || pk === 'stripes' || pk === 'bannerBlue' || pk === 'bannerRed') return 'paper';
     return 'card';
   }
-  function add(p, n, kind, scale = 1) {
-    if (!im) init(); const k = CELLS[kind] ?? 0, h = hash(p.x, p.y, p.z, k);
-    o.position.copy(p).addScaledVector(n, kind === 'blast' ? .02 : .006); o.lookAt(p.x + n.x, p.y + n.y, p.z + n.z); o.rotateZ(h * 6.283);
-    o.scale.setScalar(SIZE[kind] * scale * (.85 + h * .3)); if (kind === 'slash') o.scale.y *= .35; o.updateMatrix();
-    im.setMatrixAt(idx, o.matrix); cellAttr.setXY(idx, (k % 4) * .25, k < 4 ? .5 : 0); base[idx] = o.matrix.clone(); born[idx] = 1;
+  /* ---- the VISIBLE surface's colour at a hit (colliders are invisible boxes whose kind often differs from the art on them):
+     a 0.5 m grid sampled once per map from the visible paper-material triangles (albedo = texture mean x colour x vertex colour).
+     Built at match start (PAPER_MARKS.clear), ~0.1-0.3 s; a lookup is a few Map reads. */
+  const THIN = { blue: 1, red: 1, bannerBlue: 1, bannerRed: 1, stripes: 1, yellow: 1, note: 1 };
+  const SURF = { map: null, key: '', cs: 1, avg: {} };
+  function matAlbedo(mt) {
+    const pm = mt.userData.pm, c = mt.color || _c.setRGB(1, 1, 1);
+    if (pm && pm.mean) { const v = pm.mean.value; return [v.x * c.r, v.y * c.g, v.z * c.b]; }
+    const t = mt.map, im_ = t && t.image; let a = SURF.avg[t ? t.uuid : 'none'];
+    if (!a) { a = [.7, .62, .5]; try { if (im_ && (im_.width || im_.videoWidth) && !t.isCompressedTexture) { const cv = document.createElement('canvas'); cv.width = cv.height = 4; const g = cv.getContext('2d'); g.drawImage(im_, 0, 0, 4, 4); const d = g.getImageData(0, 0, 4, 4).data; let r = 0, gg = 0, b = 0; for (let i = 0; i < 64; i += 4) { r += d[i]; gg += d[i + 1]; b += d[i + 2]; } const L = x => Math.pow(x / 16 / 255, 2.2); a = [L(r), L(gg), L(b)]; } } catch (e) {} SURF.avg[t ? t.uuid : 'none'] = a; }
+    return [a[0] * c.r, a[1] * c.g, a[2] * c.b];
+  }
+  function surfBuild() {
+    const meshes = []; scene.traverse(q => { if (!q.isMesh || q.isInstancedMesh || q === im || q.userData.tear !== undefined || !q.geometry || !q.geometry.attributes.position) return; const mt = Array.isArray(q.material) ? q.material[0] : q.material; if (mt && (mt.userData.pm || /^pm_/.test(mt.name || ''))) meshes.push(q); });
+    const key = meshes.length + ':' + meshes.reduce((s, q) => s + q.id, 0); if (key === SURF.key && SURF.map) return; SURF.key = key;
+    const map = new Map(), cs = SURF.cs, a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), e1 = new THREE.Vector3(), e2 = new THREE.Vector3(), nn = new THREE.Vector3(), pt = new THREE.Vector3();
+    let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647, t0 = performance.now();
+    for (const q of meshes) {
+      q.updateMatrixWorld(); const g = q.geometry, P = g.attributes.position, I = g.index, C = g.attributes.color, mats = Array.isArray(q.material) ? q.material : [q.material];
+      const groups = g.groups.length ? g.groups : [{ start: 0, count: I ? I.count : P.count, materialIndex: 0 }];
+      for (const gr of groups) {
+        const mt = mats[gr.materialIndex || 0] || mats[0]; if (!mt) continue; const alb = matAlbedo(mt), thin = THIN[mt.userData.paper] ? 1 : 0;
+        for (let i = gr.start; i + 2 < gr.start + gr.count; i += 3) {
+          const ia = I ? I.getX(i) : i, ib = I ? I.getX(i + 1) : i + 1, ic = I ? I.getX(i + 2) : i + 2;
+          a.fromBufferAttribute(P, ia).applyMatrix4(q.matrixWorld); b.fromBufferAttribute(P, ib).applyMatrix4(q.matrixWorld); c.fromBufferAttribute(P, ic).applyMatrix4(q.matrixWorld);
+          e1.subVectors(b, a); e2.subVectors(c, a); nn.crossVectors(e1, e2); const ar = nn.length() / 2; if (ar < 1e-5) continue; nn.normalize();
+          let vr = 1, vg = 1, vb = 1; if (C && mt.vertexColors) { vr = (C.getX(ia) + C.getX(ib) + C.getX(ic)) / 3; vg = (C.getY(ia) + C.getY(ib) + C.getY(ic)) / 3; vb = (C.getZ(ia) + C.getZ(ib) + C.getZ(ic)) / 3; }
+          const col = [alb[0] * vr, alb[1] * vg, alb[2] * vb], d = nn.dot(a), ns = Math.min(40, Math.ceil(ar / .5));
+          for (let s = 0; s < ns; s++) { let u = rnd(), v = rnd(); if (u + v > 1) { u = 1 - u; v = 1 - v; } pt.copy(a).addScaledVector(e1, u).addScaledVector(e2, v);
+            const k = Math.floor(pt.x / cs) + ',' + Math.floor(pt.y / cs) + ',' + Math.floor(pt.z / cs); let L = map.get(k); if (!L) map.set(k, L = []);
+            if (L.length < 6 && !L.some(x => x[0] * nn.x + x[1] * nn.y + x[2] * nn.z > .95 && Math.abs(x[3] - d) < .04)) L.push([nn.x, nn.y, nn.z, d, col[0], col[1], col[2], thin]); }
+        }
+      }
+    }
+    SURF.map = map; PAPER_MARKS.stats.surfMs = Math.round(performance.now() - t0); PAPER_MARKS.stats.surfCells = map.size;
+  }
+  function surfAt(p, n) {
+    if (!SURF.map) return null; const cs = SURF.cs, X = Math.floor(p.x / cs), Y = Math.floor(p.y / cs), Z = Math.floor(p.z / cs); let best = null, bs = 1e9;
+    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) { const L = SURF.map.get((X + dx) + ',' + (Y + dy) + ',' + (Z + dz)); if (!L) continue;
+      for (const e of L) { const dt = e[0] * n.x + e[1] * n.y + e[2] * n.z; if (dt < .6) continue; const dist = Math.abs(e[0] * p.x + e[1] * p.y + e[2] * p.z - e[3]), sc = dist + (1 - dt) * .3; if (dist < .5 && sc < bs) { bs = sc; best = e; } } }
+    return best;
+  }
+  // petal tint from a linear albedo: the petals ARE the wall's card (atlas petals render at ~.78), with a light torn rim from the atlas
+  const tintOf = c => { const w = [.96, .9, .78], k = .3; return [w[0] * (1 - k) + k * Math.min(1.6, c[0] / .62), w[1] * (1 - k) + k * Math.min(1.6, c[1] / .62), w[2] * (1 - k) + k * Math.min(1.6, c[2] / .62)]; };   // petals = light warm card, brighter than cream AND kraft (ref1); the recess stays dark brown
+  function tintFor(obj) {
+    const m = obj && obj.isMaterial ? obj : obj && obj.material && !Array.isArray(obj.material) ? obj.material : null, pk = m && m.userData.paper;
+    if (m && m.userData.pm) return tintOf(matAlbedo(m));
+    if (!pk || pk === 'kraft' || pk === 'card') return HOLE.tint.kraft;
+    if (pk === 'cream' || pk === 'white' || pk === 'note' || pk === 'window' || pk === 'paper') return HOLE.tint.cream;
+    const c = m.color || _c.setRGB(1, 1, 1); return [.45 + .55 * c.r, .45 + .55 * c.g, .45 + .55 * c.b];
+  }
+  /* ---- the decal frame: cell 'up' = world up on walls (the atlas is lit from the top, petal shadows fall down like ref1) with a
+     small tilt, free spin on floors; random mirror; GRAZING hits (bullet at a shallow angle) stretch the hole along the bullet's path
+     (up to x1.8) and push it a little toward the exit side. Returns { pos, cx, cy, cz } (cx / cy = cell axes in metres). */
+  const _X = new THREE.Vector3(), _Y = new THREE.Vector3(), _T = new THREE.Vector3(), _q = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0), FR = { pos: new THREE.Vector3(), cx: new THREE.Vector3(), cy: new THREE.Vector3(), cz: new THREE.Vector3() };
+  function frame(p, n, dir, h, size, stretchAxis, stretchK) {
+    const wall = Math.abs(n.y) < .7;
+    if (wall) { _Y.copy(UP).addScaledVector(n, -n.y).normalize(); } else { _Y.set(1, 0, 0).addScaledVector(n, -n.x).normalize(); }
+    _X.crossVectors(_Y, n).normalize();
+    const th = wall ? (h - .5) * .7 : h * 6.283, cs = Math.cos(th), sn = Math.sin(th); FR.mir = hash(h, 1, 2, 3) < .5;
+    FR.cx.copy(_X).multiplyScalar(cs).addScaledVector(_Y, sn).multiplyScalar(size); FR.cy.copy(_X).multiplyScalar(-sn).addScaledVector(_Y, cs).multiplyScalar(size); FR.cz.copy(n);
+    FR.pos.copy(p); let k = stretchK || 1;
+    if (stretchAxis) _T.copy(stretchAxis).addScaledVector(n, -stretchAxis.dot(n));
+    else if (dir) { const c = Math.abs(dir.dot(n)); _T.copy(dir).addScaledVector(n, -dir.dot(n)); if (c < .75 && _T.lengthSq() > 1e-6) { k = Math.min(1.8, .75 / Math.max(c, .1)); FR.pos.addScaledVector(_T.normalize(), size * .04 * (k - 1)); } }
+    if (k > 1.01 && _T.lengthSq() > 1e-6) { _T.normalize(); for (const v of [FR.cx, FR.cy]) v.addScaledVector(_T, (k - 1) * _T.dot(v)); }
+    return FR;
+  }
+  // one instance from a frame. cell = atlas offset [u, v]; tint = rgb; open = see aCell.z; tear = { id, u, v } (hide later)
+  function put(F, lift, cell, tint, open, tear, back) {
+    _q.copy(F.pos).addScaledVector(F.cz, back ? -lift : lift);
+    // back face: x axis negated (keeps a proper rotation, single-sided plane faces the back) and u flipped so the SAME cell point lands
+    // on the same spot of the card as on the front (one shared opening); a mirrored front flips u instead of the matrix
+    _m.makeBasis(back ? _T.copy(F.cx).negate() : F.cx, F.cy, back ? _n.copy(F.cz).negate() : F.cz).setPosition(_q);
+    im.setMatrixAt(idx, _m); cellAttr.setXYZ(idx, cell[0] + ((back ? !F.mir : F.mir) ? 2 : 0), cell[1], open || 0); im.setColorAt(idx, _c.setRGB(tint[0], tint[1], tint[2]));
+    base[idx] = _m.clone(); born[idx] = 1; tearOf[idx] = tear || null;
     idx = (idx + 1) % R.max; count = Math.min(R.max, count + 1);
+  }
+  const cellOf = c => (HOLE.cells && HOLE.cells[c]) || { coreR: c < 8 ? .115 : .145, coreMax: c < 8 ? .16 : .24, core: null };
+  function add(p, n, kind, scale = 1, obj = null, weapon = '', dir = null) {
+    if (!im) init();
+    if (kind === 'card' || kind === 'paper' || kind === 'through') {   // torn star hole (ref1); sniper = a small clean punch
+      const clean = kind === 'through', h = hash(p.x, p.y, p.z, 11), h2 = hash(p.x, p.y, p.z, 29), c = clean ? HOLE.star + ((h2 * 2) | 0) : (h2 * HOLE.star) | 0;
+      const s = surfAt(p, n), tint = s ? tintOf([s[4], s[5], s[6]]) : tintFor(obj), thin = s ? s[7] : 0;
+      const sz = (clean ? HOLE.clean : HOLE.size * (HOLE.gun[weapon] || 1)) * scale * (.85 + h * .3) * (thin ? .8 : 1);
+      const F = frame(p, n, dir, h, sz);
+      // thin team paper: an exit-style tear whose opening glows (light through the sheet); thick card: the brown recess
+      if (thin) put(F, .006, [c * .125, HOLE.rowV.entry], tint, -cellOf(8 + c).coreMax * 1.02, null);
+      else put(F, .006, [c * .125, HOLE.rowV.solid], tint, 0, null);
+    } else {
+      const k = CELLS[kind] ?? 0, h = hash(p.x, p.y, p.z, k);
+      o.position.copy(p).addScaledVector(n, kind === 'blast' ? .02 : .006); o.lookAt(o.position.x + n.x, o.position.y + n.y, o.position.z + n.z); o.rotateZ(h * 6.283);
+      const sz = SIZE[kind] * scale * (.85 + h * .3); o.scale.set(sz, sz * (kind === 'slash' ? .35 : 1), sz); o.updateMatrix();
+      im.setMatrixAt(idx, o.matrix); cellAttr.setXYZ(idx, k * .125, HOLE.rowV.proc, 0); im.setColorAt(idx, _c.setRGB(1, 1, 1)); base[idx] = o.matrix.clone(); born[idx] = 1; tearOf[idx] = null;
+      idx = (idx + 1) % R.max; count = Math.min(R.max, count + 1);
+    }
+    finish();
+  }
+  /* a real hole torn THROUGH thin card (62-tearing.js). Entry face (the shooter's side) = petals pushed IN, back face = exit petals pushed
+     OUT; both cells share one star opening, cut see-through. Sized so the opening's mean radius = r. stretchAxis / stretchK: a merged
+     slit (torn along the line between two hits). Returns { pos, cx, cy, core } so the card's own mask cuts the SAME star. */
+  function tearHole(p, n, t, r, mat, weapon, tear, dir, stretchAxis, stretchK) {
+    if (!im) init();
+    const h = hash(p.x, p.y, p.z, 13), h2 = hash(p.x, p.y, p.z, 31), clean = weapon === 'sniper' || weapon === 'obelisk';
+    const c = clean ? HOLE.star + ((h2 * 2) | 0) : (h2 * HOLE.star) | 0, cl = cellOf(8 + c), sf_ = surfAt(p, n), tint = sf_ ? tintOf([sf_[4], sf_[5], sf_[6]]) : tintFor(mat);
+    const F = frame(p, n, stretchAxis ? null : dir, h, r / cl.coreR, stretchAxis, stretchK), cut = cl.coreMax * 1.02;
+    put(F, .006, [c * .125, HOLE.rowV.entry], tint, cut, tear);
+    const front = { pos: F.pos.clone(), cx: F.cx.clone().multiplyScalar(F.mir ? -1 : 1), cy: F.cy.clone(), core: cl.core };   // cell -> card map (mirror included)
+    F.pos.addScaledVector(n, -t); put(F, .006, [c * .125, HOLE.rowV.exit], tint, cut, tear, true);
+    finish(); return front;
+  }
+  // hide the marks of a tearable panel where the card is gone (an opened flap, a cut-out piece). gone(u, v) -> bool
+  function hideTear(id, gone) {
+    if (!im) return 0; let k = 0;
+    for (let i = 0; i < R.max; i++) { const q = tearOf[i]; if (!q || q.id !== id || !gone(q.u, q.v)) continue; o.position.set(0, -50, 0); o.scale.setScalar(0); o.updateMatrix(); im.setMatrixAt(i, o.matrix); base[i] = null; tearOf[i] = null; k++; }
+    if (k) im.instanceMatrix.needsUpdate = true; return k;
+  }
+  function finish() {
     // the R.fade oldest shrink (they are next to be reused)
-    if (count >= R.max) for (let j = 0; j < R.fade; j++) { const q = (idx + j) % R.max; if (!base[q]) continue; const s = .25 + .75 * j / R.fade; base[q].decompose(o.position, o.quaternion, o.scale); o.scale.multiplyScalar(s); o.updateMatrix(); im.setMatrixAt(q, o.matrix); }
-    im.instanceMatrix.needsUpdate = true; cellAttr.needsUpdate = true;
+    if (count >= R.max) for (let j = 0; j < R.fade; j++) { const q = (idx + j) % R.max; if (!base[q]) continue; const s = .25 + .75 * j / R.fade; _m.copy(base[q]).multiply(_s.makeScale(s, s, s)); im.setMatrixAt(q, _m); }
+    im.instanceMatrix.needsUpdate = true; cellAttr.needsUpdate = true; im.instanceColor.needsUpdate = true;
     PAPER_MARKS.stats.added++;
   }
-  // a bullet / pellet / blade hit on a world object (not a tearable panel)
-  function hit(obj, p, n, weapon) { add(p, n, kindFor(obj, weapon), weapon === 'breacher' ? .8 : 1); }
-  function clear() { if (!im) return; o.position.set(0, -50, 0); o.scale.setScalar(0); o.updateMatrix(); for (let i = 0; i < R.max; i++) { im.setMatrixAt(i, o.matrix); base[i] = null; } idx = 0; count = 0; im.instanceMatrix.needsUpdate = true; }
-  return { R, init, add, hit, kindFor, clear, stats: { added: 0 }, get count() { return count; } };
+  // a bullet / pellet / blade hit on a world object (not a tearable panel). Shotgun pellets: HOLE.gun.breacher (was the x0.8 rule)
+  function hit(obj, p, n, weapon, dir) { const k = kindFor(obj, weapon); add(p, n, k, weapon === 'breacher' && k !== 'card' && k !== 'paper' ? .8 : 1, obj, weapon, dir); }
+  function clear() { try { surfBuild(); } catch (e) { console.warn('marks surf', e); } if (!im) return; o.position.set(0, -50, 0); o.scale.setScalar(0); o.updateMatrix(); for (let i = 0; i < R.max; i++) { im.setMatrixAt(i, o.matrix); base[i] = null; tearOf[i] = null; } idx = 0; count = 0; im.instanceMatrix.needsUpdate = true; }
+  return { R, HOLE, init, add, hit, tearHole, hideTear, kindFor, tintFor, surfAt, surfBuild, clear, stats: { added: 0, hitsLoaded: 0, surfMs: 0, surfCells: 0 }, get count() { return count; } };
 })();
 /* ================= audio (Foldiers: paper + cardboard sound set, 2026-11-12) ================= */
 // Every sound is an original paper/cardboard recipe (tools/audio/recipes.js), rendered offline at consistent loudness into ONE sprite
@@ -3328,8 +3940,8 @@ function initAudio() {
     try { const w = c.createPanner(); w.panningModel = 'HRTF'; AU.hrtfWarm = w; } catch (e) {}
     // a small warm room (a toy town on a desk): short diffuse reverb + one soft slap off the far desk
     const ir = (dur, decay) => { const len = c.sampleRate * dur, b = c.createBuffer(2, len, c.sampleRate); for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); let lp = 0; for (let i = 0; i < len; i++) { lp += .35 * ((Math.random() * 2 - 1) - lp); d[i] = lp * 1.6 * Math.pow(1 - i / len, decay); } } return b; };
-    AU.verb = c.createConvolver(); AU.verb.buffer = ir(1.4, 3.2); const vg = c.createGain(); vg.gain.value = .26; AU.verb.connect(vg); vg.connect(AU.master);
-    AU.echo = c.createDelay(1); AU.echo.delayTime.value = .21; const fb = c.createGain(); fb.gain.value = .22; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1200;
+    AU.verb = c.createConvolver(); AU.verb.buffer = ir(.6, 4); const vg = c.createGain(); vg.gain.value = .22; AU.verb.connect(vg); vg.connect(AU.master);
+    AU.echo = c.createDelay(1); AU.echo.delayTime.value = .13; const fb = c.createGain(); fb.gain.value = .12; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1200;
     AU.echo.connect(lp); lp.connect(fb); fb.connect(AU.echo); const eo = c.createGain(); eo.gain.value = .16; lp.connect(eo); eo.connect(AU.master);
     AU.noise = c.createBuffer(1, c.sampleRate * 2, c.sampleRate); { const d = AU.noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
     // room tone of a quiet room with a desk: very soft, warm, slowly breathing (no wind, no machine hum)
@@ -3514,7 +4126,7 @@ const sfx = {
   slide() { psnd('crouch', { vol: 1.4, rate: .8 }); },
   nadeThrow(pos) { const me = nearMe(pos, 1.6); psnd('plane_throw', me ? {} : { pos, hrtf: true, occl: true, ref: 3 }); },
   nadeBounce(pos) { if (!voice('misc', pos)) return; psnd('imp_card_thick', { pos, hrtf: true, occl: true, ref: 3, vol: .7, rate: 1.15 }); },   // (a dropped gun bouncing on card)
-  explode(pos) { psnd('plane_pop', { pos, ref: 8, roll: 1, verb: .35, echo: .2 }); if (pos) psnd('debris', { pos, ref: 4, delay: .7, vol: .8 }); },
+  explode(pos) { psnd('plane_pop', { pos, ref: 8, roll: 1, verb: .2, echo: .08 }); if (pos) psnd('debris', { pos, ref: 4, delay: .7, vol: .8 }); },
   overdrive() { psnd('streak', { v: 2 }); },
   overdriveReady() { psnd('streak', { v: 0 }); },
   death() { psnd('death_me'); },
@@ -3560,10 +4172,10 @@ const GSND = {};
 function gsBuild(dur, fn) {   // (add-ons: a silent buffer of that length; the paper bank fills GSND for every listed voice)
   const c = AU.ctx; return c.createBuffer(1, Math.max(1, Math.floor(c.sampleRate * Math.min(dur || .1, 2))), c.sampleRate);
 }
-const GV = (id, far, o = {}) => Object.assign({ id, far, dur: .5, verb: .12, echo: .06, vol: 1, fn: () => {} }, o);
+const GV = (id, far, o = {}) => Object.assign({ id, far, dur: .5, verb: .06, echo: .03, vol: 1, fn: () => {} }, o);
 const GUN_VOICE = {
   shot: GV('gun_rifle', 'gun_rifle_far'), smg: GV('gun_smg', 'gun_smg_far', { vol: .9 }), shotgun: GV('gun_shotgun', 'gun_shotgun_far', { pump: true }),
-  sniper: GV('gun_sniper', 'gun_sniper_far', { verb: .2, echo: .15 }), obelisk: GV('gun_sniper', 'gun_sniper_far', { verb: .2, echo: .15 }), rail: GV('gun_sniper', 'gun_sniper_far'),
+  sniper: GV('gun_sniper', 'gun_sniper_far', { verb: .08, echo: .04 }), obelisk: GV('gun_sniper', 'gun_sniper_far', { verb: .08, echo: .04 }), rail: GV('gun_sniper', 'gun_sniper_far'),
   pistol: GV('gun_smg', 'gun_smg_far'), burst: GV('gun_rifle', 'gun_rifle_far'), minigun: GV('gun_smg', 'gun_smg_far', { vol: .7 }), judge: GV('gun_shotgun', 'gun_shotgun_far'),
   launch: GV('plane_throw', null), crossbow: GV('boom_throw', null), arc: GV('gun_smg', 'gun_smg_far'), disc: GV('boom_throw', null), seeker: GV('plane_throw', null),
   cryo: GV('gun_rifle', 'gun_rifle_far'), flame: GV('shred_wall', null), voidfire: GV('gun_sniper', 'gun_sniper_far'),
@@ -3573,7 +4185,7 @@ const PAPER_VOICE = { boomThrow: 'boom_throw', boomWhirr: 'boom_whirr', boomCatc
 function gunId(k) { return PAPER_VOICE[k] || (GUN_VOICE[k] && GUN_VOICE[k].id) || null; }
 function gunVoice(name, pos, vol = 1, delay = 0) {
   const v = GUN_VOICE[name] || {}, id = gunId(name); if (!AU.ctx || !id || !PSND.has(id)) return false;
-  const gv = v.id ? v : { verb: .1, echo: 0, vol: 1 };
+  const gv = v.id ? v : { verb: .05, echo: 0, vol: 1 };
   if (!pos) {   // your own gun: 2D, the room is in the sound
     psnd(id, { vol: (gv.vol || 1) * vol, verb: gv.verb, echo: gv.echo, delay, jit: .03 });
     if (v.pump) psnd('gun_pump', { delay: delay + .36, vol: .9 });
@@ -3581,7 +4193,7 @@ function gunVoice(name, pos, vol = 1, delay = 0) {
   // someone else's: placed in 3D (HRTF, occluded, fresh panner per sound). Near body and far tail cross-fade with distance (12-45 m),
   // and the air takes the top off far shots.
   const m = SOUND_MIX.categories.shot, d = camera.position.distanceTo(pos), farK = v.far ? clamp((d - 12) / 33, 0, 1) : 0, air = clamp(16000 - d * 220, 1800, 16000);
-  const o = { pos, hrtf: true, occl: true, ref: m.ref, roll: m.roll, verb: (gv.verb || .1) * .7, echo: gv.echo || 0, delay, lp: air, jit: .03 };
+  const o = { pos, hrtf: true, occl: true, ref: m.ref, roll: m.roll, verb: (gv.verb || .05) * .7, echo: gv.echo || 0, delay, lp: air, jit: .03 };
   if (farK < 1) psnd(id, Object.assign({}, o, { vol: (gv.vol || 1) * vol * Math.sqrt(1 - farK) }));
   if (farK > 0) psnd(v.far, Object.assign({}, o, { vol: (gv.vol || 1) * vol * Math.sqrt(farK) * 1.1 }));
   if (v.pump && d < 30) psnd('gun_pump', { pos, hrtf: true, occl: true, ref: 3, roll: 1.2, delay: delay + .36, vol: .8 });
@@ -4193,6 +4805,10 @@ const PVM = (() => {
         const cx = r.left + r.width / 2 - (cv.left + cv.width / 2), cy = r.top + r.height / 2 - (cv.top + cv.height / 2), vis = +getComputedStyle(W().scope ? document.getElementById('scope') : el).opacity;
         if (W().scope || hasDot(W())) ok(id + ': aim dot visible at the exact screen centre while aiming' + (W().scope ? ' (scope dot + pencil crosshair)' : ' (reflex optic)'), vis > .95 && Math.abs(cx) <= 1 && Math.abs(cy) <= 1, 'opacity ' + vis + ', off centre ' + cx.toFixed(1) + ', ' + cy.toFixed(1) + ' px');
         else ok(id + ': iron/paper sights: NO aim dot while aiming (the sight itself is on centre)', vis === 0, 'dot opacity ' + vis); }
+      { // ONE aiming reference per gun (owner 2026-11-12, GUN_KIT.md SIGHTS): dot (reflex) XOR card tip (node 'tip', iron) XOR scope
+        const tip = vm.paper.getObjectByName('tip'), kind = W().scope ? 'scope' : hasDot(W()) ? 'dot' : 'tip', n = (W().scope ? 1 : 0) + (hasDot(W()) ? 1 : 0) + (tip ? 1 : 0);
+        let px = -1; if (tip) { vm.group.updateMatrixWorld(true); tip.getWorldPosition(v); v.project(gunCam); const cv = renderer.domElement.getBoundingClientRect(); px = Math.hypot(v.x * cv.width / 2, v.y * cv.height / 2); }
+        ok(id + ': exactly ONE aiming reference (' + kind + '), a tip sits on screen centre at ADS', n === 1 && (kind !== 'tip' || (!!tip && px <= 2)), 'refs ' + n + ', tip alignment error ' + (tip ? px.toFixed(1) + ' px' : 'n/a')); }
       adsHeld = false; await until(() => P.ads < .01, 2000); await wait(50);
       ok(id + ': aim dot gone at the hip (hip crosshair as before)', +getComputedStyle(document.getElementById('pvmDot')).opacity === 0 && getComputedStyle(document.getElementById('xh')).opacity === '1');
       // reload: the left hand follows grip_l to the mag / shell port and stays attached
@@ -4726,16 +5342,35 @@ function entEye(e, out) { if (e.isPlayer) return out.set(P.pos.x, P.pos.y + P.ca
 function entChest(e, out) { if (e.isPlayer) return out.set(P.pos.x, P.pos.y + P.camY - .4, P.pos.z); const p = e.root.position; return out.set(p.x, p.y + lerp(1.25, .85, e.crouch), p.z); }
 const entities = () => (state === 'play' || state === 'dead' || state === 'paused') ? [PLAYER_ENT, ...robots] : robots;
 let SPAWNS = [[-28, -28], [0, -29], [28, -28], [29, 0], [28, 28], [0, 29], [-28, 28], [-29, 0], [-21, -3], [21, 3], [-8, -19], [8, 19], [12, -14], [-12, 14], [-27, 9], [27, -9]];
+// Spawn rules (owner: "each team spawns in its own base, not everyone in the centre"):
+//  - SPAWN_RULES.minEnemy: never closer than this (m) to a living enemy; sight lines to enemies cost extra (lineOfSight)
+//  - team modes pass the team's base points; free-for-all passes SPAWNS (the farthest-from-everyone point wins)
+//  - a point must snap to a walkable cell within 1.5 m (nearestOk), otherwise it is skipped (never spawn inside geometry)
+const SPAWN_RULES = { minEnemy: 9, seeRange: 45, snap: 3 };
+const _spA = new THREE.Vector3(), _spB = new THREE.Vector3();
+function snapSpawn(x, z) {
+  const c = nearestOk(cellOf(x, z), SPAWN_RULES.snap); if (c < 0) return null;
+  return new THREE.Vector3(cellX(c), NAV.h[c], cellZ(c));
+}
+// pts = [[x,z],...]; isFoe(e) says who counts as an enemy (default: everybody else = free-for-all)
+function pickSafeSpawn(forEnt, pts, isFoe) {
+  const foes = entities().filter(e => e !== forEnt && entAlive(e) && (!isFoe || isFoe(e))), mates = entities().filter(e => e !== forEnt && entAlive(e) && isFoe && !isFoe(e));
+  const scored = [];
+  for (const [x, z] of pts) {
+    const v = snapSpawn(x, z); if (!v) continue;
+    let near = 99, seen = 0;
+    for (const e of foes) { const q = entPos(e), d = Math.hypot(q.x - v.x, q.z - v.z); near = Math.min(near, d); if (d < SPAWN_RULES.seeRange) { _spA.set(v.x, v.y + 1.5, v.z); entEye(e, _spB); try { if (lineOfSight(_spA, _spB)) seen++; } catch (er) {} } }
+    let mate = 99; for (const e of mates) { const q = entPos(e); mate = Math.min(mate, Math.hypot(q.x - v.x, q.z - v.z)); }
+    scored.push({ v, s: Math.min(near, 40) - seen * 12 - (near < SPAWN_RULES.minEnemy ? 200 : 0) - (mate < 1.3 ? 30 : 0) + Math.random() * 5 });
+  }
+  if (!scored.length) return null;
+  scored.sort((a, b) => b.s - a.s);
+  return scored[Math.floor(Math.random() * Math.min(2, scored.length))].v;
+}
 function pickSpawn(forEnt) {
-  const ents = entities().filter(e => e !== forEnt && entAlive(e));
-  const scored = SPAWNS.map(([x, z]) => {
-    let near = 99; for (const e of ents) { const p = entPos(e); near = Math.min(near, Math.hypot(p.x - x, p.z - z)); }
-    return { x, z, s: near + Math.random() * 6 };
-  }).sort((a, b) => b.s - a.s);
-  // 1v1: a random spawn that is far from the opponent (never right next to them)
-  const far = NET.on ? scored.filter(q => q.s - 6 > 20) : [];
-  const s = far.length ? far[Math.floor(Math.random() * far.length)] : scored[Math.floor(Math.random() * Math.min(3, scored.length))];
-  const c = nearestOk(cellOf(s.x, s.z)); return new THREE.Vector3(cellX(c), NAV.h[c], cellZ(c));
+  const v = pickSafeSpawn(forEnt, SPAWNS);
+  if (v) return v;
+  const c = nearestOk(cellOf(0, 0), 40); return new THREE.Vector3(cellX(c), NAV.h[c], cellZ(c));
 }
 // health pads and the overdrive core: fixed map pickups that respawn, worth fighting over
 const PADS = [];
@@ -4928,6 +5563,9 @@ function kfPush(d) {
 }
 function kfeedAdd(html) { const d = document.createElement('div'); d.className = 'kf'; d.innerHTML = html; kfPush(d); }
 function kfeedText(t) { const d = document.createElement('span'); d.className = 'sys'; d.textContent = t; kfeedAdd(d.outerHTML); }
+// "through the peephole" icon (a torn hole with an eye in it): drawn as an inline SVG mask, same size / colour rules as the atlas icons
+function kfPeepCss() { if (kfPeepCss.done) return; kfPeepCss.done = 1; const svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><path fill-rule='evenodd' d='M32 3l6 9 10-5 1 11 11 1-5 10 9 6-9 6 5 10-11 1-1 11-10-5-6 9-6-9-10 5-1-11-11-1 5-10-9-6 9-6-5-10 11-1 1-11 10 5zM12 32c5-8 12-12 20-12s15 4 20 12c-5 8-12 12-20 12s-15-4-20-12zm20-7a7 7 0 100 14 7 7 0 000-14z'/></svg>", u = 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")', st = document.createElement('style');
+  st.textContent = `#kfeed .ki-peep{width:var(--kh);color:#ffe08a;-webkit-mask-image:${u};mask-image:${u};-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-position:0 0;mask-position:0 0}`; document.head.appendChild(st); }
 function kfeed(killer, victim, weapon, crit, wb, ex) {
   ex = ex || {};
   const mineK = killer === PLAYER_ENT && victim !== PLAYER_ENT, mineD = victim === PLAYER_ENT;
@@ -4941,6 +5579,7 @@ function kfeed(killer, victim, weapon, crit, wb, ex) {
     d.append(name(killer), ico(wid, WEAPONS[weapon] ? WEAPONS[weapon].name : ''));
     if (ex.ns) { d.append(ico('noscope', 'No-scope')); flags.push('no-scope'); }
     if (ex.smoke) { d.append(ico('smoke', 'Through smoke')); flags.push('through smoke'); }
+    if (ex.peep) { kfPeepCss(); d.append(ico('peep', 'Through the peephole')); flags.push('peephole'); }
     if (wb) { d.append(ico('wall', 'Wallbang')); flags.push('wallbang'); }
     if (crit && weapon !== 'knife') { d.append(ico('head', 'Headshot')); flags.push('headshot'); }
     d.append(name(victim));
@@ -5211,7 +5850,7 @@ function updateRockets(dt) {
 const MEDALS = {
   headshot: ['Headshot', '#ffd27a'], double: ['Double kill', '#ff9a3c'], triple: ['Triple kill', '#ff7a2c'], multi: ['Multi kill', '#ff5a2c'], rampage: ['Rampage', '#ff3a2c'],
   longshot: ['Longshot', '#7fe7ff'], pointblank: ['Point blank', '#ffb066'], backstab: ['Backstab', '#c792ff'], explosive: ['Plasma kill', '#5ad1ff'],
-  collateral: ['Collateral', '#9dff7a'], revenge: ['Revenge', '#ff6a8a'], firstblood: ['First blood', '#ff3a3a'], shutdown: ['Shutdown', '#ffe14a'], noscope: ['No-scope', '#7affd8'], wallbang: ['Wallbang', '#ffb066'], airborne: ['Mid-air', '#8ab4ff'],
+  collateral: ['Collateral', '#9dff7a'], revenge: ['Revenge', '#ff6a8a'], firstblood: ['First blood', '#ff3a3a'], shutdown: ['Shutdown', '#ffe14a'], noscope: ['No-scope', '#7affd8'], wallbang: ['Wallbang', '#ffb066'], peephole: ['Peephole', '#ffe08a'], airborne: ['Mid-air', '#8ab4ff'],
 };
 const MEDAL_SVG = c => `<svg viewBox="0 0 40 40" width="34" height="34"><path d="M20 2l15 8.7v18.6L20 38 5 29.3V10.7z" fill="none" stroke="${c}" stroke-width="2.4"/><path d="M20 9l9 5.2v11.6L20 31l-9-5.2V14.2z" fill="${c}" opacity=".85"/></svg>`;
 let badgeT = 0, medalQ = [];
@@ -5378,7 +6017,7 @@ function fireProj() {
   if (P.ammo <= 0) { dryFire(); return; }
   P.ammo--; G.fired++; P.fireCd = 60 / w.rpm; P.shield = 0; noise(camera.position, 30, PLAYER_ENT);
   camera.getWorldDirection(shotDir); camRight.set(1, 0, 0).applyQuaternion(camera.quaternion); camUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
-  const spread = lerp(w.hip, w.ads, P.ads), a = Math.random() * 6.283, m = Math.sqrt(Math.random()) * spread;
+  const spread = lerp(w.hip, w.ads, P.ads), _sp = SPREAD.sample(PLAYER_ENT, SPREAD.begin(PLAYER_ENT), 0), a = _sp.a, m = _sp.m * spread;
   const d = shotDir.clone().addScaledVector(camRight, Math.cos(a) * m).addScaledVector(camUp, Math.sin(a) * m).normalize();
   const from = camera.position.clone().addScaledVector(d, .7).addScaledVector(camRight, .1 * (1 - P.ads)).addScaledVector(camUp, -.07);
   if (w.proj === 'bolt') { const v = d.clone().multiplyScalar(125); spawnProj('bolt', PLAYER_ENT, from, v, false); netProj('bolt', from, v); }
@@ -5832,7 +6471,7 @@ const PEN_LOSS = { sniper: .55, obelisk: .4, helix: .45, titan: 1.2, triad: 1.1,
 // bullet holes on both faces of a wall the shot went through + a spark burst where it comes out
 function penMarks(h, dir, th) {
   const n = h.face ? _v2.copy(h.face.normal).transformDirection(h.object.matrixWorld) : _v2.set(0, 1, 0);
-  const ex = _pv.copy(h.point).addScaledVector(dir, th); PAPER_MARKS.hit(h.object, h.point, n, P.weapon); PAPER_MARKS.hit(h.object, ex.clone(), dir.clone(), P.weapon);   // entry + exit marks
+  const ex = _pv.copy(h.point).addScaledVector(dir, th); PAPER_MARKS.hit(h.object, h.point, n, P.weapon, dir); PAPER_MARKS.hit(h.object, ex.clone(), dir.clone(), P.weapon);   // entry + exit marks
   PFX.chips(ex, dir, h.object.material && h.object.material.color, h.object.material && h.object.material.userData && h.object.material.userData.paper, 6);
 }
 function fireShot() {
@@ -5853,8 +6492,9 @@ function fireShot() {
   muzzleW.set(.13 * (1 - ads), -.12 * (1 - ads) - .03 * ads, -.75).applyMatrix4(camera.matrixWorld);
   if (targetsDirty) rebuildTargets();
   let end = _v3.copy(camera.position).addScaledVector(shotDir, 150);
+  const _sseq = SPREAD.begin(PLAYER_ENT), _sp0 = SPREAD.sample(PLAYER_ENT, _sseq, 0);   // seeded spread: same (seed, shooter, shot, pellet) = same shot on every client
   if (w.projectile) {
-    const a = Math.random() * 6.283, m = Math.sqrt(Math.random()) * spread;
+    const a = _sp0.a, m = _sp0.m * spread;
     const d = base.clone().addScaledVector(camRight, Math.cos(a) * m).addScaledVector(camUp, Math.sin(a) * m).normalize();
     const from = camera.position.clone().addScaledVector(d, .9).addScaledVector(camRight, .12 * (1 - ads)).addScaledVector(camUp, -.08);
     launchRocket(PLAYER_ENT, from, d); netNade(from, d.clone().multiplyScalar(44), 1);
@@ -5863,10 +6503,11 @@ function fireShot() {
     P.collat = 0;
     for (let pi = 0; pi < pellets; pi++) {
       const cone = pellets > 1 ? w.spreadP * (1 - scoped * .25) : spread;
-      const a = Math.random() * 6.283, m = Math.sqrt(Math.random()) * cone;
+      const _sp = SPREAD.sample(PLAYER_ENT, _sseq, pi), a = _sp.a, m = _sp.m * cone;
       shotDir.copy(base).addScaledVector(camRight, Math.cos(a) * m).addScaledVector(camUp, Math.sin(a) * m).normalize();
       ray.set(camera.position, shotDir); ray.far = 250;
-      const hits = shotHits(targets, false);
+      TEAR.passed.length = 0; const hits = shotHits(targets, false), passD = TEAR.passed.length ? Math.min(...TEAR.passed) : Infinity;   // passD: the ray went through an EXISTING opening at this distance
+      let tl = 0; const tmax = TEAR.maxLayers(id), crater = pi === 0;   // card panels: x TEAR.passK per layer (thin card = thinK), a hole per layer, stops after maxLayers (HOLES_SYSTEM B2 + progressive wear)
       PLANES.shot(camera.position, shotDir, hits.length ? hits[0].distance : 150, w.oneShot ? 100 : w.dmg, PLAYER_ENT);
       end = _v3.copy(camera.position).addScaledVector(shotDir, 150);
       let wallHit = null;
@@ -5875,23 +6516,23 @@ function fireShot() {
         for (const h of hits) {
           if (h.distance < skipTo) continue;
           const r = h.object.userData.robot;
-          if (!r && h.object.userData.tear !== undefined) { TEAR.hit(h.object, h.point, shotDir, id); mult *= TEAR.R.throughK; through++; continue; }
+          if (!r && h.object.userData.tear !== undefined) { const tk = TEAR.passK(h.object, id, TEAR.hit(h.object, h.point, shotDir, id, { crater })); if (tk < 0 || tl >= tmax) { end.copy(h.point); break; } tl++; mult *= tk; through++; continue; }
           if (!r) { const pn = penHit(h, shotDir), pm = pn ? penCalc(pw, pn.mat, pn.t) : -1; end.copy(h.point); wallHit = h; if (pm < 0) break; mult *= pm; if (mult < PEN.minMult) break; through++; skipTo = h.distance + pn.t + .01; penMarks(h, shotDir, pn.t); wallHit = null; continue; }
-          if (through) { r.wbT = G.time; r.wbBy = PLAYER_ENT; }
+          if (through) { r.wbT = G.time; r.wbBy = PLAYER_ENT; } if (passD < h.distance) { r.peepT = G.time; r.peepBy = PLAYER_ENT; }
           if (seen.has(r) || r.dead) continue; seen.add(r); P.collat = seen.size;
           const zone = h.object.userData.zone, crit = zone === 'head';
-          G.hits++; damageBot(r, w.oneShot && mult > .5 ? Math.max(r.hp + 1, 101) : (w.oneShot ? 100 : w.dmg) * sm * mult * (crit ? w.head : zone === 'limb' ? (w.armK && h.object.userData.part === 'arm' ? w.armK : .75) : 1) * (od ? 1.25 : 1), crit, h.point, shotDir.clone(), zone, PLAYER_ENT, id); if (w.status) applyStatus(r, w.status, PLAYER_ENT);
+          G.hits++; damageBot(r, w.oneShot && mult > .999 ? Math.max(r.hp + 1, 101) : w.oneShot && tl === through ? TEAR.R.oneShotDmg * mult * (crit ? 2 : 1) : w.oneShot && mult > .5 ? Math.max(r.hp + 1, 101) : (w.oneShot ? 100 : w.dmg) * sm * mult * (crit ? w.head : zone === 'limb' ? (w.armK && h.object.userData.part === 'arm' ? w.armK : .75) : 1) * (od ? 1.25 : 1), crit, h.point, shotDir.clone(), zone, PLAYER_ENT, id); if (w.status) applyStatus(r, w.status, PLAYER_ENT);
         }
       } else if (hits.length) {
         let mult = 1, through = 0, skipTo = -1;
         for (const h of hits) {
           if (h.distance < skipTo) continue;
-          if (h.object.userData.tear !== undefined) { TEAR.hit(h.object, h.point, shotDir, id); mult *= TEAR.R.throughK; through++; continue; }   // thin cardboard: hole + the bullet goes on (60 %)
+          if (h.object.userData.tear !== undefined) { const tk = TEAR.passK(h.object, id, TEAR.hit(h.object, h.point, shotDir, id, { crater })); if (tk < 0 || tl >= tmax) { end.copy(h.point); break; } tl++; mult *= tk; through++; continue; }   // card panel: hole (or wear) + the bullet goes on x thinK (thick card: only once breached)
           end.copy(h.point); const r = h.object.userData.robot;
           if (r) { if (r.dead) continue;
             const zone = h.object.userData.zone, crit = zone === 'head';
             if (pi === 0 || !seen.has(r)) G.hits++; seen.add(r);
-            if (through) { r.wbT = G.time; r.wbBy = PLAYER_ENT; }
+            if (through) { r.wbT = G.time; r.wbBy = PLAYER_ENT; } if (passD < h.distance) { r.peepT = G.time; r.peepBy = PLAYER_ENT; }
             damageBot(r, w.dmg * sm * mult * (crit ? w.head : zone === 'limb' ? .75 : 1) * falloffK(w, h.distance) * (od ? 1.25 : 1), crit, h.point, shotDir.clone(), zone, PLAYER_ENT, id); if (w.status) applyStatus(r, w.status, PLAYER_ENT);
             wallHit = null; break; }
           const pn = penHit(h, shotDir), pm = pn ? penCalc(pw, pn.mat, pn.t) : -1;
@@ -5900,8 +6541,8 @@ function fireShot() {
           through++; skipTo = h.distance + pn.t + .01; penMarks(h, shotDir, pn.t); wallHit = null;   // holes on both faces + exit sparks
         }
       }
-      if (wallHit && wallHit.object.userData.tear !== undefined) { TEAR.hit(wallHit.object, wallHit.point, shotDir, id); wallHit = null; }
-      if (wallHit) { const hn = wallHit.face ? _v2.copy(wallHit.face.normal).transformDirection(wallHit.object.matrixWorld) : _v2.set(0, 1, 0); PAPER_MARKS.hit(wallHit.object, wallHit.point, hn, id); }   // persistent paper shot mark (every pellet)
+      if (wallHit && wallHit.object.userData.tear !== undefined) { TEAR.hit(wallHit.object, wallHit.point, shotDir, id, { crater }); wallHit = null; }
+      if (wallHit) { const hn = wallHit.face ? _v2.copy(wallHit.face.normal).transformDirection(wallHit.object.matrixWorld) : _v2.set(0, 1, 0); PAPER_MARKS.hit(wallHit.object, wallHit.point, hn, id, shotDir); }   // persistent paper shot mark (every pellet)
       if (wallHit && (pellets === 1 || pi % 3 === 0)) {
         const h = wallHit, n = h.face ? _v2.copy(h.face.normal).transformDirection(h.object.matrixWorld) : _v2.set(0, 1, 0);
         const metal = h.object.userData.surface === 'metal', k = w.oneShot || w.beam ? 2.5 : pellets > 1 ? .5 : 1;
@@ -5993,208 +6634,373 @@ function killEntity(v, k, weapon, crit, dir) {
   if (k && k !== v) { k.kills++; k.streak++; if (k.isPlayer) G.bestStreak = Math.max(G.bestStreak || 0, k.streak); k.score += 100 + (crit ? 50 : 0); if (crit) k.heads++; announceStreak(k); }
   else v.score = Math.max(0, v.score - 50);
   const wb = !!(v.wbT && G.time - v.wbT < .05 && v.wbBy === k); v.wbT = 0;
-  kfeed(k, v, weapon, crit, wb, { ns: k === PLAYER_ENT && kfNoScope(weapon), smoke: k && k !== v && kfSmoke(k, v) });
+  const peep = !!(v.peepT && G.time - v.peepT < .05 && v.peepBy === k); v.peepT = 0;   // the killing shot went through an existing hole / cut-out
+  kfeed(k, v, weapon, crit, wb, { ns: k === PLAYER_ENT && kfNoScope(weapon), smoke: k && k !== v && kfSmoke(k, v), peep });
   v.deathW = weapon; if (k && k !== v && v.root) v.killDist = entPos(k).distanceTo(v.root.position);
   if (v.isPlayer) playerDie(k, weapon, crit); else botDie(v, dir || _v1.set(0, 0, 1), crit, k === PLAYER_ENT);
-  if (k === PLAYER_ENT && k !== v) playerKillFx(v, crit, weapon, dir, { streak: vStreak, first, wb });
+  if (k === PLAYER_ENT && k !== v) playerKillFx(v, crit, weapon, dir, { streak: vStreak, first, wb, peep });
   if (v === PLAYER_ENT) NET.killWB = wb;
   if (v === PLAYER_ENT && k && k !== v) P.lastKiller = k;
   if (k && k.kills >= KILL_LIMIT) setTimeout(() => endMatch(k), 1200);
   updateHud();
 }
-/* ================= TEARING THE MAP (signature mechanic 1; rules in docs/MECHANICS.md "Tearing") ================= */
-// Thin cardboard panels keep every bullet hole for the match. Holes close together merge into a ragged slit. Shots along a
-// panel's crease (the dashed score line around its flap) tear the flap open: it folds away on its hinge. Openings are REAL:
-// each panel's raycast skips hits that land in an opening, so bullets, the player's view and the bots' lineOfSight all pass.
-// Deterministic: the state of a panel is a pure function of its ordered list of hits (u, v, side); the mask texture and
-// the raycast both read that state. Bounded: MAX_HOLES per panel (further hits grow the nearest hole), so cost stays flat.
+/* ================= TEARING THE MAP (signature mechanic 1; rules in docs/HOLES_SYSTEM.md + docs/MECHANICS.md "Tearing") ================= */
+// Thin cardboard panels (walls AND floors) keep every bullet hole for the match. The STATE of a panel lives in the pure shared core
+// (HOLES = src/shared/holes-core.js, mm integers, one event per hit / knife cut): holes, slits, the flap, knife cuts, collapse.
+// Everything else here is a view of that state: the mask atlas (what you see), the raycast (what bullets / eyes / bots / planes
+// pass: HOLES.openAt, the same test for all = "see == shoot"), the colliders (split round big openings, removed on collapse) and
+// the paper sheets (flaps, cut-out pieces, collapsed panels).
+// Rendering (HOLES_SYSTEM C4): ONE mask atlas page (2048^2 RG8, 64 px/m) shared by every panel; panels merged into one mesh per
+// material (<= 4 draw calls for all panels); a hit redraws only its panel's small canvas and uploads only that rectangle
+// (copyTextureToTexture, max 8 per frame); flaps / cut-outs / collapsed sheets come from a pool of 24 sheets that use the map's
+// own (already compiled) materials. No shader is compiled mid-match. Each panel keeps an invisible box proxy for raycasts.
 const TEAR = (() => {
-  const R = { holeR: .09, holeVis: 1.0, rimK: 1.5, rayK: .9, shotgunBig: .2, throughK: .6, cutR: .022, cutMax: 1.8, cutSpeed: .7, mergeD: .36, slitK: .75, maxHoles: 48, growK: 1.08, growMax: .32, crSeg: .2, crReach: .2, crNeed: .7, ppm: 40, flapTime: .45, flapAngle: 1.9 };
-  const panels = [];
-  const _inv = new THREE.Matrix4(), _lp = new THREE.Vector3(), _tmp = [];
-  // a tiny seeded random per (panel, hole): the ragged outline of a hole never depends on Math.random
-  const hrand = (a, b) => { let s = (a * 73856093 ^ b * 19349663) >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; };
+  const R = { holeVis: 1.0, rimK: 1.5, cutR: .022, ppm: 64, atlas: 2048, pad: 2, uploads: 8, pool: 24, flapTime: .45, flapAngle: 1.9, kflapRest: 1.45, fallLife: 4, groundY: 0,
+    oneShotDmg: 110 };   // a one-shot sniper's body damage once a wall took some of it (HOLES_SYSTEM A5: 110 x .92 = 101 kills, x .85 = 93 does not)
+  const panels = [], H = HOLES, K = H.K;
+  const _inv = new THREE.Matrix4(), _lp = new THREE.Vector3(), _tmp = [], _q = new THREE.Quaternion(), _v = new THREE.Vector3(), _ax = new THREE.Vector3();
+  const hrand = H.hrand;
+  // game weapon id -> holes table (HOLES.GUNS = data/penetration.json "holes")
+  const GMAP = { sniper: 'sniper', obelisk: 'sniper', helix: 'sniper', carbine: 'carbine', rifle: 'carbine', titan: 'carbine', triad: 'carbine', void: 'carbine', wasp: 'wasp', smg: 'wasp', pistol: 'pistol', judge: 'pistol',
+    breacher: 'breacher', shotgun: 'breacher', boomerang: 'boomerang' };
+  const gunKey = w => GMAP[w] || 'carbine';
+  const thinK = w => H.GUNS[gunKey(w)].thinK, maxLayers = w => H.GUNS[gunKey(w)].maxLayers;
+  // damage a bullet keeps after this panel's hit result (-1 = stopped here): thin card x thinK, thick card only once breached (progressive wear)
+  const passK = (mesh, w, res) => { const P_ = panels[mesh.userData.tear]; return P_ ? H.passK(P_.core, gunKey(w), res) : -1; };
+  const passed = [];   // panels a ray went THROUGH an opening of (raycast side effect; fireShot clears it): "through the peephole"
 
+  /* ---------- mask atlas pages + merged meshes ---------- */
+  const pages = [], groups = new Map(), upQ = new Set(); let dirtyMerge = false, flushQ = false;
+  const proxyMat = new THREE.MeshBasicMaterial({ visible: false });
+  function newPage() {
+    const S = R.atlas, gl2 = !renderer.capabilities || renderer.capabilities.isWebGL2 !== false;
+    const tex = new THREE.DataTexture(new Uint8Array(S * S * (gl2 ? 2 : 4)), S, S, gl2 ? THREE.RGFormat : THREE.RGBAFormat, THREE.UnsignedByteType);
+    tex.minFilter = tex.magFilter = THREE.LinearFilter; tex.generateMipmaps = false; tex.flipY = false; tex.unpackAlignment = 1; tex.needsUpdate = true;
+    const pg = { tex, x: 0, y: 0, rowH: 0, i: pages.length }; pages.push(pg); return pg;
+  }
+  function alloc(wp, hp) {   // shelf packing; a full page opens the next one (v1 map uses ~17 % of one page)
+    const S = R.atlas, w = wp + R.pad * 2, h = hp + R.pad * 2;
+    for (const pg of pages) { if (pg.x + w > S) { pg.x = 0; pg.y += pg.rowH; pg.rowH = 0; } if (pg.y + h <= S && pg.x + w <= S) { const r = { pg, x: pg.x + R.pad, y: pg.y + R.pad }; pg.x += w; pg.rowH = Math.max(pg.rowH, h); return r; } }
+    const pg = newPage(); return alloc(wp, hp);
+  }
   function holeHook(sh) {
     sh.uniforms.uHole = this.userData.uHole;
     sh.vertexShader = 'attribute vec2 huv;\nvarying vec2 vHuv;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vHuv = huv;');
     sh.fragmentShader = 'uniform sampler2D uHole;\nvarying vec2 vHuv;\n' + sh.fragmentShader.replace('void main() {', 'void main() {\n vec4 hm = texture2D(uHole, vHuv); if (hm.r > .5) discard;');
     // the torn rim: pale torn liner outside, dark corrugated flutes right at the cut (mask green channel = rim band)
     if (this.isMeshStandardMaterial) sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
-      { float g = hm.g; float fl = .5 + .5 * sin((vHuv.x * 3.0 + vHuv.y) * 520.0);
+      { float g = hm.g; float fl = .5 + .5 * sin((vHuv.x * 3.0 + vHuv.y) * 16640.0);
         vec3 core = vec3(.97, .95, .91) * (.88 + .12 * fl), lip = vec3(.18, .14, .1);
-        diffuseColor.rgb = mix(diffuseColor.rgb, core, smoothstep(.06, .3, g));
+        diffuseColor.rgb = mix(diffuseColor.rgb, core, smoothstep(.4, .55, g));
         diffuseColor.rgb = mix(diffuseColor.rgb, lip, smoothstep(.82, .97, g) * .8); }`);
     if (this.isMeshStandardMaterial) PAPER_EDGE_HOOK(sh);
   }
   function tearMaterials(base, holeTex) {
-    const m = base.clone(); m.onBeforeCompile = THREE.Material.prototype.onBeforeCompile; m.userData = Object.assign({}, base.userData, { uHole: { value: holeTex }, s9g: 1, gm: 999 });   // s9g/gm: the graphics add-ons must not replace this shader hook (it cuts the holes)
-    m.onBeforeCompile = holeHook; m.customProgramCacheKey = () => 'tearHole3';
+    const m = base.clone(); m.userData = Object.assign({}, base.userData, { uHole: { value: holeTex }, s9g: 1, gm: 999 });   // s9g/gm: the graphics add-ons must not replace this shader hook (it cuts the holes)
+    m.lightMap = null; m.aoMap = null;   // the map's baked AO / light atlases are for the map's own UV2, not the panel's
+    m.onBeforeCompile = holeHook; m.customProgramCacheKey = () => 'tearHole4';
     const d = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking }); d.userData.uHole = m.userData.uHole;
-    d.onBeforeCompile = holeHook; d.customProgramCacheKey = () => 'tearHoleDepth1';
+    d.onBeforeCompile = holeHook; d.customProgramCacheKey = () => 'tearHoleDepth2';
     return [m, d];
   }
-  // geometry: a thin box in the panel's local XY plane (normal +Z), centred; huv = (u/w, v/h) on every face (both sides line up)
-  function panelGeo(w, h, t, tile) {
-    const g = new THREE.BoxGeometry(w, h, t), p = g.attributes.position, uv = g.attributes.uv, n = g.attributes.normal, huv = new Float32Array(p.count * 2);
+  // one panel's box in its local frame (normal +Z, centred), huv = its rectangle in the atlas page, tiled uv for the paper texture
+  function panelGeo(P_, forRender) {
+    const w = P_.w, h = P_.h, t = P_.t, tile = P_.mat.userData.tile, g = new THREE.BoxGeometry(w, h, t);
+    if (!forRender) return g;
+    const p = g.attributes.position, uv = g.attributes.uv, n = g.attributes.normal, huv = new Float32Array(p.count * 2), S = R.atlas, ppm = R.ppm;
     for (let i = 0; i < p.count; i++) {
-      const x = p.getX(i), y = p.getY(i); huv[i * 2] = (x + w / 2) / w; huv[i * 2 + 1] = (y + h / 2) / h;
+      const x = p.getX(i), y = p.getY(i); huv[i * 2] = (P_.rect.x + (x + w / 2) * ppm) / S; huv[i * 2 + 1] = (P_.rect.y + (y + h / 2) * ppm) / S;
       if (tile) { const nz = Math.abs(n.getZ(i)) > .5; uv.setXY(i, nz ? (x + w / 2) / tile : (p.getZ(i) + x + w / 2) / tile, (y + h / 2) / tile); }
     }
-    g.setAttribute('huv', new THREE.BufferAttribute(huv, 2)); g.setAttribute('uv2', uv);
+    g.setAttribute('huv', new THREE.BufferAttribute(huv, 2)); g.setAttribute('uv2', uv.clone());
     return g;
   }
+  function mergeGeos(list) {   // [{geo, matrix}] -> one non-indexed geometry (position, normal, uv, uv2, huv)
+    const names = ['position', 'normal', 'uv', 'uv2', 'huv'], parts = list.map(({ geo, matrix }) => { const g = geo.index ? geo.toNonIndexed() : geo; g.applyMatrix4(matrix); return g; });
+    const out = new THREE.BufferGeometry();
+    for (const nm of names) { const sz = parts[0].attributes[nm].itemSize, n = parts.reduce((s, g) => s + g.attributes[nm].count, 0), arr = new Float32Array(n * sz); let o = 0;
+      for (const g of parts) { arr.set(g.attributes[nm].array, o); o += g.attributes[nm].array.length; } out.setAttribute(nm, new THREE.BufferAttribute(arr, sz)); }
+    for (const g of parts) g.dispose(); out.computeBoundingSphere(); out.computeBoundingBox(); return out;
+  }
+  // (re)build the merged render meshes: one per (material, atlas page). Map build time only (and when a panel is added later).
+  function flush() {
+    flushQ = false; if (!dirtyMerge) return; dirtyMerge = false;
+    for (const gr of groups.values()) { if (gr.mesh) { gr.mesh.parent && gr.mesh.parent.remove(gr.mesh); gr.mesh.geometry.dispose(); gr.mesh = null; } gr.list.length = 0; }
+    for (const P_ of panels) { if (!P_.mesh.parent) continue; const key = P_.mat.uuid + ':' + P_.rect.pg.i; let gr = groups.get(key);
+      if (!gr) { const [m, d] = tearMaterials(P_.mat, P_.rect.pg.tex); gr = { m, d, list: [], mesh: null }; groups.set(key, gr); } gr.list.push(P_); }
+    for (const gr of groups.values()) { if (!gr.list.length) continue;
+      const mesh = new THREE.Mesh(mergeGeos(gr.list.map(P_ => ({ geo: panelGeo(P_, true), matrix: P_.mesh.matrixWorld }))), gr.m);
+      mesh.customDepthMaterial = gr.d; mesh.castShadow = mesh.receiveShadow = true; mesh.matrixAutoUpdate = false; mesh.userData.noProbe = true; mesh.userData.tearMerged = gr.list.length; mesh.name = 'tearMerged';
+      scene.add(mesh); gr.mesh = mesh; }
+    for (const pg of pages) try { renderer.initTexture(pg.tex); } catch (e) {}
+  }
+  function upload(P_) {
+    try { renderer.copyTextureToTexture(_up.set(P_.rect.x, P_.rect.y), { image: P_.cv }, P_.rect.pg.tex); TEAR.stats.uploads++; }
+    catch (e) { TEAR.stats.uploadErr = String(e && e.message || e); }
+  }
+  const _up = new THREE.Vector2();
+  function pumpUploads() {
+    if (!upQ.size) return; let n = 0;
+    for (const P_ of upQ) { if (n++ >= R.uploads) break; upQ.delete(P_); upload(P_); }
+  }
 
-  /* add a panel. o = { x, y (bottom), z, w, h, rot (radians about +Y; 0 = faces +Z), t (thickness), mat (paper material),
-     cuts: [[u0,v0,u1,v1], ..] pre-cut windows (metres from the panel's bottom-left), flap: { u0, v0, u1, v1, hinge: 'top'|'bottom'|'left'|'right' } } */
+  /* ---------- panels ---------- */
+  /* add a panel. o = { x, y (bottom), z, w, h, rot (radians about +Y; 0 = faces +Z), t (thickness), mat (paper material), floor,
+     cuts: [[u0,v0,u1,v1], ..] pre-cut windows (metres from the panel's bottom-left), flap: { u0, v0, u1, v1, hinge }, collapse (default true),
+     cls: 'P0' paper | 'P1' thin card (default) | 'P2' double card | 'P3' thick board | 'P4' solid block (P2+ wear: several hits at a spot before it opens) } */
   function add(o) {
     const id = panels.length, w = o.w, h = o.h, t = o.t || .05, ppm = R.ppm;
     const cv = document.createElement('canvas'); cv.width = Math.max(8, Math.ceil(w * ppm)); cv.height = Math.max(8, Math.ceil(h * ppm));
-    const ctx = cv.getContext('2d'), tx = new THREE.CanvasTexture(cv); tx.minFilter = THREE.LinearFilter; tx.generateMipmaps = false;
-    const [m, dm] = tearMaterials(o.mat, tx);
-    const mesh = new THREE.Mesh(panelGeo(w, h, t, o.mat.userData.tile), m); mesh.customDepthMaterial = dm;
-    if (o.floor) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(-Math.PI / 2, o.rot || 0, 0, 'YXZ'); } else { mesh.position.set(o.x, o.y + h / 2, o.z); mesh.rotation.y = o.rot || 0; } mesh.castShadow = mesh.receiveShadow = true;
+    const P_ = { id, w, h, t, cv, ctx: cv.getContext('2d'), mat: o.mat, floor: !!o.floor, cuts: o.cuts || [], rect: null, boxes: [], holes: [], slits: [], knife: [], hits: null, live: null, sheets: [] };
+    P_.rect = alloc(cv.width, cv.height);
+    const mesh = new THREE.Mesh(panelGeo(P_, false), proxyMat); mesh.visible = false;   // raycast / transform proxy; drawn by the merged mesh
+    if (o.floor) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(-Math.PI / 2, o.rot || 0, 0, 'YXZ'); } else { mesh.position.set(o.x, o.y + h / 2, o.z); mesh.rotation.y = o.rot || 0; }
     mesh.userData.surface = 'paper'; mesh.userData.dyn = true; mesh.userData.tear = id;
-    scene.add(mesh); mesh.updateMatrixWorld(); world.meshes.push(mesh);
-    const bx = new THREE.Box3().setFromObject(mesh); if (o.floor) { bx.walk = true; bx.tearFloor = id; } world.colliders.push(bx);
-    const P_ = { id, mesh, w, h, t, cv, ctx, tx, cuts: o.cuts || [], flap: o.flap ? Object.assign({ open: false, k: 0, side: 1, segs: null, len: 0, mesh: null }, o.flap) : null, holes: [], slits: [], hits: [], mat: o.mat };
-    if (P_.flap) { const L = tearLine(P_.flap); P_.flap.lines = L; P_.flap.len = L.reduce((s, l) => s + l.len, 0); P_.flap.segs = new Uint8Array(Math.max(1, Math.ceil(P_.flap.len / R.crSeg))); }
-    mesh.raycast = function (rc, out) { _tmp.length = 0; THREE.Mesh.prototype.raycast.call(this, rc, _tmp); for (const hh of _tmp) if (!openAtWorld(P_, hh.point)) out.push(hh); };
-    P_.floor = !!o.floor; panels.push(P_); redraw(P_);
+    scene.add(mesh); mesh.updateMatrixWorld(true); world.meshes.push(mesh); P_.mesh = mesh; if (typeof targetsDirty !== 'undefined') targetsDirty = true;
+    P_.cls = o.cls || 'P1'; P_.def = { id, w, h, cls: P_.cls, floor: !!o.floor, cuts: P_.cuts, flap: o.flap || null, collapse: o.collapse !== false };
+    P_.core = H.newPanel(P_.def); P_.hits = P_.core.hits;
+    P_.flap = o.flap ? Object.assign({ open: false, k: 0, side: 1, sheet: null, mesh: null }, o.flap) : null;
+    if (P_.flap) P_.flap.lines = P_.core.flap.lines.map(L => ({ a: [L.a[0] / 1000, L.a[1] / 1000], b: [L.b[0] / 1000, L.b[1] / 1000], len: L.len / 1000 }));
+    const bx = new THREE.Box3().setFromObject(mesh); if (o.floor) { bx.walk = true; bx.tearFloor = id; } world.colliders.push(bx); P_.boxes = [bx];
+    mesh.raycast = function (rc, out) { _tmp.length = 0; THREE.Mesh.prototype.raycast.call(this, rc, _tmp);
+      for (const hh of _tmp) { const [u, v] = toLocal(P_, hh.point), open = rc.plane ? H.passAtMM(P_.core, u * 1000, v * 1000) : H.openAt(P_.core, u, v) && !(rc.knife && nearCut(P_, u, v));
+        if (!open) out.push(hh); else if (passed.length < 16) passed.push(hh.distance); } };
+    panels.push(P_); redraw(P_);
+    dirtyMerge = true; if (!flushQ) { flushQ = true; Promise.resolve().then(flush); }
     return P_;
   }
-  // the crease = the flap's edges except its hinge, as line pieces in panel metres
-  function tearLine(f) {
-    const E = { bottom: [f.u0, f.v0, f.u1, f.v0], top: [f.u0, f.v1, f.u1, f.v1], left: [f.u0, f.v0, f.u0, f.v1], right: [f.u1, f.v0, f.u1, f.v1] };
-    return Object.keys(E).filter(k => k !== f.hinge).map(k => { const [a, b, c, d] = E[k]; return { a: [a, b], b: [c, d], len: Math.hypot(c - a, d - b) }; });
-  }
+  // within 4 cm of a knife line (not inside a cut-out): the blade's aim still meets card there
+  function nearCut(P_, u, v) { for (const L of P_.knife) for (let i = 1; i < L.pts.length; i++) { const a = L.pts[i - 1], b = L.pts[i], ax = b[0] - a[0], ay = b[1] - a[1], k = clamp(((u - a[0]) * ax + (v - a[1]) * ay) / (ax * ax + ay * ay || 1e-9), 0, 1); if (Math.hypot(u - a[0] - ax * k, v - a[1] - ay * k) < .04) return !((L.closed || L.flap) && Math.hypot(u - a[0] - ax * k, v - a[1] - ay * k) > .03); } return false; }
   const toLocal = (P_, pt) => { _inv.copy(P_.mesh.matrixWorld).invert(); _lp.copy(pt).applyMatrix4(_inv); return [_lp.x + P_.w / 2, _lp.y + P_.h / 2, _lp.z]; };
-  function openAtWorld(P_, pt) { const [u, v] = toLocal(P_, pt); return openAt(P_, u, v); }
-  function openAt(P_, u, v) {
-    if (u < 0 || v < 0 || u > P_.w || v > P_.h) return false;
-    for (const c of P_.cuts) if (u > c[0] && u < c[2] && v > c[1] && v < c[3]) return true;
-    const f = P_.flap; if (f && f.open && u > f.u0 && u < f.u1 && v > f.v0 && v < f.v1) return true;
-    for (const q of P_.holes) { const r = q.r * R.rayK; if ((u - q.u) * (u - q.u) + (v - q.v) * (v - q.v) < r * r) return true; }
-    for (const L of P_.knife || []) { if (L.closed && inPoly(L.pts, u, v)) return true; for (let i = 1; i < L.pts.length; i++) if (segD2(u, v, L.pts[i - 1], L.pts[i]) < R.cutR * R.cutR * R.rayK * R.rayK) return true; }
-    for (const s of P_.slits) { const ax = s.b[0] - s.a[0], ay = s.b[1] - s.a[1], L2 = ax * ax + ay * ay || 1e-6; const k = clamp(((u - s.a[0]) * ax + (v - s.a[1]) * ay) / L2, 0, 1); const dx = u - s.a[0] - ax * k, dy = v - s.a[1] - ay * k; if (dx * dx + dy * dy < s.r * s.r * R.rayK * R.rayK) return true; }
-    return false;
+  const toWorld = (P_, u, v, z) => new THREE.Vector3(u - P_.w / 2, v - P_.h / 2, z || 0).applyMatrix4(P_.mesh.matrixWorld);
+  function openAtWorld(P_, pt) { const [u, v] = toLocal(P_, pt); return H.openAt(P_.core, u, v); }
+  const openAt = (P_, u, v) => H.openAt(P_.core, u, v);
+  // the metre views other code reads (audio occlusion, marks, tests): rebuilt from the core after every event (<= 48 holes)
+  function sync(P_) {
+    const C = P_.core;
+    for (let i = 0; i < C.holes.length; i++) { const c = C.holes[i], q = P_.holes[i]; if (q) q.r = c.r / 1000; else P_.holes.push({ u: c.u / 1000, v: c.v / 1000, r: c.r / 1000, side: c.side, i }); }
+    for (let i = P_.slits.length; i < C.slits.length; i++) { const s = C.slits[i]; P_.slits.push({ a: [s.a[0] / 1000, s.a[1] / 1000], b: [s.b[0] / 1000, s.b[1] / 1000], u0: s.a[0] / 1000, v0: s.a[1] / 1000, u1: s.b[0] / 1000, v1: s.b[1] / 1000, r: s.r / 1000, i }); }
+    P_.knife = C.knife.map(L => { const pts = L.pts.map(p => [p[0] / 1000, p[1] / 1000]); let a = 0; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) a += (pts[j][0] + pts[i][0]) * (pts[j][1] - pts[i][1]);
+      return { pts, closed: L.closed, flap: L.flap, area: (L.closed || L.flap) ? Math.abs(a / 2) : 0 }; });
+    if (P_.flap && C.flap) { P_.flap.open = C.flap.open; P_.flap.side = C.flap.side; }
+    P_.collapsed = C.collapsed; P_.openFrac = C.openFrac;
   }
-  /* one hit: u, v in panel metres, side = which face was hit (+1 front / -1 back), r = hole radius (weapon). Pure + deterministic. */
-  function apply(P_, u, v, side, r) {
-    P_.hits.push([u, v, side, r]);
-    if (P_.holes.length >= R.maxHoles) {   // bounded: grow the nearest hole instead of adding one
-      let best = null, bd = 1e9; for (const q of P_.holes) { const d = Math.hypot(q.u - u, q.v - v); if (d < bd) { bd = d; best = q; } }
-      best.r = Math.min(R.growMax, best.r * R.growK);
-    } else {
-      const nh = { u, v, r, i: P_.holes.length };
-      for (const q of P_.holes) { const d = Math.hypot(q.u - u, q.v - v); if (d < R.mergeD && d > 1e-4) P_.slits.push({ a: [q.u, q.v], b: [u, v], r: Math.min(q.r, r) * R.slitK, i: P_.slits.length }); }
-      P_.holes.push(nh);
-    }
-    const f = P_.flap;
-    if (f && !f.open) {
-      let off = 0;
-      for (const L of f.lines) {
-        const ax = L.b[0] - L.a[0], ay = L.b[1] - L.a[1], k = clamp(((u - L.a[0]) * ax + (v - L.a[1]) * ay) / (L.len * L.len), 0, 1);
-        const d = Math.hypot(u - L.a[0] - ax * k, v - L.a[1] - ay * k);
-        if (d < R.crReach) { const at = off + k * L.len; for (let s = 0; s < f.segs.length; s++) { const c = (s + .5) * R.crSeg; if (Math.abs(c - at) < R.crReach + r) f.segs[s] = 1; } }
-        off += L.len;
-      }
-      let n = 0; for (const s of f.segs) n += s;
-      if (n / f.segs.length >= R.crNeed) { f.open = true; f.side = side; f.k = 0; return 'flap'; }
-    }
-    return 'hole';
-  }
-  const segD2 = (u, v, a, b) => { const ax = b[0] - a[0], ay = b[1] - a[1], L2 = ax * ax + ay * ay || 1e-9, k = clamp(((u - a[0]) * ax + (v - a[1]) * ay) / L2, 0, 1), dx = u - a[0] - ax * k, dy = v - a[1] - ay * k; return dx * dx + dy * dy; };
-  const inPoly = (pts, u, v) => { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > v) !== (yj > v) && u < (xj - xi) * (v - yi) / ((yj - yi) || 1e-9) + xi) c = !c; } return c; };
-  /* KNIFE CUT (cutter out, hold left click near thin card, drag): a polyline in panel metres. Closed (end within .22 m of the
-     start and area >= .02 m2) = the piece inside falls out. Deterministic: the polyline itself is the event. */
-  function cutApply(P_, pts) {
-    if (pts.length < 2) return null; P_.knife = P_.knife || []; let len = 0; for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
-    const e = pts[pts.length - 1], s0 = pts[0]; let area = 0; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) area += (pts[j][0] + pts[i][0]) * (pts[j][1] - pts[i][1]);
-    const closed = pts.length >= 4 && Math.hypot(e[0] - s0[0], e[1] - s0[1]) < .22 && Math.abs(area / 2) >= .02;
-    P_.knife.push({ pts: pts.map(p => [p[0], p[1]]), closed }); P_.hits.push(['cut', pts.length, closed]); return { len, closed, area: Math.abs(area / 2) };
-  }
-  function cut(mesh, pts) { const P_ = panels[mesh.userData.tear]; if (!P_) return null; const r = cutApply(P_, pts); redraw(P_);
-    if (r) { const a = pts[pts.length - 1]; tearEvent(new THREE.Vector3(a[0] - P_.w / 2, a[1] - P_.h / 2, 0).applyMatrix4(P_.mesh.matrixWorld), 'knife', r.closed ? 'cut-open' : 'cut'); }
-    if (r && r.closed) hangPiece(P_, pts);
-    if (r && r.closed) { const c = pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]); const w = new THREE.Vector3(c[0] - P_.w / 2, c[1] - P_.h / 2, 0).applyMatrix4(P_.mesh.matrixWorld); PFX.burst(w, { n: 18, cols: [P_.mat.color, PFX.TEAMC.cream], speed: 1.5, up: .5, size: [.05, .12] }); }
-    return r; }
-  // the cut-out piece as a sheet hinged on its lowest edge, swinging down + out toward the cutter's side
-  function hangPiece(P_, pts) {
-    let minV = 1e9; for (const p of pts) minV = Math.min(minV, p[1]); const sh = new THREE.Shape(pts.map(p => new THREE.Vector2(p[0] - P_.w / 2, p[1] - minV)));
-    const g = new THREE.ShapeGeometry(sh); const mat = P_.mat.clone(); mat.side = THREE.DoubleSide; mat.onBeforeCompile = THREE.Material.prototype.onBeforeCompile; mat.userData = Object.assign({}, P_.mat.userData, { s9g: 1, gm: 999 });
-    const m = new THREE.Mesh(g, mat); m.castShadow = true; m.userData.noProbe = true; const piv = new THREE.Group(); piv.position.set(0, minV - P_.h / 2, P_.t * .6); piv.add(m); P_.mesh.add(piv);
-    (P_.pieces = P_.pieces || []).push({ piv, k: 0 });
-  }
-  const uvOf = (mesh, pt) => { const P_ = panels[mesh.userData.tear]; if (!P_) return null; const [u, v] = toLocal(P_, pt); return [clamp(u, 0, P_.w), clamp(v, 0, P_.h)]; };
-  // world hit -> hole (called by fireShot / botShoot / explosions). Returns 'hole' | 'flap' | null.
-  const WR = { sniper: 1.05, breacher: .85, carbine: .95, wasp: .7, carbine: 1, wasp: .9, pistol: .9, boomerang: 1.4, plane: 2.5 };
-  function hit(mesh, point, dir, weapon) {
-    const P_ = panels[mesh.userData.tear]; if (!P_ || !P_.mesh.parent) return null;
-    const [u, v, z] = toLocal(P_, point);
-    _lp.copy(dir).transformDirection(_inv.copy(P_.mesh.matrixWorld).invert());
-    const side = _lp.z < 0 ? 1 : -1;   // shot travelling toward -Z hit the front (+Z) face
-    let res = apply(P_, clamp(u, 0, P_.w), clamp(v, 0, P_.h), side, R.holeR * (WR[weapon] || 1));
-    if (weapon === 'breacher' && P_.bigAt !== G.time) { P_.bigAt = G.time; const r2 = apply(P_, clamp(u, 0, P_.w), clamp(v, 0, P_.h), side, R.shotgunBig); if (r2 === 'flap') res = 'flap'; }
-    redraw(P_); if (res === 'flap') openFlap(P_);
-    // paper chips from both faces
-    if (typeof PFX !== 'undefined') { const n = new THREE.Vector3(0, 0, side).transformDirection(P_.mesh.matrixWorld); PFX.chips(point, n, P_.mat.color, P_.mat.userData.paper, res === 'flap' ? 40 : 7); }
-    if (res === 'flap') { try { sfx.impact(point, false); } catch (e) {} TEAR.stats.flaps++; }
-    TEAR.stats.holes++; tearEvent(point, weapon, res);
+  // apply wire events to a panel + every view of it. point/dir/weapon only for the look (chips, marks). Returns the strongest result.
+  const RANK = { null: 0, cut: 1, grow: 1, dent: 1, crack: 1, hole: 2, breach: 2, 'cut-flap': 3, 'cut-open': 3, flap: 4, collapse: 5 };
+  function applyEvents(P_, evs, point, dir, weapon, side) {
+    const C = P_.core, h0 = P_.holes.length, s0 = P_.slits.length, k0 = C.knife.map(L => (L.closed ? 2 : 0) + (L.flap ? 1 : 0)), flap0 = !!(C.flap && C.flap.open); let res = null;
+    for (const e of evs) { const r = H.applyHit(C, e); if ((RANK[r] || 0) > (RANK[res] || 0)) res = r; }
+    if (side) P_.lastSide = side; sync(P_); if (weapon !== 'knife-cut') markHoles(P_, h0, s0, side || 1, weapon, dir);
+    redraw(P_);
+    if (C.flap && C.flap.open && !flap0) { openFlap(P_); if (res !== 'collapse') res = 'flap'; }
+    C.knife.forEach((L, i) => { const was = k0[i] || 0; if (L.closed && !(was & 2)) dropPiece(P_, P_.knife[i], i); else if (L.flap && !(was & 1) && !L.closed) knifeFlap(P_, P_.knife[i], i); });
+    if (C.collapsed) collapse(P_); else updateColliders(P_);
     return res;
   }
-  // mask: white = open. Ragged star holes, jagged slits, the open flap and the pre-cut windows.
+  /* world hit -> wire events -> state (fireShot / botShoot / explosions). opts.crater: a shotgun shot's ONE big crater (pellet 0).
+     Returns 'hole' | 'grow' | 'flap' | 'collapse' | null. */
+  function hit(mesh, point, dir, weapon, opts) {
+    const P_ = panels[mesh.userData.tear]; if (!P_ || !P_.mesh.parent || P_.core.collapsed) return null;
+    const [u, v] = toLocal(P_, point); _lp.copy(dir).transformDirection(_inv.copy(P_.mesh.matrixWorld).invert());
+    const side = _lp.z < 0 ? 1 : -1;   // shot travelling toward -Z hit the front (+Z) face
+    const evs = weapon === 'plane' ? [H.makeBlast(P_.core, u, v, side, .3)] : H.makeHits(P_.core, u, v, side, gunKey(weapon), 0, { crater: !!(opts && opts.crater) }).hits;
+    const res = applyEvents(P_, evs, point, dir, weapon, side);
+    if (typeof PFX !== 'undefined') { const n = new THREE.Vector3(0, 0, -side).transformDirection(P_.mesh.matrixWorld); PFX.chips(point, n, P_.mat.color, P_.mat.userData.paper, res === 'flap' || res === 'collapse' ? 40 : 7); }   // fibres out of the EXIT face (the tell)
+    if (res === 'flap') { try { sfx.impact(point, false); } catch (e) {} TEAR.stats.flaps++; }
+    if ((res === 'dent' || res === 'crack') && typeof PAPER_MARKS !== 'undefined' && PAPER_MARKS.hit) { try { PAPER_MARKS.hit(mesh, point, new THREE.Vector3(0, 0, side).transformDirection(P_.mesh.matrixWorld), weapon, dir); } catch (e) {} TEAR.stats.wear++; }
+    if (res === 'breach') TEAR.stats.breaches++; if (res !== 'dent' && res !== 'crack') TEAR.stats.holes++; tearEvent(point, weapon, res, P_.cls);
+    return res;
+  }
+  // the ref1 torn-star look of the holes added since index h0 (visual only, never state)
+  const markMax = () => typeof PAPER_MARKS !== 'undefined' && PAPER_MARKS.HOLE ? PAPER_MARKS.HOLE.tearMax : 0;
+  const _hn = new THREE.Vector3();
+  function markHoles(P_, h0, s0, side, weapon, dir) {
+    if (typeof PAPER_MARKS === 'undefined' || !PAPER_MARKS.tearHole) return;
+    _hn.set(0, 0, side).transformDirection(P_.mesh.matrixWorld);
+    const W = (u, v) => toWorld(P_, u, v, side * P_.t / 2);
+    const poly = (info) => info && info.core ? info.core.map(([x, y]) => { const w = info.pos.clone().addScaledVector(info.cx, x * .95).addScaledVector(info.cy, y * .95), l = toLocal(P_, w); return [l[0], l[1]]; }) : null;
+    for (let i = h0; i < P_.holes.length; i++) { const q = P_.holes[i]; if (q.r > markMax()) continue;
+      q.poly = poly(PAPER_MARKS.tearHole(W(q.u, q.v), _hn, P_.t, q.r * R.holeVis, P_.mat, weapon, { id: P_.id, u: q.u, v: q.v }, dir)); }
+    for (let i = Math.max(s0, P_.slits.length - 2); i < P_.slits.length; i++) { const sl = P_.slits[i], L = Math.hypot(sl.b[0] - sl.a[0], sl.b[1] - sl.a[1]); if (L < 1e-3) continue;
+      const m = W((sl.a[0] + sl.b[0]) / 2, (sl.a[1] + sl.b[1]) / 2), ax = W(sl.b[0], sl.b[1]).sub(W(sl.a[0], sl.a[1])).normalize();
+      sl.poly = poly(PAPER_MARKS.tearHole(m, _hn, P_.t, sl.r, P_.mat, weapon, { id: P_.id, u: (sl.a[0] + sl.b[0]) / 2, v: (sl.a[1] + sl.b[1]) / 2 }, null, ax, Math.min(2.2, (L / 2 + sl.r) / sl.r))); }
+  }
+
+  /* ---------- mask: R = open, G = torn rim band. v points UP in the canvas rows (atlas flipY off). ---------- */
   function redraw(P_) {
-    const c = P_.ctx, ppm = R.ppm, H = P_.h, X = u => u * ppm, Y = v => (H - v) * ppm;
+    const c = P_.ctx, ppm = R.ppm, X = u => u * ppm, Y = v => v * ppm;
     c.fillStyle = '#000'; c.fillRect(0, 0, P_.cv.width, P_.cv.height);
-    // rim pass (green): a soft band round every opening = torn liner + flutes in the shader
+    if (P_.core.collapsed) { c.fillStyle = '#f00'; c.fillRect(0, 0, P_.cv.width, P_.cv.height); upQ.add(P_); return; }
+    const path = (pts, close) => { c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(X(p[0]), Y(p[1])) : c.moveTo(X(p[0]), Y(p[1]))); if (close) c.closePath(); };
+    const knifeLines = P_.live ? P_.knife.concat([{ pts: P_.live, closed: false, live: true }]) : P_.knife;
+    if (P_.core.wear.size) { const W = H.WEAR, cs = W.cell / 1000 * ppm; for (const [k, w] of P_.core.wear) { const f = w / W.full; if (f >= 1) continue; c.fillStyle = `rgb(0,${Math.round(255 * (.3 + .62 * f))},0)`; c.fillRect((k % 4096) * cs, Math.floor(k / 4096) * cs, cs, cs); } }
+    // rim pass (green): a soft band round big openings + every knife line (torn liner + flutes in the shader)
     c.save(); c.shadowColor = '#0f0'; c.shadowBlur = 5; c.fillStyle = 'rgb(0,150,0)'; c.strokeStyle = 'rgb(0,150,0)';
-    for (const q of P_.holes) { const rr = hrand(P_.id + 3, q.i + 9), n = 11; c.beginPath(); for (let i = 0; i < n * 2; i++) { const a = i / (n * 2) * 6.283, r = q.r * R.rimK * (i % 2 ? .78 + rr() * .2 : 1 + rr() * .45); const x = X(q.u + Math.cos(a) * r), y = Y(q.v + Math.sin(a) * r); i ? c.lineTo(x, y) : c.moveTo(x, y); } c.closePath(); c.fill(); }
-    for (const s of P_.slits) { c.lineWidth = s.r * 2 * R.rimK * ppm; c.lineCap = 'round'; c.beginPath(); c.moveTo(X(s.a[0]), Y(s.a[1])); c.lineTo(X(s.b[0]), Y(s.b[1])); c.stroke(); }
-    for (const k of P_.cuts) { c.lineWidth = 6; c.strokeRect(X(k[0]), Y(k[3]), (k[2] - k[0]) * ppm, (k[3] - k[1]) * ppm); }
-    for (const L of P_.knife || []) { c.lineWidth = R.cutR * 2 * R.rimK * ppm + 3; c.lineCap = c.lineJoin = 'round'; c.beginPath(); L.pts.forEach((p, i) => i ? c.lineTo(X(p[0]), Y(p[1])) : c.moveTo(X(p[0]), Y(p[1]))); if (L.closed) c.closePath(); c.stroke(); }
-    c.restore(); c.fillStyle = '#fff'; c.strokeStyle = '#fff';
-    for (const L of P_.knife || []) { c.lineWidth = R.cutR * 2 * ppm; c.lineCap = c.lineJoin = 'round'; c.beginPath(); L.pts.forEach((p, i) => i ? c.lineTo(X(p[0]), Y(p[1])) : c.moveTo(X(p[0]), Y(p[1]))); if (L.closed) { c.closePath(); c.fill(); } c.stroke(); }
-    for (const k of P_.cuts) c.fillRect(X(k[0]), Y(k[3]), (k[2] - k[0]) * ppm, (k[3] - k[1]) * ppm);
-    const f = P_.flap; if (f && f.open) { const rr = hrand(P_.id, 999); c.beginPath(); const pts = [[f.u0, f.v0], [f.u1, f.v0], [f.u1, f.v1], [f.u0, f.v1]];
+    for (const q of P_.holes) { if (q.r <= markMax()) continue; const rr = hrand(P_.id + 3, q.i + 9), n = 11; c.beginPath(); for (let i = 0; i < n * 2; i++) { const a = i / (n * 2) * 6.283, r = q.r * R.rimK * (i % 2 ? .78 + rr() * .2 : 1 + rr() * .45); const x = X(q.u + Math.cos(a) * r), y = Y(q.v + Math.sin(a) * r); i ? c.lineTo(x, y) : c.moveTo(x, y); } c.closePath(); c.fill(); }
+    for (const k of P_.cuts) { c.lineWidth = 6; c.strokeRect(X(k[0]), Y(k[1]), (k[2] - k[0]) * ppm, (k[3] - k[1]) * ppm); }
+    c.lineCap = c.lineJoin = 'round';
+    for (const L of knifeLines) { if (L.pts.length < 2) continue; c.lineWidth = R.cutR * 2 * R.rimK * ppm + 3; path(L.pts, L.closed || L.flap); c.stroke(); }
+    if (P_.liveHome) { const h = P_.liveHome; c.shadowBlur = 0; c.lineWidth = 3; c.strokeStyle = 'rgb(0,120,0)'; c.beginPath(); c.arc(X(h[0]), Y(h[1]), .06 * ppm, 0, 6.2832); c.stroke(); }   // where the cut started: get back here to cut it out
+    c.restore(); c.fillStyle = '#f00'; c.strokeStyle = '#f00'; c.lineCap = c.lineJoin = 'round';
+    for (const L of knifeLines) { if (L.pts.length < 2) continue; c.lineWidth = R.cutR * 2 * ppm + 2.5; path(L.pts, L.closed || L.flap); if (L.closed || L.flap) c.fill(); c.stroke(); }
+    for (const k of P_.cuts) c.fillRect(X(k[0]) - 1, Y(k[1]) - 1, (k[2] - k[0]) * ppm + 2, (k[3] - k[1]) * ppm + 2);
+    const f = P_.flap; if (f && f.open) { const rr = hrand(P_.id, 999); c.fillRect(X(f.u0) - 1, Y(f.v0) - 1, (f.u1 - f.u0) * ppm + 2, (f.v1 - f.v0) * ppm + 2); c.beginPath(); const pts = [[f.u0, f.v0], [f.u1, f.v0], [f.u1, f.v1], [f.u0, f.v1]];
       pts.forEach((p, i) => { const q = pts[(i + 1) % 4]; for (let s = 0; s <= 8; s++) { const k = s / 8, j = (rr() - .5) * .05; const x = p[0] + (q[0] - p[0]) * k + j, y = p[1] + (q[1] - p[1]) * k + j; if (!i && !s) c.moveTo(X(x), Y(y)); else c.lineTo(X(x), Y(y)); } }); c.fill(); }
-    for (const q of P_.holes) { const rr = hrand(P_.id + 1, q.i + 1), n = 9; c.beginPath(); for (let i = 0; i < n * 2; i++) { const a = i / (n * 2) * 6.283 + rr() * .3, r = q.r * R.holeVis * (i % 2 ? .55 + rr() * .2 : 1 + rr() * .35); const x = X(q.u + Math.cos(a) * r), y = Y(q.v + Math.sin(a) * r); if (!i) c.moveTo(x, y); else c.lineTo(x, y); } c.closePath(); c.fill(); }
-    for (const s of P_.slits) { const rr = hrand(P_.id + 7, s.i + 3); c.lineWidth = s.r * 2 * ppm * (.8 + rr() * .3); c.lineCap = 'round'; c.beginPath(); c.moveTo(X(s.a[0]), Y(s.a[1]));
-      const mx = (s.a[0] + s.b[0]) / 2 + (rr() - .5) * .05, my = (s.a[1] + s.b[1]) / 2 + (rr() - .5) * .05; c.lineTo(X(mx), Y(my)); c.lineTo(X(s.b[0]), Y(s.b[1])); c.stroke(); }
-    P_.tx.needsUpdate = true;
+    // holes: the decal's star opening (or a seeded star) UNION the disc of .95 r: every point a ray passes (.9 r) is drawn open (see == shoot)
+    for (const q of P_.holes) {
+      if (q.poly) { path(q.poly, true); c.fill(); }
+      else { const big = q.r > markMax(), rr = hrand(P_.id + 1, q.i + 1), n = big ? 9 : 7; c.beginPath(); for (let i = 0; i < n * 2; i++) { const a = i / (n * 2) * 6.283 + rr() * (big ? .3 : .2), r = q.r * R.holeVis * (big ? (i % 2 ? .95 + rr() * .1 : 1 + rr() * .35) : 1.12 + rr() * .08); const x = X(q.u + Math.cos(a) * r), y = Y(q.v + Math.sin(a) * r); if (!i) c.moveTo(x, y); else c.lineTo(x, y); } c.closePath(); c.fill(); }
+      c.beginPath(); c.arc(X(q.u), Y(q.v), q.r * K.drawK * ppm + 1.5, 0, 6.2832); c.fill();
+    }
+    // slits: a ragged torn strip (never narrower than the ray capsule) + the stretched star's opening
+    for (const s of P_.slits) { const rr = hrand(P_.id + 7, s.i + 3), dx = s.b[0] - s.a[0], dy = s.b[1] - s.a[1], L = Math.hypot(dx, dy) || 1e-3, nx = -dy / L, ny = dx / L, k = Math.max(2, Math.ceil(L / .03)), top = [], bot = [];
+      for (let j = 0; j <= k; j++) { const t = j / k, w = s.r * (j % 2 ? .95 + rr() * .15 : 1.05 + rr() * .3); const x = s.a[0] + dx * t, y = s.a[1] + dy * t; top.push([x + nx * w, y + ny * w]); bot.push([x - nx * w * (1 + rr() * .3), y - ny * w * (1 + rr() * .3)]); }
+      path(top.concat(bot.reverse()), true); c.fill(); c.lineWidth = s.r * 2 * K.drawK * ppm + 3; c.beginPath(); c.moveTo(X(s.a[0]), Y(s.a[1])); c.lineTo(X(s.b[0]), Y(s.b[1])); c.stroke(); if (s.poly) { path(s.poly, true); c.fill(); } }
+    upQ.add(P_);
   }
-  // the flap: a piece of the same cardboard hinged on its hinge edge, folding away from the last shot
+
+  /* ---------- paper sheets: pooled (24), the map's own materials (no new shaders) ---------- */
+  const pool = [];
+  function sheet(P_, geo, kind) {
+    let s = pool.find(x => !x.busy);
+    if (!s && pool.length < R.pool) { s = { g: new THREE.Group(), piv: new THREE.Group(), m: new THREE.Mesh(new THREE.BufferGeometry(), P_.mat) }; s.g.add(s.piv); s.piv.add(s.m); s.m.castShadow = true; s.m.receiveShadow = true; s.m.userData.noProbe = true; pool.push(s); }
+    if (!s) { s = pool.filter(x => x.kind === 'fall').sort((a, b) => a.t0 - b.t0)[0] || pool.slice().sort((a, b) => a.t0 - b.t0)[0]; release(s); }
+    s.m.geometry.dispose(); s.m.geometry = geo; s.m.material = P_.mat; s.m.position.set(0, 0, 0); s.m.scale.set(1, 1, 1); s.piv.position.set(0, 0, 0); s.piv.quaternion.identity();
+    s.g.matrixAutoUpdate = true; s.g.position.set(0, 0, 0); s.g.quaternion.identity(); s.g.scale.set(1, 1, 1);
+    Object.assign(s, { busy: true, kind, P_, t0: performance.now(), k: 0, a: 0, av: 0, rest: 0, life: 0, landed: false, vel: null, spin: null });
+    if (!s.g.parent) scene.add(s.g); s.g.visible = true; P_.sheets.push(s); TEAR.stats.sheets = pool.filter(x => x.busy).length; return s;
+  }
+  function release(s) { if (!s) return; s.busy = false; s.g.visible = false; if (s.P_) { const i = s.P_.sheets.indexOf(s); if (i >= 0) s.P_.sheets.splice(i, 1); } if (s.P_ && s.P_.flap && s.P_.flap.sheet === s) { s.P_.flap.sheet = null; s.P_.flap.mesh = null; } s.P_ = null; }
+  const inPanel = (s, P_) => { s.g.matrixAutoUpdate = false; s.g.matrix.copy(P_.mesh.matrixWorld); s.g.matrixWorldNeedsUpdate = true; };
+  // the designed flap: a piece of the same cardboard hinged on its hinge edge, folding away from the last shot
   function openFlap(P_) {
-    const f = P_.flap, fw = f.u1 - f.u0, fh = f.v1 - f.v0, g = new THREE.BoxGeometry(fw, fh, P_.t * .9);
-    const piv = new THREE.Group(), m = new THREE.Mesh(g, P_.mat); m.castShadow = true; m.userData.noProbe = true;
+    const f = P_.flap, fw = f.u1 - f.u0, fh = f.v1 - f.v0, s = sheet(P_, new THREE.BoxGeometry(fw, fh, P_.t * .9), 'hinge'); inPanel(s, P_);
     const hx = f.hinge === 'left' ? f.u0 : f.hinge === 'right' ? f.u1 : (f.u0 + f.u1) / 2, hy = f.hinge === 'top' ? f.v1 : f.hinge === 'bottom' ? f.v0 : (f.v0 + f.v1) / 2;
-    piv.position.set(hx - P_.w / 2, hy - P_.h / 2, 0); m.position.set((f.u0 + f.u1) / 2 - hx, (f.v0 + f.v1) / 2 - hy, 0);
-    piv.add(m); P_.mesh.add(piv); f.mesh = piv; f.k = 0;
+    s.piv.position.set(hx - P_.w / 2, hy - P_.h / 2, 0); s.m.position.set((f.u0 + f.u1) / 2 - hx, (f.v0 + f.v1) / 2 - hy, 0); f.sheet = s; f.mesh = s.piv; f.k = 0;
+    if (typeof PAPER_MARKS !== 'undefined' && PAPER_MARKS.hideTear) PAPER_MARKS.hideTear(P_.id, (u, v) => u > f.u0 && u < f.u1 && v > f.v0 && v < f.v1);
   }
+  const polyGeo = (pts, cu, cv, t) => { const sh = new THREE.Shape(pts.map(p => new THREE.Vector2(p[0] - cu, p[1] - cv))), g = new THREE.ExtrudeGeometry(sh, { depth: t, bevelEnabled: false, curveSegments: 1 }); g.translate(0, 0, -t / 2); return g; };
+  const inPolyM = (pts, u, v) => { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > v) !== (yj > v) && u < (xj - xi) * (v - yi) / ((yj - yi) || 1e-9) + xi) c = !c; } return c; };
+  // a closed knife cut: the piece falls out as a paper sheet (tips away from the cutter, lands, lies flat, goes after 4 s)
+  function dropPiece(P_, L, idx) {
+    const pts = L.pts; let cu = 0, cv = 0; for (const p of pts) { cu += p[0] / pts.length; cv += p[1] / pts.length; }
+    const s = sheet(P_, polyGeo(pts, cu, cv, P_.t * .9), 'fall'), side = P_.lastSide || 1;
+    s.g.position.copy(toWorld(P_, cu, cv, 0)); s.g.quaternion.setFromRotationMatrix(_inv.extractRotation(P_.mesh.matrixWorld));
+    const n = new THREE.Vector3(0, 0, -side).transformDirection(P_.mesh.matrixWorld), rr = hrand(P_.id + 11, idx + 1);
+    s.vel = n.multiplyScalar(P_.floor ? .2 : .9).add(new THREE.Vector3(0, P_.floor ? -.5 : .4, 0)); s.spin = new THREE.Vector3((rr() - .5) * 3, (rr() - .5) * 3, (rr() - .5) * 2);
+    if (P_.floor) s.spin.multiplyScalar(.4);
+    s.ground = (typeof groundAt === 'function' ? groundAt(s.g.position.x, s.g.position.z, s.g.position.y - (P_.floor ? .6 : 0), .1) : R.groundY);
+    if (typeof PAPER_MARKS !== 'undefined' && PAPER_MARKS.hideTear) PAPER_MARKS.hideTear(P_.id, (u, v) => inPolyM(pts, u, v));
+    if (typeof PFX !== 'undefined') PFX.burst(s.g.position, { n: 18, cols: [P_.mat.color, PFX.TEAMC.cream], speed: 1.5, up: .5, size: [.05, .12] });
+  }
+  // an open knife cut that bends round an area: a flap hinged on the gap between the cut's ends; it hangs open and gets pushed
+  function knifeFlap(P_, L, idx) {
+    const pts = L.pts, a = pts[0], b = pts[pts.length - 1], hu = (a[0] + b[0]) / 2, hv = (a[1] + b[1]) / 2;
+    const s = sheet(P_, polyGeo(pts, hu, hv, P_.t * .9), 'kflap'); inPanel(s, P_);
+    s.piv.position.set(hu - P_.w / 2, hv - P_.h / 2, 0); s.axis = new THREE.Vector3(b[0] - a[0], b[1] - a[1], 0).normalize();
+    // which way it folds: away from the cutter; sign so a positive angle swings the free part toward -side
+    let cu = 0, cv = 0; for (const p of pts) { cu += p[0] / pts.length; cv += p[1] / pts.length; }
+    const out = new THREE.Vector3(cu - hu, cv - hv, 0), side = P_.lastSide || 1, z = new THREE.Vector3().crossVectors(s.axis, out).z;
+    s.cz = z > 0 ? 1 : -1; s.sgn = s.cz * -side; s.rest = R.kflapRest * s.sgn; s.a = 0; s.av = 3 * s.sgn; s.centre = toWorld(P_, cu, cv, 0);
+    if (typeof PAPER_MARKS !== 'undefined' && PAPER_MARKS.hideTear) PAPER_MARKS.hideTear(P_.id, (u, v) => inPolyM(pts, u, v));
+  }
+  // B3 stage 4: the whole panel lets go: it falls as one sheet, its collider goes (players walk / drop through)
+  function collapse(P_) {
+    if (P_.gone) return; P_.gone = true; for (const s of P_.sheets.slice()) release(s);
+    const s = sheet(P_, new THREE.BoxGeometry(P_.w, P_.h, P_.t * .9), 'fall'), side = P_.lastSide || 1;
+    s.g.position.copy(toWorld(P_, P_.w / 2, P_.h / 2, 0)); s.g.quaternion.setFromRotationMatrix(_inv.extractRotation(P_.mesh.matrixWorld));
+    s.vel = new THREE.Vector3(0, 0, -side).transformDirection(P_.mesh.matrixWorld).multiplyScalar(P_.floor ? 0 : 1.2).add(new THREE.Vector3(0, P_.floor ? -1 : 0, 0));
+    s.spin = new THREE.Vector3(P_.floor ? .4 : 1.6 * -side, 0, P_.floor ? .3 : 0);
+    setBoxes(P_, []); s.ground = typeof groundAt === 'function' ? groundAt(s.g.position.x, s.g.position.z, s.g.position.y - (P_.floor ? .2 : P_.h / 2 - .2), .1) : R.groundY; if (typeof PAPER_MARKS !== 'undefined' && PAPER_MARKS.hideTear) PAPER_MARKS.hideTear(P_.id, () => true);
+    TEAR.stats.collapses++; tearEvent(s.g.position, 'collapse', 'collapse');
+    try { if (typeof psnd === 'function') psnd(P_.floor ? 'floor_break' : 'flap_tear', { pos: s.g.position.clone(), ref: 5, roll: 1, hrtf: true }); } catch (e) {}
+    if (typeof PFX !== 'undefined') PFX.burst(s.g.position, { n: 30, cols: [P_.mat.color, PFX.TEAMC.cream], speed: 2, up: .6, size: [.05, .14] });
+  }
+  /* ---------- colliders (C5): split round openings >= .6 x 1.0 m, none after a collapse ---------- */
+  function setBoxes(P_, rects) {
+    for (const b of P_.boxes) { const i = world.colliders.indexOf(b); if (i >= 0) world.colliders.splice(i, 1); }
+    P_.boxes = rects.map(r => { const b = new THREE.Box3(); for (const [u, v] of [[r[0], r[1]], [r[2], r[1]], [r[0], r[3]], [r[2], r[3]]]) for (const z of [-P_.t / 2, P_.t / 2]) b.expandByPoint(toWorld(P_, u / 1000, v / 1000, z));
+      if (P_.floor) { b.walk = true; b.tearFloor = P_.id; } world.colliders.push(b); return b; });
+    if (typeof targetsDirty !== 'undefined') targetsDirty = true;
+  }
+  function updateColliders(P_) {
+    const rs = H.solidRects(P_.core); if (rs === null) return; const key = JSON.stringify(rs); if (key === P_.boxKey) return; P_.boxKey = key; setBoxes(P_, rs);
+  }
+
+  /* ---------- knife cuts (76-knife-slice.js draws the live line, then sends ONE event) ---------- */
+  function cutApply(P_, pts) {   // pts: polyline in panel metres. The deterministic event: ['cut', mm points]
+    if (!pts || pts.length < 2) return null;
+    const ev = ['cut', pts.map(p => [Math.round(p[0] * 1000), Math.round(p[1] * 1000)])];
+    const res = applyEvents(P_, [ev], null, null, 'knife-cut');
+    let len = 0; for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    return { len, closed: res === 'cut-open', flap: res === 'cut-flap', collapsed: res === 'collapse', res };
+  }
+  function cut(mesh, pts, side) {
+    const P_ = panels[mesh.userData.tear]; if (!P_ || P_.core.collapsed) return null; if (side) P_.lastSide = side;
+    P_.live = null; P_.liveHome = null; const r = cutApply(P_, pts);
+    if (r) { const a = pts[pts.length - 1]; tearEvent(toWorld(P_, a[0], a[1], 0), 'knife', r.closed ? 'cut-open' : r.flap ? 'cut-flap' : 'cut'); }
+    return r;
+  }
+  function setLive(P_, pts, home) { P_.live = pts && pts.length > 1 ? pts : null; P_.liveHome = pts ? home || pts[0] : null; redraw(P_); }
+  // free end of an open cut near (u, v) (metres): continue it later
+  function openEndNear(P_, u, v, d) { for (const L of P_.core.knife) { if (L.closed) continue; for (const e of [L.pts[0], L.pts[L.pts.length - 1]]) if (Math.hypot(e[0] / 1000 - u, e[1] / 1000 - v) < (d || K.cutJoinD / 1000)) return [e[0] / 1000, e[1] / 1000]; } return null; }
+  const uvOf = (mesh, pt) => { const P_ = panels[mesh.userData.tear]; if (!P_) return null; const [u, v] = toLocal(P_, pt); return [clamp(u, 0, P_.w), clamp(v, 0, P_.h)]; };
+  const sideOf = (mesh, dir) => { const P_ = panels[mesh.userData.tear]; if (!P_) return 1; _lp.copy(dir).transformDirection(_inv.copy(P_.mesh.matrixWorld).invert()); return _lp.z < 0 ? 1 : -1; };
+
+  /* ---------- per frame ---------- */
+  const _pp = new THREE.Vector3();
   function update(dt) {
-    for (const P_ of panels) if (P_.pieces) for (const q of P_.pieces) if (q.k < 1) { q.k = Math.min(1, q.k + dt / .6); const e = 1 - Math.pow(1 - q.k, 3); q.piv.rotation.x = 1.75 * e + Math.sin(q.k * Math.PI) * .15; }
-    for (const P_ of panels) { const f = P_.flap; if (!f || !f.mesh || f.k >= 1) continue;
-      f.k = Math.min(1, f.k + dt / R.flapTime); const e = 1 - Math.pow(1 - f.k, 3), a = R.flapAngle * e * -f.side + Math.sin(f.k * Math.PI) * .12;
-      if (f.hinge === 'top') f.mesh.rotation.x = -a; else if (f.hinge === 'bottom') f.mesh.rotation.x = a; else if (f.hinge === 'left') f.mesh.rotation.y = -a; else f.mesh.rotation.y = a; }
+    if (dirtyMerge) flush();
+    pumpUploads();
+    for (const s of pool) { if (!s.busy) continue; const P_ = s.P_;
+      if (s.kind === 'hinge') { const f = P_.flap; if (s.k >= 1) continue; s.k = Math.min(1, s.k + dt / R.flapTime); const e = 1 - Math.pow(1 - s.k, 3), a = R.flapAngle * e * -f.side + Math.sin(s.k * Math.PI) * .12;
+        if (f.hinge === 'top') s.piv.rotation.set(-a, 0, 0); else if (f.hinge === 'bottom') s.piv.rotation.set(a, 0, 0); else if (f.hinge === 'left') s.piv.rotation.set(0, -a, 0); else s.piv.rotation.set(0, a, 0); }
+      else if (s.kind === 'kflap') {   // spring to its rest fold; a body walking into it pushes it open the other way
+        let rest = s.rest; const pp = typeof P !== 'undefined' && P.pos ? P.pos : null;
+        if (pp && Math.hypot(pp.x - s.centre.x, pp.z - s.centre.z) < .8 && pp.y < s.centre.y + .5 && pp.y + 1.8 > s.centre.y - .5) { const [, , z] = toLocal(P_, _pp.set(pp.x, s.centre.y, pp.z)); rest = 1.9 * s.cz * (z > 0 ? -1 : 1); }
+        s.av += (-(s.a - rest) * 30 - s.av * 4) * dt; s.a += s.av * dt; s.piv.quaternion.setFromAxisAngle(s.axis, s.a); }
+      else if (s.kind === 'fall') {
+        s.life += dt;
+        if (!s.landed) { s.vel.y -= 9.8 * dt; s.g.position.addScaledVector(s.vel, dt); _v.copy(s.spin).multiplyScalar(dt); _q.setFromEuler(new THREE.Euler(_v.x, _v.y, _v.z)); s.g.quaternion.multiply(_q);
+          if (s.g.position.y <= s.ground + .03 || s.life > 3) { s.landed = true; s.g.position.y = Math.max(s.g.position.y, s.ground + .03); const yaw = new THREE.Euler().setFromQuaternion(s.g.quaternion, 'YXZ').y; s.flat = new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2, yaw, 0, 'YXZ')); } }
+        else if (s.flat) s.g.quaternion.slerp(s.flat, Math.min(1, dt * 10));
+        if (s.life > R.fallLife) { const k = Math.max(0, 1 - (s.life - R.fallLife) / .5); s.g.scale.setScalar(Math.max(.001, k)); if (k <= 0) release(s); } }
+    }
   }
-  // every panel back to new (match start); the flap meshes are removed
+  // every panel back to new (match start): state, masks, colliders, sheets
   function reset() {
-    for (const P_ of panels) { P_.holes.length = 0; P_.slits.length = 0; P_.hits.length = 0; P_.knife = []; if (P_.pieces) { for (const q of P_.pieces) P_.mesh.remove(q.piv); P_.pieces = []; } const f = P_.flap; if (f) { f.open = false; f.k = 0; f.segs.fill(0); if (f.mesh) { P_.mesh.remove(f.mesh); f.mesh.traverse(o => o.geometry && o.geometry.dispose()); f.mesh = null; } } redraw(P_); }
-    TEAR.stats.holes = 0; TEAR.stats.flaps = 0;
+    for (const s of pool) release(s);
+    for (const P_ of panels) { P_.core = H.newPanel(P_.def); P_.hits = P_.core.hits; P_.holes.length = 0; P_.slits.length = 0; P_.knife = []; P_.live = null; P_.gone = false; P_.boxKey = null;
+      if (P_.flap) { P_.flap.open = false; P_.flap.k = 0; P_.flap.sheet = null; P_.flap.mesh = null; } sync(P_); redraw(P_);
+      const bx = new THREE.Box3().setFromObject(P_.mesh); if (P_.floor) { bx.walk = true; bx.tearFloor = P_.id; } for (const b of P_.boxes) { const i = world.colliders.indexOf(b); if (i >= 0) world.colliders.splice(i, 1); } world.colliders.push(bx); P_.boxes = [bx]; }
+    TEAR.stats.holes = 0; TEAR.stats.flaps = 0; TEAR.stats.collapses = 0;
   }
   // an explosion next to cardboard: a big ragged hole where the panel is closest (within `reach` m)
   function blast(pt, reach) {
-    for (const P_ of panels) { if (!P_.mesh.parent) continue; const [u, v, z] = toLocal(P_, pt); if (Math.abs(z) > reach || u < -.3 || v < -.3 || u > P_.w + .3 || v > P_.h + .3) continue;
-      const r = .22 + .3 * (1 - Math.abs(z) / reach); const res = apply(P_, clamp(u, 0, P_.w), clamp(v, 0, P_.h), z > 0 ? 1 : -1, r); redraw(P_); if (res === 'flap') openFlap(P_); TEAR.stats.holes++; }
+    for (const P_ of panels) { if (!P_.mesh.parent || P_.core.collapsed) continue; const [u, v, z] = toLocal(P_, pt); if (Math.abs(z) > reach || u < -.3 || v < -.3 || u > P_.w + .3 || v > P_.h + .3) continue;
+      const side = z > 0 ? 1 : -1; P_.lastSide = side; const res = applyEvents(P_, [H.makeBlast(P_.core, clamp(u, 0, P_.w), clamp(v, 0, P_.h), side, .22 + .3 * (1 - Math.abs(z) / reach))], pt, null, 'plane', side);
+      if (res === 'flap') TEAR.stats.flaps++; TEAR.stats.holes++; }
   }
-  function floorOpen(id, x, y, z, r) { const P_ = panels[id]; if (!P_ || !P_.floor) return false; _lp.set(x, y, z); const [u, v] = toLocal(P_, _lp);
-    for (const [du, dv] of [[0, 0], [r * .6, 0], [-r * .6, 0], [0, r * .6], [0, -r * .6]]) if (!openAt(P_, u + du, v + dv)) return false; return true; }
-  function tearEvent(p, weapon, kind) { try { dispatchEvent(new CustomEvent('foldiers:tear', { detail: { x: p.x, y: p.y, z: p.z, weapon, kind } })); } catch (e) {} }
-  function clear() { panels.length = 0; }   // map unloaded (clearMap disposes the meshes)
-  // replay a hit list on a fresh copy of a panel's state (determinism check; also how an online client rebuilds a panel)
-  function replay(id, hits) { const P_ = panels[id]; const S = { id, w: P_.w, h: P_.h, cuts: P_.cuts, holes: [], slits: [], hits: [], flap: P_.flap ? Object.assign({}, P_.flap, { open: false, segs: new Uint8Array(P_.flap.segs.length) }) : null };
-    for (const h of hits) apply(S, h[0], h[1], h[2], h[3]); return { holes: S.holes.map(q => [q.u, q.v, q.r]), slits: S.slits.length, flap: S.flap ? S.flap.open : null }; }
-  return { R, panels, add, hit, blast, apply, cut, cutApply, uvOf, redraw, floorOpen, openAt, openAtWorld, update, reset, clear, replay, stats: { holes: 0, flaps: 0 } };
+  // legacy entry: one hole of radius r (metres) at (u, v). Same deterministic path (a 'blast' event).
+  function apply(P_, u, v, side, r) { return applyEvents(P_, [['blast', Math.round(u * 1000), Math.round(v * 1000), side < 0 ? -1 : 1, Math.round(r * 1000)]], null, null, 'plane'); }
+  function floorOpen(id, x, y, z, r) { const P_ = panels[id]; if (!P_ || !P_.floor) return false; if (P_.core.collapsed) return true; _lp.set(x, y, z); const [u, v] = toLocal(P_, _lp);
+    for (const [du, dv] of [[0, 0], [r * .6, 0], [-r * .6, 0], [0, r * .6], [0, -r * .6]]) if (!H.openAt(P_.core, u + du, v + dv)) return false; return true; }
+  // (kind: hole / grow / flap / collapse / cut* / dent / crack / breach; cls: the panel's material class, so the sound can follow how thick it is)
+  function tearEvent(p, weapon, kind, cls) { try { dispatchEvent(new CustomEvent('foldiers:tear', { detail: { x: p.x, y: p.y, z: p.z, weapon, kind, cls: cls || 'P1' } })); } catch (e) {} }
+  function clear() {   // map unloaded (clearMap disposes the proxies; the merged meshes, sheets and atlas pages are ours)
+    for (const gr of groups.values()) { if (gr.mesh) { gr.mesh.parent && gr.mesh.parent.remove(gr.mesh); gr.mesh.geometry.dispose(); } gr.m.dispose(); gr.d.dispose(); } groups.clear();
+    for (const s of pool) { s.g.parent && s.g.parent.remove(s.g); s.m.geometry.dispose(); } pool.length = 0;
+    for (const pg of pages) pg.tex.dispose(); pages.length = 0; upQ.clear(); panels.length = 0; dirtyMerge = false;
+  }
+  // determinism check: replaying the panel's own event list on a fresh core gives the same state string
+  function replay(id, hits) { const P_ = panels[id], C = H.replay(P_.def, hits || P_.core.hits);
+    return { holes: C.holes.map(c => [c.u / 1000, c.v / 1000, c.r / 1000]), slits: C.slits.length, flap: C.flap ? C.flap.open : null, collapsed: C.collapsed, key: H.serialize(C) }; }
+  const stateKey = id => H.serialize(panels[id].core);
+  // draw-call / memory numbers for the perf test
+  const renderStats = () => ({ merged: [...groups.values()].filter(g => g.mesh).length, pages: pages.length, panels: panels.length, sheets: pool.filter(s => s.busy).length, queued: upQ.size,
+    atlasMB: +(pages.length * R.atlas * R.atlas * 2 / 1048576).toFixed(1) });
+  return { R, panels, passed, add, hit, blast, apply, cut, cutApply, setLive, openEndNear, uvOf, sideOf, redraw, floorOpen, openAt, openAtWorld, update, reset, clear, replay, stateKey, flush, renderStats,
+    thinK, maxLayers, passK, gunKey, stats: { holes: 0, flaps: 0, collapses: 0, uploads: 0, sheets: 0, wear: 0, breaches: 0 } };
 })();
 /* ================= deaths that match what killed you ================= */
 const DEATH_OF = { nova: 'blast', seeker: 'blast', nade: 'blast', breacher: 'blast', judge: 'blast', cryo: 'freeze', inferno: 'burn', arc: 'shock', helix: 'vapor', void: 'vapor',
@@ -6289,7 +7095,7 @@ function playerKillFx(r, crit, weapon, dir, ex = {}) {
   hitstop = weapon === 'sniper' || weapon === 'helix' || weapon === 'obelisk' ? .08 : crit ? .06 : .045; P.fov -= 2.5;
   G.combo = Math.min(4, G.combo + .5); G.comboT = 4; G.multi++; G.multiT = 2.4;
   const medals = [];
-  if (ex.wb) medals.push('wallbang');
+  if (ex.peep) medals.push('peephole'); else if (ex.wb) medals.push('wallbang');
   if (crit) medals.push(weapon === 'knife' ? 'backstab' : 'headshot');
   if (G.multi >= 2) medals.push(['', '', 'double', 'triple', 'multi', 'rampage'][Math.min(G.multi, 5)]);
   if (ex.first) medals.push('firstblood');
@@ -6377,13 +7183,13 @@ function botShoot(r, aimPoint) {
   let err = r.aimErr0 * Math.exp(-r.trackT * 1.6 * r.skill) + (sniper ? .004 : .016) / r.skill * (1 + tv * .14) + moving * (sniper ? .03 : .012) - r.crouch * .004;
   if (t && t.isPlayer && P.odT > 0) err *= 1.15;
   const up = Math.abs(d.y) > .95 ? _b3.set(1, 0, 0) : _b3.set(0, 1, 0), sx = _b4.crossVectors(d, up).normalize(), sy = up.crossVectors(sx, d).normalize();
-  const a = rand(0, 6.283), m = Math.sqrt(Math.random()) * err; d.addScaledVector(sx, Math.cos(a) * m).addScaledVector(sy, Math.sin(a) * m).normalize();
+  const _sseq = SPREAD.begin(r), _sp0 = SPREAD.sample(r, _sseq, 0), a = _sp0.a, m = _sp0.m * err; d.addScaledVector(sx, Math.cos(a) * m).addScaledVector(sy, Math.sin(a) * m).normalize();
   const pellets = w.pellets || 1, base = d.clone(); let res, hitMe = false;
   r.muzzle.getWorldPosition(_v3); const mz = _v3.clone();
   for (let pi = 0; pi < pellets; pi++) {
-    if (pellets > 1) { const a2 = rand(0, 6.283), m2 = Math.sqrt(Math.random()) * w.spreadP; d.copy(base).addScaledVector(sx, Math.cos(a2) * m2).addScaledVector(sy, Math.sin(a2) * m2).normalize(); }
+    if (pellets > 1) { const _sp = SPREAD.sample(r, _sseq, pi + 1), a2 = _sp.a, m2 = _sp.m * w.spreadP; d.copy(base).addScaledVector(sx, Math.cos(a2) * m2).addScaledVector(sy, Math.sin(a2) * m2).normalize(); }
     res = traceShot(eye, d, r, 150); PLANES.shot(eye, d, res.dist, w.dmg, r);
-    if (!res.ent && res.obj && res.obj.userData.tear !== undefined) { TEAR.hit(res.obj, res.point, d, r.weapon); res.tore = true; }
+    if (!res.ent && res.obj && res.obj.userData.tear !== undefined) { TEAR.hit(res.obj, res.point, d, r.weapon, { crater: pi === 0 }); res.tore = true; }
     if (res.ent === PLAYER_ENT) hitMe = true;
     if (pi < 3) tracer(mz, res.point, sniper ? new THREE.Color(5, 6, 9) : new THREE.Color(r.color.r * 4 + 1, r.color.g * 4 + 1, r.color.b * 4 + 1), sniper ? .035 : .022, sniper ? .14 : .06);
     if (pellets > 1 && res.ent) { const z = res.zone, k = falloffK(WEAPONS[r.weapon] || {}, res.dist); damageEntity(res.ent, w.dmg * k * (z === 'head' ? w.head : z === 'limb' ? w.limb : 1), z === 'head', res.point, d.clone(), z, r, r.weapon); }
@@ -6636,7 +7442,7 @@ const TF = {
 const PLANES = (() => {
   const R = { speed: 15, life: 7, hp: 25, hitR: .55, turn: 2.4, botTurn: 1.5, sink: .06, catchDist: 4.2, catchCone: Math.cos(1.0), catchBoost: 1.2, blastKill: 120, arm: .2, carry: 3, regen: 10, slowmo: .9, slowK: .3, catchSlow: .45 };
   const list = []; let seq = 0, geo = null, mats = {}, pipCam = null;
-  const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _rc = new THREE.Raycaster(), _hits = [];
+  const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _rc = new THREE.Raycaster(), _hits = []; _rc.plane = true;   // tear panels: a plane only fits through openings >= 45 cm (TEAR raycast reads this flag)
   const S = { steering: null, stats: { thrown: 0, caught: 0, shotDown: 0, exploded: 0, returns: 0, botThrows: 0, botCatches: 0, botShotDown: 0 } };
   const teamOf = e => { if (!e) return null; if (e === PLAYER_ENT || e.isPlayer) return window.S9BotModes && S9BotModes.on ? S9BotModes.myTeam : 'me'; return e.mxTeam || (e.netId || e.name); };
   const enemies = (a, b) => a && b && a !== b && teamOf(a) !== teamOf(b);
@@ -7790,48 +8596,70 @@ function restoreReplay() {
   REC.saved.length = 0;
 }
 
-/* ================= MELEE SLICE: cut a peek hole in thin cardboard with the paper cutter ================= */
-// Rules (docs/MECHANICS.md "Knife slice"): with the cutter out (V), aim at a sliceable (tearable) thin cardboard surface within
-// KSLICE.R.reach m: a small scissors icon shows. HOLD left click = slice mode: the cut follows the crosshair across that panel at
-// most R.speed m/s (slow on purpose), up to R.max m per hold; release = the cut stays (a slit you can see / shoot through). A
-// cut that comes back near its start and encloses >= .02 m2 drops the piece out (a clean peek hole). Cutting is loud: enemies hear
-// tearing card (noise every .25 s). A TAP (released within R.tap s) on the same panel, or holding left click anywhere else, is the
-// normal melee attack. Aiming the cutter at thick card / props within reach shows "too thick". Deterministic: the polyline.
+/* ================= KNIFE CUT SHAPES: draw any shape in thin cardboard with the paper cutter ================= */
+// Owner: "implement the holes and cutting shapes inside with knife by holding left click". Rules (docs/HOLES_SYSTEM.md B2/B3):
+// with the cutter out (V), aim at a thin cardboard WALL or FLOOR within R.reach m: the prompt says "hold left click + drag".
+// HOLD left click = cutting: the blade follows the crosshair across that panel (at most R.speed m/s, up to R.max m per hold) and
+// the cut line appears as you drag (a torn line in the card, with a pale ring marking where you started).
+//  - Come back near the START (R.close m) = the shape closes: the piece falls out as a paper sheet and leaves a see-through,
+//    shoot-through opening of exactly that shape.
+//  - Release early = the cut stays (a slit you can see / shoot through). Aim at its free end later and hold again to CONTINUE it.
+//  - An open cut that bends round an area (3 sides of a square, a U, a C) = a FLAP hinged on the gap: it hangs open, you can push it.
+// Deterministic + replicable: the whole drag is ONE small event ['cut', mm points] applied by the shared core (like holes).
+// Cutting is heard (noise every R.noise s, a slice sound + paper fibres per stroke). A TAP is the normal melee swing.
 const KSLICE = (() => {
-  const R = { reach: 2.2, speed: .9, max: 1.8, step: .03, tap: .18 };
-  const rc = new THREE.Raycaster(), _d = new THREE.Vector3();
-  const S = { near: null, thick: false, active: null, stats: { cuts: 0, closed: 0 } };
+  const R = { reach: 2.2, speed: 1.2, max: 3.6, step: .03, tap: .18, close: .07, closeMin: .3, noise: .25, stroke: .1 };
+  const rc = new THREE.Raycaster(), _d = new THREE.Vector3(); rc.knife = true;   // (TEAR: the blade meets card right at a cut line)
+  const S = { near: null, thick: false, cont: null, active: null, stats: { cuts: 0, closed: 0, flaps: 0, continued: 0 } };
   function aimHit() {
     camera.getWorldDirection(_d); rc.set(camera.position, _d); rc.far = R.reach + .6; if (targetsDirty) rebuildTargets();
     const h = rc.intersectObjects(world.meshes, false)[0]; return h && h.distance <= R.reach + (S.active ? .6 : 0) ? h : null;
   }
-  // mousedown with the cutter out: start slicing if we are on thin card (returns true = the attack is held back)
+  const isCard = h => { if (!h || h.object.userData.tear === undefined) return false; const C = TEAR.panels[h.object.userData.tear].core; return !C.collapsed && !!HOLES.WEAR.knife[C.cls]; };   // thick board / blocks: too thick to cut
+  // mousedown with the cutter out: start (or continue) a cut if we are on thin card (returns true = the swing is held back)
   function tryStart() {
     if (P.weapon !== 'knife' || state !== 'play' || P.dead) return false;
-    const h = aimHit(); if (!h || h.object.userData.tear === undefined) return false;
-    const P_ = TEAR.panels[h.object.userData.tear], uv = TEAR.uvOf(h.object, h.point);
-    const L = { pts: [uv], closed: false, live: true }; P_.knife = P_.knife || []; P_.knife.push(L);
-    S.active = { mesh: h.object, P_: P_, L, len: 0, t0: performance.now(), noiseT: 0, cur: uv.slice() }; return true;
+    const h = aimHit(); if (!isCard(h)) return false;
+    const P_ = TEAR.panels[h.object.userData.tear], uv = TEAR.uvOf(h.object, h.point), end = TEAR.openEndNear(P_, uv[0], uv[1]);
+    let home = null;
+    if (end) {   // continuing an earlier cut: closing means getting back to ITS other end
+      for (const L of P_.knife) { if (L.closed) continue; const a = L.pts[0], b = L.pts[L.pts.length - 1];
+        if (Math.hypot(b[0] - end[0], b[1] - end[1]) < 1e-6) { home = a; break; } if (Math.hypot(a[0] - end[0], a[1] - end[1]) < 1e-6) { home = b; break; } } }
+    const start = end || uv;
+    S.active = { mesh: h.object, P_, pts: [start.slice()], home: home || start.slice(), len: 0, t0: performance.now(), noiseT: 0, strokeT: 0, cur: start.slice(), cont: !!end, side: TEAR.sideOf(h.object, _d) };
+    TEAR.setLive(P_, null); return true;
   }
-  function stop() {
-    const A = S.active; if (!A) return; S.active = null; const P_ = A.P_, L = A.L;
-    if (performance.now() - A.t0 < R.tap * 1000 && A.len < .05) {   // a tap: no cut, a normal swing
-      P_.knife.splice(P_.knife.indexOf(L), 1); TEAR.redraw(P_); try { knifeAttack(false); } catch (e) {} return; }
-    P_.knife.splice(P_.knife.indexOf(L), 1); const r = TEAR.cut(A.mesh, L.pts);   // re-applied through the deterministic path
-    S.stats.cuts++; if (r && r.closed) { S.stats.closed++; callout('PEEK HOLE!', 'multi'); }
+  function finish(closeIt) {
+    const A = S.active; if (!A) return null; S.active = null; const P_ = A.P_;
+    if (!closeIt && performance.now() - A.t0 < R.tap * 1000 && A.len < .05) { TEAR.setLive(P_, null); try { knifeAttack(false); } catch (e) {} return null; }   // a tap: a normal swing
+    if (closeIt) A.pts.push(A.home.slice());
+    if (A.pts.length < 2) { TEAR.setLive(P_, null); return null; }
+    const r = TEAR.cut(A.mesh, A.pts, A.side);   // ONE deterministic event
+    S.stats.cuts++; if (A.cont) S.stats.continued++;
+    if (r && r.closed) { S.stats.closed++; callout('CUT OUT!', 'multi'); try { psnd('paper_flap', { vol: 1 }); } catch (e) {} }
+    else if (r && r.flap) { S.stats.flaps++; callout('FLAP', 'multi'); try { psnd('paper_flap', { vol: .8 }); } catch (e) {} }
+    return r;
   }
+  const stop = () => finish(false);
   function update(dt) {
-    if (P.weapon !== 'knife' || state !== 'play') { if (S.active) stop(); S.near = null; S.thick = false; icon(); return; }
-    const h = aimHit(); S.near = h && h.object.userData.tear !== undefined ? h.object : null; S.thick = !!h && !S.near;
+    if (P.weapon !== 'knife' || state !== 'play') { if (S.active) stop(); S.near = null; S.thick = false; S.cont = null; icon(); return; }
+    const h = aimHit(); S.near = isCard(h) ? h.object : null; S.thick = !!h && !S.near;
+    S.cont = null; if (S.near && !S.active) { const P_ = TEAR.panels[S.near.userData.tear], uv = TEAR.uvOf(S.near, h.point); S.cont = TEAR.openEndNear(P_, uv[0], uv[1]); }
     const A = S.active;
     if (A) {
       if (!mouseDown && !A.hold) { stop(); icon(); return; }
       if (h && h.object === A.mesh && A.len < R.max) {
         const uv = TEAR.uvOf(A.mesh, h.point), c = A.cur, dx = uv[0] - c[0], dy = uv[1] - c[1], d = Math.hypot(dx, dy), m = Math.min(d, R.speed * dt);
         if (d > 1e-4) { c[0] += dx / d * m; c[1] += dy / d * m; }
-        const last = A.L.pts[A.L.pts.length - 1];
-        if (Math.hypot(c[0] - last[0], c[1] - last[1]) >= R.step) { A.len += Math.hypot(c[0] - last[0], c[1] - last[1]); A.L.pts.push(c.slice()); TEAR.redraw(A.P_);
-          if ((A.noiseT -= dt) <= 0) { A.noiseT = .25; noise(camera.position, 30, PLAYER_ENT); try { sfx.knifeHit(); } catch (e) {} PFX.chips(h.point, _d.clone().negate(), A.P_.mat.color, A.P_.mat.userData.paper, 2); } }
+        const last = A.pts[A.pts.length - 1], seg = Math.hypot(c[0] - last[0], c[1] - last[1]);
+        if (seg >= R.step) {
+          A.len += seg; A.pts.push(c.slice()); TEAR.setLive(A.P_, A.pts, A.home);
+          if ((A.strokeT -= dt) <= 0) { A.strokeT = R.stroke; try { sfx.knifeHit(); } catch (e) {} PFX.chips(h.point, _d.clone().negate(), A.P_.mat.color, A.P_.mat.userData.paper, 2); }   // slice sound + paper fibres per stroke
+          if ((A.noiseT -= dt) <= 0) { A.noiseT = R.noise; noise(camera.position, 30, PLAYER_ENT); }
+          // back at the start: the shape closes and the piece drops out right away
+          const run = A.cont ? A.len + .5 : A.len;
+          if (run >= R.closeMin && A.pts.length >= 4 && Math.hypot(c[0] - A.home[0], c[1] - A.home[1]) < R.close) { finish(true); icon(); return; }
+        }
       }
       if (A.len >= R.max) stop();
     }
@@ -7840,10 +8668,12 @@ const KSLICE = (() => {
   let last = '';
   function icon() {
     const el = document.getElementById('pSlice'); if (!el) return;
-    const t = S.active ? 'cutting… release to stop' : S.near ? 'hold left click to cut' : S.thick ? 'too thick to cut' : '';
-    if (t !== last) { last = t; el.textContent = t; el.style.display = t ? 'block' : 'none'; el.classList.toggle('no', !S.active && !S.near); }
+    const A = S.active;
+    const t = A ? (A.len > .25 ? `cutting… back to the start to cut it out · ${Math.max(0, R.max - A.len).toFixed(1)} m left` : 'cutting… drag to draw the shape')
+      : S.cont ? 'HOLD LEFT CLICK: continue the cut' : S.near ? 'HOLD LEFT CLICK + DRAG: cut any shape' : S.thick ? 'too thick to cut' : '';
+    if (t !== last) { last = t; el.textContent = t; el.style.display = t ? 'block' : 'none'; el.classList.toggle('no', !A && !S.near); }
   }
-  return { R, S, tryStart, stop, update };
+  return { R, S, tryStart, stop, finish, update };
 })();
 /* ================= update: player ================= */
 const fwd = V3(), right = V3(), wish = V3();

@@ -225,23 +225,23 @@
     "name": "R-90 Longbow",
     "cls": "Sniper rifle",
     "mag": 5,
-    "reserve": 20,
+    "reserve": 25,
     "maxReserve": 35,
-    "rpm": 55,
+    "rpm": 70,
     "auto": false,
-    "dmg": 110,
-    "head": 2,
-    "oneShot": false,
+    "dmg": 5000,
+    "head": 1,
+    "oneShot": true,
     "pierce": true,
     "scope": true,
     "hip": 0.06,
     "ads": 0,
-    "adsFov": 20,
-    "adsSpeed": 30,
+    "adsFov": 13,
+    "adsSpeed": 26,
     "reload": 2,
     "reloadEmpty": 2,
     "falloff": null,
-    "kick": 5,
+    "kick": 4,
     "move": 0.94,
     "heat": 0,
     "stats": [
@@ -250,13 +250,9 @@
      100,
      45
     ],
-    "desc": "Bolt-action. Head, body or arm shot kills, a leg shot leaves them on a sliver.",
+    "desc": "Scoped. Kills in one shot and passes through every body in line.",
     "bolt": 0.75,
-    "_note": "bolt action like Sector Nine's BR-6 Obelisk (WEAPONS agent 2026-11-11): head/body/arm shot kills (110, arm counts as body), a leg shot (x0.75 = 82) leaves a sliver; 0.75 s bolt after each shot (the bolt clip, right hand on the knob), the scope drops out during the bolt and snaps back; switching weapons cancels the bolt. APPLIED from data/paper_weapons.json (this copy is documentation).",
-    "armK": 1,
-    "scopeSnap": true,
-    "steady": true,
-    "draw": 0.4
+    "_note": "bolt action: rpm 70 and mag 5 suggested so the 0.75 s bolt clip fits between shots (Sector Nine had rpm 200, mag 10)"
    },
    "desc": "Rolled-paper sniper with a film-lens scope. One shot, then work the bolt.",
    "art": {
@@ -372,8 +368,8 @@
      -0.13,
      -0.27
     ],
-    "eye": 0.13,
-    "tris": 2738,
+    "eye": 0.16,
+    "tris": 1504,
     "clips": {
      "equip": 0.5,
      "idle": 2,
@@ -386,8 +382,8 @@
     "attach": {
      "mag": [
       0,
-      0.035,
-      -0.1598
+      0.0173,
+      -0.1481
      ],
      "grip_r": [
       0,
@@ -396,23 +392,23 @@
      ],
      "grip_l": [
       0,
-      0.055,
-      -0.2848
+      0.0398,
+      -0.2434
      ],
      "muzzle": [
       0,
-      0.087,
-      -0.4048
+      0.0912,
+      -0.4039
      ],
      "sight": [
       0,
-      0.1465,
-      -0.0498
+      0.1339,
+      0.0006
      ],
      "eject": [
-      0.035,
-      0.095,
-      -0.1298
+      0.039,
+      0.0803,
+      -0.1084
      ]
     }
    }
@@ -545,7 +541,7 @@
     -0.42
    ],
    "eye": null,
-   "tris": 416,
+   "tris": 192,
    "clips": {
     "equip": 0.667,
     "idle": 2,
@@ -555,39 +551,39 @@
    },
    "attach": {
     "plane": [
-     0,
-     0.008,
-     -0.015
+     0.0,
+     0.023,
+     -0.04
     ],
     "wing_l": [
-     0,
-     0.03,
-     -0.035
+     0.0,
+     0.045,
+     -0.06
     ],
     "wing_r": [
-     0,
-     0.03,
-     -0.035
+     0.0,
+     0.045,
+     -0.06
     ],
     "grip_r": [
-     0,
-     0,
-     0
+     0.0,
+     0.0,
+     -0.0
     ],
     "muzzle": [
-     0,
-     0.03,
-     -0.175
+     0.0,
+     0.045,
+     -0.21
     ],
     "sight": [
-     0,
-     0.05,
-     -0.015
+     0.0,
+     0.065,
+     -0.04
     ],
     "grip_l": [
      -0.06,
-     -0.03,
-     0.085
+     -0.015,
+     0.06
     ]
    },
    "flightGlb": "assets/paper/guns/plane_flight.glb",

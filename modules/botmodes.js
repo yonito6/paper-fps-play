@@ -17,7 +17,7 @@
   if (window.S9BotModes) return;
   const $ = id => document.getElementById(id);
   const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const TEAM = { atk: { name: 'Blue team', css: '#3f64d8', col: [.18, .31, .69] }, def: { name: 'Red team', css: '#d6402f', col: [.75, .22, .17] } };
+  const TEAM = { atk: { name: 'Blue team', css: '#1f56c4', col: [.18, .31, .69] }, def: { name: 'Red team', css: '#c61e12', col: [.75, .22, .17] } };
   const MODE_NAME = { ffa: 'Free for all', tdm: 'Team deathmatch', demo: 'Demolition' };
   const CFG_KEY = 'sector9-botcfg';
   const S = window.S9BotModes = {
@@ -273,10 +273,8 @@
   pickSpawn = function (forEnt) {
     const L = layout();
     if (S.on && forEnt && forEnt.mxBot && forEnt.mxTeam && L && L[forEnt.mxTeam]) {
-      const pts = L[forEnt.mxTeam], taken = [PLAYER_ENT, ...robots].filter(e => e !== forEnt && alive(e) && teamOf(e) === forEnt.mxTeam).map(posOf);
-      const free = pts.filter(q => taken.every(t => Math.hypot(t.x - q[0], t.z - q[1]) > 1.3));
-      const q = free.length ? free[(forEnt.mxIdx || 0) % free.length] : pts[Math.floor(Math.random() * pts.length)];
-      const c = nearestOk(cellOf(q[0] + (free.length ? 0 : Math.random() - .5), q[1]), 6); return new THREE.Vector3(cellX(c), NAV.h[c], cellZ(c));
+      // same rule as the player: own team's base, the safest point (no enemy near / in sight), never inside geometry
+      const t = forEnt.mxTeam, v = pickSafeSpawn(forEnt, L[t], e => teamOf(e) !== t); if (v) return v;
     }
     return _pickSpawn.apply(this, arguments);
   };

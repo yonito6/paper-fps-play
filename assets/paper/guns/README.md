@@ -10,7 +10,7 @@ its origin is the right-hand grip (`grip_r`), so you place the root in camera sp
 | rifle | `rifle.glb` (463 KB) | `rifle_red.glb` | 2634 | equip, idle, fire, ads, ads_idle, inspect, reload |
 | shotgun | `shotgun.glb` (514 KB) | `shotgun_red.glb` | 3040 | equip, idle, fire, ads, ads_idle, inspect, reload_start, reload_shell, reload_end |
 | sniper | `sniper.glb` (495 KB) | `sniper_red.glb` | 2858 | equip, idle, fire, ads, ads_idle, inspect, reload, bolt |
-| smg | `smg.glb` (475 KB) | `smg_red.glb` | 2738 | equip, idle, fire, ads, ads_idle, inspect, reload |
+| smg | `smg.glb` (336 KB) | `smg_red.glb` | 1504 | equip, idle, fire, ads, ads_idle, inspect, reload |
 | boomerang | `boomerang.glb` (184 KB) | `boomerang_red.glb` | 404 | equip, idle, windup, throw, catch, inspect, punch |
 | plane | `plane.glb` (185 KB) | `plane_red.glb` | 416 | equip, idle, aim, aim_idle, throw |
 | plane_flight | `plane_flight.glb` (176 KB) | `plane_flight_red.glb` | 416 | none |
@@ -41,7 +41,7 @@ Rest positions (glTF, metres, relative to the root):
 - **rifle**: `mag` (0.000, 0.040, -0.159) parent `vm`; `grip_r` (0.000, 0.000, 0.000) parent `vm`; `grip_l` (0.000, 0.050, -0.384) parent `vm`; `muzzle` (0.000, 0.094, -0.724) parent `vm`; `sight` (0.000, 0.175, -0.085) parent `vm`; `eject` (0.040, 0.100, -0.144) parent `vm`; `mag_well` (0.000, 0.040, -0.159) parent `vm`
 - **shotgun**: `pump` (0.000, 0.085, -0.471) parent `vm`; `shell` (0.000, -0.001, -0.171) parent `vm`; `grip_r` (0.000, 0.000, 0.000) parent `vm`; `grip_l` (0.000, 0.057, -0.471) parent `vm`; `muzzle` (0.000, 0.123, -0.823) parent `vm`; `sight` (0.000, 0.158, 0.004) parent `vm`; `eject` (0.047, 0.101, -0.156) parent `vm`; `mag` (0.000, 0.031, -0.171) parent `vm`
 - **sniper**: `mag` (0.000, 0.046, -0.126) parent `vm`; `bolt` (0.000, 0.096, -0.036) parent `vm`; `grip_r` (0.000, 0.000, 0.000) parent `vm`; `grip_l` (0.000, 0.045, -0.446) parent `vm`; `muzzle` (0.000, 0.089, -1.101) parent `vm`; `sight` (0.000, 0.156, 0.062) parent `vm`; `eject` (0.032, 0.109, -0.066) parent `vm`; `bolt_knob` (0.064, 0.084, -0.027) parent `bolt`
-- **smg**: `mag` (0.000, 0.035, -0.160) parent `vm`; `grip_r` (0.000, 0.000, 0.000) parent `vm`; `grip_l` (0.000, 0.055, -0.285) parent `vm`; `muzzle` (0.000, 0.087, -0.405) parent `vm`; `sight` (0.000, 0.146, -0.050) parent `vm`; `eject` (0.035, 0.095, -0.130) parent `vm`
+- **smg**: `mag` (0.000, 0.017, -0.148) parent `vm`; `grip_r` (0.000, 0.000, 0.000) parent `vm`; `grip_l` (0.000, 0.040, -0.243) parent `vm`; `muzzle` (0.000, 0.091, -0.404) parent `vm`; `sight` (0.000, 0.134, 0.001) parent `vm`; `eject` (0.039, 0.080, -0.108) parent `vm`
 - **boomerang**: `blade` (0.142, 0.094, -0.005) parent `vm`; `grip_r` (0.000, 0.000, 0.000) parent `vm`; `grip_l` (0.220, -0.080, 0.055) parent `vm`; `muzzle` (0.142, 0.094, -0.005) parent `blade`; `sight` (0.170, 0.200, -0.015) parent `vm`
 - **plane**: `plane` (0.000, 0.008, -0.015) parent `vm`; `wing_l` (0.000, 0.030, -0.035) parent `plane`; `wing_r` (0.000, 0.030, -0.035) parent `plane`; `grip_r` (0.000, 0.000, 0.000) parent `vm`; `muzzle` (0.000, 0.030, -0.175) parent `plane`; `sight` (0.000, 0.050, -0.015) parent `vm`; `grip_l` (-0.060, -0.030, 0.085) parent `vm`
 

@@ -38,7 +38,7 @@ Scout / Marksman / Heavy = the same base with a different build + gear (ref1 poi
   `r.body` = the single paper material.
 - Every vertex has `_PIECE` (float id; three.js geometry attribute `_piece`): the rigid fold-panel it belongs to (57-61 per character),
   each panel bound 100 % to one bone. For break-up deaths, split by `_piece`.
-- Budgets: 1020 / 1028 / 998 / 1028 triangles (trooper / scout / marksman / heavy; rule <= 8k, so no LOD1/LOD2 needed: LOD0 is already under the 3k LOD1 budget), 1 material, 1 atlas, 49 bones (<= 60).
+- Budgets: 1230 / 1216 / 1186 / 1196 triangles (v3, 2026-11-12: 4-finger chunky hands, chest wrap split, cheek guards) (trooper / scout / marksman / heavy; rule <= 8k, so no LOD1/LOD2 needed: LOD0 is already under the 3k LOD1 budget), 1 material, 1 atlas, 49 bones (<= 60).
 
 ## Attach points (empties parented to bones, exported as glTF nodes)
 | name | bone | where |

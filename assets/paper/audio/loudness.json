@@ -1,0 +1,2947 @@
+{
+ "about": "Loudness of every sound (max momentary LUFS, BS.1770 K-weighting, 400 ms window), measured on the render and again after Ogg Vorbis encoding (decoded back). peak = dBFS.",
+ "sounds": {
+  "gun_rifle": {
+   "cat": "gun",
+   "target": -13,
+   "variants": [
+    {
+     "render": {
+      "M": -13,
+      "I": -13,
+      "peak": -0.87,
+      "len": 0.231
+     },
+     "encoded": {
+      "M": -13.36,
+      "I": -13.36,
+      "peak": 0,
+      "len": 0.231
+     }
+    },
+    {
+     "render": {
+      "M": -13,
+      "I": -13,
+      "peak": -0.82,
+      "len": 0.232
+     },
+     "encoded": {
+      "M": -13.31,
+      "I": -13.31,
+      "peak": 0,
+      "len": 0.232
+     }
+    },
+    {
+     "render": {
+      "M": -13,
+      "I": -13,
+      "peak": -1.01,
+      "len": 0.23
+     },
+     "encoded": {
+      "M": -13.35,
+      "I": -13.35,
+      "peak": 0,
+      "len": 0.23
+     }
+    }
+   ]
+  },
+  "gun_rifle_far": {
+   "cat": "gun",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -0.87,
+      "len": 0.296
+     },
+     "encoded": {
+      "M": -15.19,
+      "I": -15.19,
+      "peak": 0,
+      "len": 0.296
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -1.09,
+      "len": 0.348
+     },
+     "encoded": {
+      "M": -15.03,
+      "I": -15.03,
+      "peak": 0,
+      "len": 0.348
+     }
+    }
+   ]
+  },
+  "gun_smg": {
+   "cat": "gun",
+   "target": -14,
+   "variants": [
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -1.09,
+      "len": 0.132
+     },
+     "encoded": {
+      "M": -14.45,
+      "I": -14.45,
+      "peak": 0,
+      "len": 0.132
+     }
+    },
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -1.14,
+      "len": 0.129
+     },
+     "encoded": {
+      "M": -14.42,
+      "I": -14.42,
+      "peak": 0,
+      "len": 0.129
+     }
+    },
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -1.1,
+      "len": 0.131
+     },
+     "encoded": {
+      "M": -14.38,
+      "I": -14.38,
+      "peak": 0,
+      "len": 0.131
+     }
+    },
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -0.82,
+      "len": 0.131
+     },
+     "encoded": {
+      "M": -14.48,
+      "I": -14.48,
+      "peak": 0,
+      "len": 0.131
+     }
+    }
+   ]
+  },
+  "gun_smg_far": {
+   "cat": "gun",
+   "target": -16,
+   "variants": [
+    {
+     "render": {
+      "M": -16,
+      "I": -16,
+      "peak": -0.85,
+      "len": 0.209
+     },
+     "encoded": {
+      "M": -16.06,
+      "I": -16.06,
+      "peak": 0,
+      "len": 0.209
+     }
+    },
+    {
+     "render": {
+      "M": -16,
+      "I": -16,
+      "peak": -0.86,
+      "len": 0.209
+     },
+     "encoded": {
+      "M": -16.18,
+      "I": -16.18,
+      "peak": -0.05,
+      "len": 0.209
+     }
+    }
+   ]
+  },
+  "gun_shotgun": {
+   "cat": "gun",
+   "target": -11.5,
+   "variants": [
+    {
+     "render": {
+      "M": -11.5,
+      "I": -11.5,
+      "peak": -1.16,
+      "len": 0.421
+     },
+     "encoded": {
+      "M": -11.64,
+      "I": -11.64,
+      "peak": 0,
+      "len": 0.421
+     }
+    },
+    {
+     "render": {
+      "M": -11.5,
+      "I": -11.5,
+      "peak": -1.1,
+      "len": 0.424
+     },
+     "encoded": {
+      "M": -11.68,
+      "I": -11.68,
+      "peak": 0,
+      "len": 0.424
+     }
+    }
+   ]
+  },
+  "gun_shotgun_far": {
+   "cat": "gun",
+   "target": -14,
+   "variants": [
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -1.09,
+      "len": 0.369
+     },
+     "encoded": {
+      "M": -14.21,
+      "I": -14.21,
+      "peak": 0,
+      "len": 0.369
+     }
+    },
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -1.09,
+      "len": 0.471
+     },
+     "encoded": {
+      "M": -14.16,
+      "I": -14.16,
+      "peak": 0,
+      "len": 0.471
+     }
+    }
+   ]
+  },
+  "gun_sniper": {
+   "cat": "gun",
+   "target": -11,
+   "variants": [
+    {
+     "render": {
+      "M": -11,
+      "I": -13.55,
+      "peak": -1.09,
+      "len": 0.6
+     },
+     "encoded": {
+      "M": -11.14,
+      "I": -13.67,
+      "peak": 0,
+      "len": 0.6
+     }
+    },
+    {
+     "render": {
+      "M": -11,
+      "I": -13.61,
+      "peak": -1.01,
+      "len": 0.6
+     },
+     "encoded": {
+      "M": -11.24,
+      "I": -13.83,
+      "peak": 0,
+      "len": 0.6
+     }
+    }
+   ]
+  },
+  "gun_sniper_far": {
+   "cat": "gun",
+   "target": -13.5,
+   "variants": [
+    {
+     "render": {
+      "M": -13.5,
+      "I": -13.5,
+      "peak": -1.17,
+      "len": 0.471
+     },
+     "encoded": {
+      "M": -13.59,
+      "I": -13.59,
+      "peak": 0,
+      "len": 0.471
+     }
+    },
+    {
+     "render": {
+      "M": -13.5,
+      "I": -13.5,
+      "peak": -0.87,
+      "len": 0.508
+     },
+     "encoded": {
+      "M": -13.65,
+      "I": -13.65,
+      "peak": 0,
+      "len": 0.508
+     }
+    }
+   ]
+  },
+  "gun_pump": {
+   "cat": "foley",
+   "target": -21,
+   "variants": [
+    {
+     "render": {
+      "M": -21,
+      "I": -21,
+      "peak": -2.22,
+      "len": 0.45
+     },
+     "encoded": {
+      "M": -21.08,
+      "I": -21.08,
+      "peak": -2.13,
+      "len": 0.45
+     }
+    }
+   ]
+  },
+  "gun_bolt": {
+   "cat": "foley",
+   "target": -21,
+   "variants": [
+    {
+     "render": {
+      "M": -21,
+      "I": -22.3,
+      "peak": -1.72,
+      "len": 0.65
+     },
+     "encoded": {
+      "M": -21.07,
+      "I": -22.38,
+      "peak": -1.32,
+      "len": 0.65
+     }
+    }
+   ]
+  },
+  "dry_rifle": {
+   "cat": "foley",
+   "target": -27,
+   "variants": [
+    {
+     "render": {
+      "M": -27,
+      "I": -27,
+      "peak": -6.21,
+      "len": 0.08
+     },
+     "encoded": {
+      "M": -27.27,
+      "I": -27.27,
+      "peak": -6.53,
+      "len": 0.08
+     }
+    }
+   ]
+  },
+  "dry_smg": {
+   "cat": "foley",
+   "target": -27,
+   "variants": [
+    {
+     "render": {
+      "M": -27,
+      "I": -27,
+      "peak": -5.01,
+      "len": 0.08
+     },
+     "encoded": {
+      "M": -27.2,
+      "I": -27.2,
+      "peak": -5.25,
+      "len": 0.08
+     }
+    }
+   ]
+  },
+  "dry_shotgun": {
+   "cat": "foley",
+   "target": -27,
+   "variants": [
+    {
+     "render": {
+      "M": -27,
+      "I": -27,
+      "peak": -4.1,
+      "len": 0.08
+     },
+     "encoded": {
+      "M": -27.1,
+      "I": -27.1,
+      "peak": -4.44,
+      "len": 0.08
+     }
+    }
+   ]
+  },
+  "dry_sniper": {
+   "cat": "foley",
+   "target": -27,
+   "variants": [
+    {
+     "render": {
+      "M": -27,
+      "I": -27,
+      "peak": -4.24,
+      "len": 0.08
+     },
+     "encoded": {
+      "M": -27.07,
+      "I": -27.07,
+      "peak": -4.29,
+      "len": 0.08
+     }
+    }
+   ]
+  },
+  "mag_out": {
+   "cat": "foley",
+   "target": -24,
+   "variants": [
+    {
+     "render": {
+      "M": -24,
+      "I": -24,
+      "peak": -1.65,
+      "len": 0.2
+     },
+     "encoded": {
+      "M": -24.24,
+      "I": -24.24,
+      "peak": -2.86,
+      "len": 0.2
+     }
+    }
+   ]
+  },
+  "mag_in": {
+   "cat": "foley",
+   "target": -22,
+   "variants": [
+    {
+     "render": {
+      "M": -22,
+      "I": -22,
+      "peak": -2.22,
+      "len": 0.24
+     },
+     "encoded": {
+      "M": -22.07,
+      "I": -22.07,
+      "peak": -1.59,
+      "len": 0.24
+     }
+    }
+   ]
+  },
+  "tape_rip": {
+   "cat": "foley",
+   "target": -24,
+   "variants": [
+    {
+     "render": {
+      "M": -24,
+      "I": -24,
+      "peak": -5.93,
+      "len": 0.244
+     },
+     "encoded": {
+      "M": -24.19,
+      "I": -24.19,
+      "peak": -6.1,
+      "len": 0.244
+     }
+    }
+   ]
+  },
+  "shell_in": {
+   "cat": "foley",
+   "target": -24,
+   "variants": [
+    {
+     "render": {
+      "M": -24,
+      "I": -24,
+      "peak": -3.41,
+      "len": 0.12
+     },
+     "encoded": {
+      "M": -24.01,
+      "I": -24.01,
+      "peak": -3.46,
+      "len": 0.12
+     }
+    }
+   ]
+  },
+  "equip": {
+   "cat": "foley",
+   "target": -24,
+   "variants": [
+    {
+     "render": {
+      "M": -24,
+      "I": -24,
+      "peak": -3.57,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -24.05,
+      "I": -24.05,
+      "peak": -3.81,
+      "len": 0.25
+     }
+    },
+    {
+     "render": {
+      "M": -24,
+      "I": -24,
+      "peak": -3.96,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -24.13,
+      "I": -24.13,
+      "peak": -4.44,
+      "len": 0.25
+     }
+    }
+   ]
+  },
+  "ads_in": {
+   "cat": "foley",
+   "target": -28,
+   "variants": [
+    {
+     "render": {
+      "M": -28,
+      "I": -28,
+      "peak": -9.82,
+      "len": 0.14
+     },
+     "encoded": {
+      "M": -28.17,
+      "I": -28.17,
+      "peak": -10.64,
+      "len": 0.14
+     }
+    }
+   ]
+  },
+  "pickup": {
+   "cat": "ui",
+   "target": -22,
+   "variants": [
+    {
+     "render": {
+      "M": -22,
+      "I": -22,
+      "peak": -9.46,
+      "len": 0.35
+     },
+     "encoded": {
+      "M": -22.12,
+      "I": -22.12,
+      "peak": -9.74,
+      "len": 0.35
+     }
+    }
+   ]
+  },
+  "boom_throw": {
+   "cat": "gun",
+   "target": -16,
+   "variants": [
+    {
+     "render": {
+      "M": -16,
+      "I": -17.43,
+      "peak": -2.23,
+      "len": 0.5
+     },
+     "encoded": {
+      "M": -16.22,
+      "I": -17.63,
+      "peak": -2.26,
+      "len": 0.5
+     }
+    },
+    {
+     "render": {
+      "M": -16,
+      "I": -17.4,
+      "peak": -1.57,
+      "len": 0.5
+     },
+     "encoded": {
+      "M": -16.25,
+      "I": -17.65,
+      "peak": -1.99,
+      "len": 0.5
+     }
+    }
+   ]
+  },
+  "boom_whirr": {
+   "cat": "world",
+   "target": -20,
+   "variants": [
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -2.82,
+      "len": 0.219
+     },
+     "encoded": {
+      "M": -20.18,
+      "I": -20.18,
+      "peak": -2.31,
+      "len": 0.219
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -1.65,
+      "len": 0.219
+     },
+     "encoded": {
+      "M": -20.07,
+      "I": -20.07,
+      "peak": -2.51,
+      "len": 0.219
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -2.33,
+      "len": 0.219
+     },
+     "encoded": {
+      "M": -20.11,
+      "I": -20.11,
+      "peak": -2.97,
+      "len": 0.219
+     }
+    }
+   ]
+  },
+  "boom_clang": {
+   "cat": "world",
+   "target": -16,
+   "variants": [
+    {
+     "render": {
+      "M": -16,
+      "I": -16,
+      "peak": -1.76,
+      "len": 0.356
+     },
+     "encoded": {
+      "M": -16.07,
+      "I": -16.07,
+      "peak": 0,
+      "len": 0.356
+     }
+    },
+    {
+     "render": {
+      "M": -16,
+      "I": -16,
+      "peak": -1.79,
+      "len": 0.355
+     },
+     "encoded": {
+      "M": -16.04,
+      "I": -16.04,
+      "peak": -0.17,
+      "len": 0.355
+     }
+    }
+   ]
+  },
+  "boom_catch": {
+   "cat": "foley",
+   "target": -18,
+   "variants": [
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -2.13,
+      "len": 0.187
+     },
+     "encoded": {
+      "M": -18.04,
+      "I": -18.04,
+      "peak": -1.49,
+      "len": 0.187
+     }
+    }
+   ]
+  },
+  "boom_hit": {
+   "cat": "hit",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -1.98,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -15.15,
+      "I": -15.15,
+      "peak": -0.18,
+      "len": 0.3
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -1.93,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -15.16,
+      "I": -15.16,
+      "peak": -0.4,
+      "len": 0.3
+     }
+    }
+   ]
+  },
+  "boom_wind": {
+   "cat": "foley",
+   "target": -27,
+   "variants": [
+    {
+     "render": {
+      "M": -27,
+      "I": -27,
+      "peak": -7.91,
+      "len": 0.12
+     },
+     "encoded": {
+      "M": -27.21,
+      "I": -27.21,
+      "peak": -8.77,
+      "len": 0.12
+     }
+    },
+    {
+     "render": {
+      "M": -27,
+      "I": -27,
+      "peak": -8.1,
+      "len": 0.12
+     },
+     "encoded": {
+      "M": -27.06,
+      "I": -27.06,
+      "peak": -7.93,
+      "len": 0.12
+     }
+    },
+    {
+     "render": {
+      "M": -27,
+      "I": -27,
+      "peak": -3.96,
+      "len": 0.12
+     },
+     "encoded": {
+      "M": -27.42,
+      "I": -27.42,
+      "peak": -3.67,
+      "len": 0.12
+     }
+    }
+   ]
+  },
+  "plane_unfold": {
+   "cat": "foley",
+   "target": -22,
+   "variants": [
+    {
+     "render": {
+      "M": -22,
+      "I": -22,
+      "peak": -6.16,
+      "len": 0.34
+     },
+     "encoded": {
+      "M": -22.21,
+      "I": -22.21,
+      "peak": -6.86,
+      "len": 0.34
+     }
+    }
+   ]
+  },
+  "plane_throw": {
+   "cat": "gun",
+   "target": -17,
+   "variants": [
+    {
+     "render": {
+      "M": -17,
+      "I": -17,
+      "peak": -3.67,
+      "len": 0.391
+     },
+     "encoded": {
+      "M": -17.3,
+      "I": -17.3,
+      "peak": -3.15,
+      "len": 0.391
+     }
+    },
+    {
+     "render": {
+      "M": -17,
+      "I": -17,
+      "peak": -2.49,
+      "len": 0.389
+     },
+     "encoded": {
+      "M": -17.25,
+      "I": -17.25,
+      "peak": -2.84,
+      "len": 0.389
+     }
+    }
+   ]
+  },
+  "plane_loop": {
+   "cat": "world",
+   "target": -22,
+   "variants": [
+    {
+     "render": {
+      "M": -22,
+      "I": -22.51,
+      "peak": -8.72,
+      "len": 1.2
+     },
+     "encoded": {
+      "M": -22.17,
+      "I": -22.7,
+      "peak": -9.03,
+      "len": 1.2
+     }
+    }
+   ]
+  },
+  "plane_pop": {
+   "cat": "gun",
+   "target": -10.5,
+   "variants": [
+    {
+     "render": {
+      "M": -10.5,
+      "I": -15.83,
+      "peak": -1.39,
+      "len": 1.9
+     },
+     "encoded": {
+      "M": -10.59,
+      "I": -15.9,
+      "peak": 0,
+      "len": 1.9
+     }
+    },
+    {
+     "render": {
+      "M": -10.5,
+      "I": -15.71,
+      "peak": -1.34,
+      "len": 1.9
+     },
+     "encoded": {
+      "M": -10.62,
+      "I": -15.79,
+      "peak": 0,
+      "len": 1.9
+     }
+    }
+   ]
+  },
+  "plane_down": {
+   "cat": "world",
+   "target": -16,
+   "variants": [
+    {
+     "render": {
+      "M": -16,
+      "I": -16,
+      "peak": -1.87,
+      "len": 0.7
+     },
+     "encoded": {
+      "M": -16.18,
+      "I": -16.18,
+      "peak": 0,
+      "len": 0.7
+     }
+    }
+   ]
+  },
+  "plane_catch": {
+   "cat": "hit",
+   "target": -14,
+   "variants": [
+    {
+     "render": {
+      "M": -14,
+      "I": -14.16,
+      "peak": -1.52,
+      "len": 0.5
+     },
+     "encoded": {
+      "M": -14.09,
+      "I": -14.25,
+      "peak": -1.01,
+      "len": 0.5
+     }
+    }
+   ]
+  },
+  "plane_rts": {
+   "cat": "ui",
+   "target": -14,
+   "variants": [
+    {
+     "render": {
+      "M": -14,
+      "I": -17.06,
+      "peak": -1.85,
+      "len": 1.4
+     },
+     "encoded": {
+      "M": -14.06,
+      "I": -17.12,
+      "peak": -1.67,
+      "len": 1.4
+     }
+    }
+   ]
+  },
+  "plane_prompt": {
+   "cat": "ui",
+   "target": -20,
+   "variants": [
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -4.8,
+      "len": 0.22
+     },
+     "encoded": {
+      "M": -20.04,
+      "I": -20.04,
+      "peak": -7.18,
+      "len": 0.22
+     }
+    }
+   ]
+  },
+  "knife_swing": {
+   "cat": "foley",
+   "target": -20,
+   "variants": [
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -3.02,
+      "len": 0.24
+     },
+     "encoded": {
+      "M": -20.36,
+      "I": -20.36,
+      "peak": -3.55,
+      "len": 0.24
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -3.84,
+      "len": 0.24
+     },
+     "encoded": {
+      "M": -20.22,
+      "I": -20.22,
+      "peak": -3.55,
+      "len": 0.24
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -4.27,
+      "len": 0.24
+     },
+     "encoded": {
+      "M": -20.25,
+      "I": -20.25,
+      "peak": -5.64,
+      "len": 0.24
+     }
+    }
+   ]
+  },
+  "knife_swing_heavy": {
+   "cat": "foley",
+   "target": -18,
+   "variants": [
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -2.16,
+      "len": 0.316
+     },
+     "encoded": {
+      "M": -18.24,
+      "I": -18.24,
+      "peak": -2.88,
+      "len": 0.316
+     }
+    }
+   ]
+  },
+  "knife_stab": {
+   "cat": "hit",
+   "target": -14,
+   "variants": [
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -1.53,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -14.11,
+      "I": -14.11,
+      "peak": -0.01,
+      "len": 0.3
+     }
+    },
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -2.11,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -14.1,
+      "I": -14.1,
+      "peak": -0.2,
+      "len": 0.3
+     }
+    }
+   ]
+  },
+  "knife_slice": {
+   "cat": "world",
+   "target": -20,
+   "variants": [
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -6.39,
+      "len": 0.27
+     },
+     "encoded": {
+      "M": -20.18,
+      "I": -20.18,
+      "peak": -7.85,
+      "len": 0.27
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -3.98,
+      "len": 0.27
+     },
+     "encoded": {
+      "M": -20.15,
+      "I": -20.15,
+      "peak": -5.28,
+      "len": 0.27
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -6.69,
+      "len": 0.27
+     },
+     "encoded": {
+      "M": -20.16,
+      "I": -20.16,
+      "peak": -6.95,
+      "len": 0.27
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -2.3,
+      "len": 0.27
+     },
+     "encoded": {
+      "M": -20.15,
+      "I": -20.15,
+      "peak": -3,
+      "len": 0.27
+     }
+    }
+   ]
+  },
+  "hit_body": {
+   "cat": "hit",
+   "target": -14,
+   "variants": [
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -1.74,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -14.06,
+      "I": -14.06,
+      "peak": -0.16,
+      "len": 0.25
+     }
+    },
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -1.73,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -14.04,
+      "I": -14.04,
+      "peak": 0,
+      "len": 0.25
+     }
+    },
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -1.81,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -14.01,
+      "I": -14.01,
+      "peak": -0.02,
+      "len": 0.25
+     }
+    },
+    {
+     "render": {
+      "M": -14,
+      "I": -14,
+      "peak": -1.86,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -14.06,
+      "I": -14.06,
+      "peak": -0.3,
+      "len": 0.25
+     }
+    }
+   ]
+  },
+  "hit_head": {
+   "cat": "hit",
+   "target": -12.5,
+   "variants": [
+    {
+     "render": {
+      "M": -12.5,
+      "I": -14.88,
+      "peak": -1.8,
+      "len": 0.5
+     },
+     "encoded": {
+      "M": -12.62,
+      "I": -14.98,
+      "peak": 0,
+      "len": 0.5
+     }
+    },
+    {
+     "render": {
+      "M": -12.5,
+      "I": -14.87,
+      "peak": -1.93,
+      "len": 0.5
+     },
+     "encoded": {
+      "M": -12.62,
+      "I": -14.99,
+      "peak": 0,
+      "len": 0.5
+     }
+    },
+    {
+     "render": {
+      "M": -12.5,
+      "I": -14.86,
+      "peak": -1.82,
+      "len": 0.5
+     },
+     "encoded": {
+      "M": -12.6,
+      "I": -14.94,
+      "peak": 0,
+      "len": 0.5
+     }
+    }
+   ]
+  },
+  "hit_limb": {
+   "cat": "hit",
+   "target": -15.5,
+   "variants": [
+    {
+     "render": {
+      "M": -15.5,
+      "I": -15.5,
+      "peak": -1.81,
+      "len": 0.2
+     },
+     "encoded": {
+      "M": -15.54,
+      "I": -15.54,
+      "peak": -0.68,
+      "len": 0.2
+     }
+    },
+    {
+     "render": {
+      "M": -15.5,
+      "I": -15.5,
+      "peak": -1.85,
+      "len": 0.2
+     },
+     "encoded": {
+      "M": -15.49,
+      "I": -15.49,
+      "peak": -0.49,
+      "len": 0.2
+     }
+    }
+   ]
+  },
+  "hit_wall": {
+   "cat": "hit",
+   "target": -14.5,
+   "variants": [
+    {
+     "render": {
+      "M": -14.5,
+      "I": -14.5,
+      "peak": -1.91,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -14.47,
+      "I": -14.47,
+      "peak": -0.9,
+      "len": 0.25
+     }
+    },
+    {
+     "render": {
+      "M": -14.5,
+      "I": -14.5,
+      "peak": -1.93,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -14.5,
+      "I": -14.5,
+      "peak": -0.88,
+      "len": 0.25
+     }
+    }
+   ]
+  },
+  "hit_shield": {
+   "cat": "hit",
+   "target": -17,
+   "variants": [
+    {
+     "render": {
+      "M": -17,
+      "I": -17,
+      "peak": -1.8,
+      "len": 0.2
+     },
+     "encoded": {
+      "M": -17.09,
+      "I": -17.09,
+      "peak": -0.55,
+      "len": 0.2
+     }
+    }
+   ]
+  },
+  "kill_confirm": {
+   "cat": "hit",
+   "target": -13.5,
+   "variants": [
+    {
+     "render": {
+      "M": -13.5,
+      "I": -17.74,
+      "peak": -2.01,
+      "len": 0.9
+     },
+     "encoded": {
+      "M": -13.56,
+      "I": -17.81,
+      "peak": -1.32,
+      "len": 0.9
+     }
+    },
+    {
+     "render": {
+      "M": -13.5,
+      "I": -17.98,
+      "peak": -1.61,
+      "len": 0.9
+     },
+     "encoded": {
+      "M": -13.52,
+      "I": -18.02,
+      "peak": -1.82,
+      "len": 0.9
+     }
+    }
+   ]
+  },
+  "kill_confirm_head": {
+   "cat": "hit",
+   "target": -12.5,
+   "variants": [
+    {
+     "render": {
+      "M": -12.5,
+      "I": -17.02,
+      "peak": -2.21,
+      "len": 0.95
+     },
+     "encoded": {
+      "M": -12.58,
+      "I": -17.09,
+      "peak": -0.92,
+      "len": 0.95
+     }
+    },
+    {
+     "render": {
+      "M": -12.5,
+      "I": -16.62,
+      "peak": -1.94,
+      "len": 0.95
+     },
+     "encoded": {
+      "M": -12.58,
+      "I": -16.7,
+      "peak": -1.31,
+      "len": 0.95
+     }
+    }
+   ]
+  },
+  "body_impact": {
+   "cat": "world",
+   "target": -16,
+   "variants": [
+    {
+     "render": {
+      "M": -16,
+      "I": -16,
+      "peak": -1.72,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -16.03,
+      "I": -16.03,
+      "peak": -0.29,
+      "len": 0.25
+     }
+    },
+    {
+     "render": {
+      "M": -16,
+      "I": -16,
+      "peak": -1.75,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -16,
+      "I": -16,
+      "peak": -0.75,
+      "len": 0.25
+     }
+    },
+    {
+     "render": {
+      "M": -16,
+      "I": -16,
+      "peak": -1.62,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -16,
+      "I": -16,
+      "peak": -0.32,
+      "len": 0.25
+     }
+    },
+    {
+     "render": {
+      "M": -16,
+      "I": -16,
+      "peak": -1.75,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -16,
+      "I": -16,
+      "peak": -0.29,
+      "len": 0.25
+     }
+    }
+   ]
+  },
+  "head_impact": {
+   "cat": "world",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -1.81,
+      "len": 0.221
+     },
+     "encoded": {
+      "M": -15.29,
+      "I": -15.29,
+      "peak": 0,
+      "len": 0.221
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -1.83,
+      "len": 0.226
+     },
+     "encoded": {
+      "M": -15.2,
+      "I": -15.2,
+      "peak": 0,
+      "len": 0.226
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -1.91,
+      "len": 0.232
+     },
+     "encoded": {
+      "M": -15.26,
+      "I": -15.26,
+      "peak": 0,
+      "len": 0.232
+     }
+    }
+   ]
+  },
+  "hurt": {
+   "cat": "hit",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -1.87,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -14.96,
+      "I": -14.96,
+      "peak": -1.4,
+      "len": 0.3
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -1.83,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -14.95,
+      "I": -14.95,
+      "peak": -1.42,
+      "len": 0.3
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -1.85,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -15.02,
+      "I": -15.02,
+      "peak": -1.32,
+      "len": 0.3
+     }
+    }
+   ]
+  },
+  "hurt_head": {
+   "cat": "hit",
+   "target": -13.5,
+   "variants": [
+    {
+     "render": {
+      "M": -13.5,
+      "I": -13.5,
+      "peak": -1.96,
+      "len": 0.32
+     },
+     "encoded": {
+      "M": -13.46,
+      "I": -13.46,
+      "peak": -0.88,
+      "len": 0.32
+     }
+    },
+    {
+     "render": {
+      "M": -13.5,
+      "I": -13.5,
+      "peak": -2,
+      "len": 0.32
+     },
+     "encoded": {
+      "M": -13.55,
+      "I": -13.55,
+      "peak": -1.2,
+      "len": 0.32
+     }
+    }
+   ]
+  },
+  "death_confetti": {
+   "cat": "death",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -19.53,
+      "peak": -1.78,
+      "len": 1.448
+     },
+     "encoded": {
+      "M": -15.12,
+      "I": -19.65,
+      "peak": -0.14,
+      "len": 1.448
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -17.85,
+      "peak": -1.84,
+      "len": 1.481
+     },
+     "encoded": {
+      "M": -15.17,
+      "I": -18.02,
+      "peak": -0.01,
+      "len": 1.481
+     }
+    }
+   ]
+  },
+  "death_shred": {
+   "cat": "death",
+   "target": -14.5,
+   "variants": [
+    {
+     "render": {
+      "M": -14.5,
+      "I": -18.11,
+      "peak": -1.55,
+      "len": 1.188
+     },
+     "encoded": {
+      "M": -14.71,
+      "I": -18.33,
+      "peak": -0.25,
+      "len": 1.188
+     }
+    },
+    {
+     "render": {
+      "M": -14.5,
+      "I": -18.16,
+      "peak": -1.51,
+      "len": 1.151
+     },
+     "encoded": {
+      "M": -14.64,
+      "I": -18.3,
+      "peak": -0.62,
+      "len": 1.151
+     }
+    }
+   ]
+  },
+  "death_crumple": {
+   "cat": "death",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -16.96,
+      "peak": -1.86,
+      "len": 1.242
+     },
+     "encoded": {
+      "M": -15.25,
+      "I": -17.21,
+      "peak": -2.11,
+      "len": 1.242
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -16.94,
+      "peak": -2.03,
+      "len": 1.245
+     },
+     "encoded": {
+      "M": -15.21,
+      "I": -17.13,
+      "peak": -2.15,
+      "len": 1.245
+     }
+    }
+   ]
+  },
+  "death_halve": {
+   "cat": "death",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -16.98,
+      "peak": -2.16,
+      "len": 1.196
+     },
+     "encoded": {
+      "M": -14.99,
+      "I": -17.03,
+      "peak": -1.18,
+      "len": 1.196
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -17.01,
+      "peak": -2.14,
+      "len": 1.17
+     },
+     "encoded": {
+      "M": -14.97,
+      "I": -17.03,
+      "peak": -1.51,
+      "len": 1.17
+     }
+    }
+   ]
+  },
+  "death_flatten": {
+   "cat": "death",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -20.63,
+      "peak": -1.97,
+      "len": 1.248
+     },
+     "encoded": {
+      "M": -15.09,
+      "I": -20.79,
+      "peak": -2.07,
+      "len": 1.248
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -20.01,
+      "peak": -1.92,
+      "len": 1.246
+     },
+     "encoded": {
+      "M": -15.13,
+      "I": -20.2,
+      "peak": -1.78,
+      "len": 1.246
+     }
+    }
+   ]
+  },
+  "death_unfold": {
+   "cat": "death",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -20.63,
+      "peak": -2.03,
+      "len": 1.615
+     },
+     "encoded": {
+      "M": -15.1,
+      "I": -20.82,
+      "peak": -0.99,
+      "len": 1.615
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -21.21,
+      "peak": -2.1,
+      "len": 1.614
+     },
+     "encoded": {
+      "M": -15.15,
+      "I": -21.44,
+      "peak": -0.97,
+      "len": 1.614
+     }
+    }
+   ]
+  },
+  "death_puff": {
+   "cat": "death",
+   "target": -22,
+   "variants": [
+    {
+     "render": {
+      "M": -22,
+      "I": -22,
+      "peak": -6.39,
+      "len": 0.397
+     },
+     "encoded": {
+      "M": -22.24,
+      "I": -22.24,
+      "peak": -6.96,
+      "len": 0.397
+     }
+    }
+   ]
+  },
+  "death_me": {
+   "cat": "death",
+   "target": -16,
+   "variants": [
+    {
+     "render": {
+      "M": -16,
+      "I": -23.77,
+      "peak": -3.54,
+      "len": 1.9
+     },
+     "encoded": {
+      "M": -15.97,
+      "I": -23.77,
+      "peak": -3.27,
+      "len": 1.9
+     }
+    }
+   ]
+  },
+  "spawn_me": {
+   "cat": "ui",
+   "target": -22,
+   "variants": [
+    {
+     "render": {
+      "M": -22,
+      "I": -22,
+      "peak": -4.51,
+      "len": 0.4
+     },
+     "encoded": {
+      "M": -22.13,
+      "I": -22.13,
+      "peak": -4.4,
+      "len": 0.4
+     }
+    }
+   ]
+  },
+  "imp_card_thin": {
+   "cat": "world",
+   "target": -18,
+   "variants": [
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -2.08,
+      "len": 0.13
+     },
+     "encoded": {
+      "M": -18.12,
+      "I": -18.12,
+      "peak": -1.12,
+      "len": 0.13
+     }
+    },
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -2.22,
+      "len": 0.133
+     },
+     "encoded": {
+      "M": -18.21,
+      "I": -18.21,
+      "peak": -1.38,
+      "len": 0.133
+     }
+    },
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -1.63,
+      "len": 0.134
+     },
+     "encoded": {
+      "M": -18.19,
+      "I": -18.19,
+      "peak": -1.41,
+      "len": 0.134
+     }
+    },
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -1.68,
+      "len": 0.134
+     },
+     "encoded": {
+      "M": -18.17,
+      "I": -18.17,
+      "peak": -1.12,
+      "len": 0.134
+     }
+    }
+   ]
+  },
+  "imp_card_thick": {
+   "cat": "world",
+   "target": -18,
+   "variants": [
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -1.89,
+      "len": 0.2
+     },
+     "encoded": {
+      "M": -18.02,
+      "I": -18.02,
+      "peak": -1.46,
+      "len": 0.2
+     }
+    },
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -1.98,
+      "len": 0.2
+     },
+     "encoded": {
+      "M": -18.04,
+      "I": -18.04,
+      "peak": -1.53,
+      "len": 0.2
+     }
+    },
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -1.99,
+      "len": 0.2
+     },
+     "encoded": {
+      "M": -18.03,
+      "I": -18.03,
+      "peak": -1.67,
+      "len": 0.2
+     }
+    },
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -2.13,
+      "len": 0.2
+     },
+     "encoded": {
+      "M": -18.01,
+      "I": -18.01,
+      "peak": -1.62,
+      "len": 0.2
+     }
+    }
+   ]
+  },
+  "imp_wood": {
+   "cat": "world",
+   "target": -18,
+   "variants": [
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -2.05,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -18.12,
+      "I": -18.12,
+      "peak": -0.97,
+      "len": 0.25
+     }
+    },
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -2.09,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -18.11,
+      "I": -18.11,
+      "peak": -1.46,
+      "len": 0.25
+     }
+    },
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -2.1,
+      "len": 0.25
+     },
+     "encoded": {
+      "M": -18.1,
+      "I": -18.1,
+      "peak": -1.45,
+      "len": 0.25
+     }
+    }
+   ]
+  },
+  "imp_paper": {
+   "cat": "world",
+   "target": -19,
+   "variants": [
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -2.02,
+      "len": 0.14
+     },
+     "encoded": {
+      "M": -19.2,
+      "I": -19.2,
+      "peak": -2.06,
+      "len": 0.14
+     }
+    },
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -2.26,
+      "len": 0.14
+     },
+     "encoded": {
+      "M": -19.25,
+      "I": -19.25,
+      "peak": -2.14,
+      "len": 0.14
+     }
+    },
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -1.58,
+      "len": 0.14
+     },
+     "encoded": {
+      "M": -19.17,
+      "I": -19.17,
+      "peak": -2.41,
+      "len": 0.14
+     }
+    }
+   ]
+  },
+  "imp_plastic": {
+   "cat": "world",
+   "target": -19,
+   "variants": [
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -2.24,
+      "len": 0.12
+     },
+     "encoded": {
+      "M": -19.07,
+      "I": -19.07,
+      "peak": -1.43,
+      "len": 0.12
+     }
+    },
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -2.25,
+      "len": 0.12
+     },
+     "encoded": {
+      "M": -19.48,
+      "I": -19.48,
+      "peak": -1.55,
+      "len": 0.12
+     }
+    },
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -2.26,
+      "len": 0.12
+     },
+     "encoded": {
+      "M": -19.3,
+      "I": -19.3,
+      "peak": -1.82,
+      "len": 0.12
+     }
+    }
+   ]
+  },
+  "imp_metal": {
+   "cat": "world",
+   "target": -19,
+   "variants": [
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -3.66,
+      "len": 0.45
+     },
+     "encoded": {
+      "M": -18.95,
+      "I": -18.95,
+      "peak": -4.83,
+      "len": 0.45
+     }
+    },
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -5.12,
+      "len": 0.45
+     },
+     "encoded": {
+      "M": -18.99,
+      "I": -18.99,
+      "peak": -5.22,
+      "len": 0.45
+     }
+    },
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -5.24,
+      "len": 0.45
+     },
+     "encoded": {
+      "M": -18.89,
+      "I": -18.89,
+      "peak": -5.92,
+      "len": 0.45
+     }
+    }
+   ]
+  },
+  "imp_mat": {
+   "cat": "world",
+   "target": -20,
+   "variants": [
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -2.18,
+      "len": 0.12
+     },
+     "encoded": {
+      "M": -19.98,
+      "I": -19.98,
+      "peak": -1.36,
+      "len": 0.12
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -2.13,
+      "len": 0.12
+     },
+     "encoded": {
+      "M": -20,
+      "I": -20,
+      "peak": -1.52,
+      "len": 0.12
+     }
+    }
+   ]
+  },
+  "shred_wall": {
+   "cat": "world",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -2.06,
+      "len": 0.52
+     },
+     "encoded": {
+      "M": -15.11,
+      "I": -15.11,
+      "peak": 0,
+      "len": 0.52
+     }
+    },
+    {
+     "render": {
+      "M": -15,
+      "I": -15,
+      "peak": -1.91,
+      "len": 0.546
+     },
+     "encoded": {
+      "M": -15.16,
+      "I": -15.16,
+      "peak": 0,
+      "len": 0.546
+     }
+    }
+   ]
+  },
+  "flap_tear": {
+   "cat": "world",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -16.72,
+      "peak": -1.61,
+      "len": 0.855
+     },
+     "encoded": {
+      "M": -15.21,
+      "I": -16.9,
+      "peak": -1.6,
+      "len": 0.855
+     }
+    }
+   ]
+  },
+  "floor_break": {
+   "cat": "world",
+   "target": -13.5,
+   "variants": [
+    {
+     "render": {
+      "M": -13.5,
+      "I": -17.64,
+      "peak": -2.15,
+      "len": 1.25
+     },
+     "encoded": {
+      "M": -13.58,
+      "I": -17.76,
+      "peak": -0.69,
+      "len": 1.25
+     }
+    }
+   ]
+  },
+  "debris": {
+   "cat": "world",
+   "target": -24,
+   "variants": [
+    {
+     "render": {
+      "M": -24,
+      "I": -25.1,
+      "peak": -3.82,
+      "len": 0.503
+     },
+     "encoded": {
+      "M": -24.17,
+      "I": -25.26,
+      "peak": -4.47,
+      "len": 0.503
+     }
+    },
+    {
+     "render": {
+      "M": -24,
+      "I": -24.88,
+      "peak": -7.9,
+      "len": 0.523
+     },
+     "encoded": {
+      "M": -24.14,
+      "I": -24.99,
+      "peak": -8.6,
+      "len": 0.523
+     }
+    },
+    {
+     "render": {
+      "M": -24,
+      "I": -24.51,
+      "peak": -9.44,
+      "len": 0.53
+     },
+     "encoded": {
+      "M": -24,
+      "I": -24.51,
+      "peak": -9.27,
+      "len": 0.53
+     }
+    }
+   ]
+  },
+  "whiz": {
+   "cat": "world",
+   "target": -19,
+   "variants": [
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -2.77,
+      "len": 0.187
+     },
+     "encoded": {
+      "M": -19.45,
+      "I": -19.45,
+      "peak": -2.72,
+      "len": 0.187
+     }
+    },
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -2.25,
+      "len": 0.188
+     },
+     "encoded": {
+      "M": -19.21,
+      "I": -19.21,
+      "peak": -2.37,
+      "len": 0.188
+     }
+    },
+    {
+     "render": {
+      "M": -19,
+      "I": -19,
+      "peak": -1.66,
+      "len": 0.188
+     },
+     "encoded": {
+      "M": -19.14,
+      "I": -19.14,
+      "peak": -2.07,
+      "len": 0.188
+     }
+    }
+   ]
+  },
+  "jump": {
+   "cat": "move",
+   "target": -27,
+   "variants": [
+    {
+     "render": {
+      "M": -27,
+      "I": -27,
+      "peak": -9.91,
+      "len": 0.16
+     },
+     "encoded": {
+      "M": -27.13,
+      "I": -27.13,
+      "peak": -10.13,
+      "len": 0.16
+     }
+    },
+    {
+     "render": {
+      "M": -27,
+      "I": -27,
+      "peak": -8.06,
+      "len": 0.16
+     },
+     "encoded": {
+      "M": -27.07,
+      "I": -27.07,
+      "peak": -8.07,
+      "len": 0.16
+     }
+    }
+   ]
+  },
+  "crouch": {
+   "cat": "move",
+   "target": -30,
+   "variants": [
+    {
+     "render": {
+      "M": -30,
+      "I": -30,
+      "peak": -8.33,
+      "len": 0.2
+     },
+     "encoded": {
+      "M": -30.32,
+      "I": -30.32,
+      "peak": -9.12,
+      "len": 0.2
+     }
+    },
+    {
+     "render": {
+      "M": -30,
+      "I": -30,
+      "peak": -10.35,
+      "len": 0.2
+     },
+     "encoded": {
+      "M": -30.29,
+      "I": -30.29,
+      "peak": -11.55,
+      "len": 0.2
+     }
+    }
+   ]
+  },
+  "paper_flap": {
+   "cat": "move",
+   "target": -22,
+   "variants": [
+    {
+     "render": {
+      "M": -22,
+      "I": -22,
+      "peak": -7.13,
+      "len": 0.32
+     },
+     "encoded": {
+      "M": -22.06,
+      "I": -22.06,
+      "peak": -7.37,
+      "len": 0.32
+     }
+    }
+   ]
+  },
+  "heart": {
+   "cat": "ui",
+   "target": -22,
+   "variants": [
+    {
+     "render": {
+      "M": -22,
+      "I": -22,
+      "peak": -5.76,
+      "len": 0.32
+     },
+     "encoded": {
+      "M": -22.02,
+      "I": -22.02,
+      "peak": -5.73,
+      "len": 0.32
+     }
+    }
+   ]
+  },
+  "ui_click": {
+   "cat": "ui",
+   "target": -24,
+   "variants": [
+    {
+     "render": {
+      "M": -24,
+      "I": -24,
+      "peak": -1.82,
+      "len": 0.08
+     },
+     "encoded": {
+      "M": -24,
+      "I": -24,
+      "peak": -1.29,
+      "len": 0.08
+     }
+    },
+    {
+     "render": {
+      "M": -24,
+      "I": -24,
+      "peak": -1.9,
+      "len": 0.08
+     },
+     "encoded": {
+      "M": -24.09,
+      "I": -24.09,
+      "peak": -0.91,
+      "len": 0.08
+     }
+    }
+   ]
+  },
+  "ui_hover": {
+   "cat": "ui",
+   "target": -32,
+   "variants": [
+    {
+     "render": {
+      "M": -32,
+      "I": -32,
+      "peak": -6.01,
+      "len": 0.04
+     },
+     "encoded": {
+      "M": -32.12,
+      "I": -32.12,
+      "peak": -5.72,
+      "len": 0.04
+     }
+    }
+   ]
+  },
+  "ui_back": {
+   "cat": "ui",
+   "target": -25,
+   "variants": [
+    {
+     "render": {
+      "M": -25,
+      "I": -25,
+      "peak": -8,
+      "len": 0.16
+     },
+     "encoded": {
+      "M": -25.19,
+      "I": -25.19,
+      "peak": -7.98,
+      "len": 0.16
+     }
+    }
+   ]
+  },
+  "ui_tick": {
+   "cat": "ui",
+   "target": -21,
+   "variants": [
+    {
+     "render": {
+      "M": -21,
+      "I": -21,
+      "peak": -4.02,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -20.89,
+      "I": -20.89,
+      "peak": -3.54,
+      "len": 0.3
+     }
+    },
+    {
+     "render": {
+      "M": -21,
+      "I": -21,
+      "peak": -3.19,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -21,
+      "I": -21,
+      "peak": -2.81,
+      "len": 0.3
+     }
+    },
+    {
+     "render": {
+      "M": -21,
+      "I": -21,
+      "peak": -3.59,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -21.03,
+      "I": -21.03,
+      "peak": -3.87,
+      "len": 0.3
+     }
+    },
+    {
+     "render": {
+      "M": -21,
+      "I": -21,
+      "peak": -2.74,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -21.03,
+      "I": -21.03,
+      "peak": -2.97,
+      "len": 0.3
+     }
+    },
+    {
+     "render": {
+      "M": -21,
+      "I": -21,
+      "peak": -2.54,
+      "len": 0.3
+     },
+     "encoded": {
+      "M": -20.96,
+      "I": -20.96,
+      "peak": -3.19,
+      "len": 0.3
+     }
+    }
+   ]
+  },
+  "kill_feed": {
+   "cat": "ui",
+   "target": -28,
+   "variants": [
+    {
+     "render": {
+      "M": -28,
+      "I": -28,
+      "peak": -11.33,
+      "len": 0.15
+     },
+     "encoded": {
+      "M": -28.09,
+      "I": -28.09,
+      "peak": -10.88,
+      "len": 0.15
+     }
+    }
+   ]
+  },
+  "round_start": {
+   "cat": "ui",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -18.1,
+      "peak": -2.11,
+      "len": 1.4
+     },
+     "encoded": {
+      "M": -15.02,
+      "I": -18.13,
+      "peak": -1.55,
+      "len": 1.4
+     }
+    }
+   ]
+  },
+  "round_go": {
+   "cat": "ui",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -19.64,
+      "peak": -1.85,
+      "len": 0.8
+     },
+     "encoded": {
+      "M": -15.11,
+      "I": -19.73,
+      "peak": -1.6,
+      "len": 0.8
+     }
+    }
+   ]
+  },
+  "sting_win": {
+   "cat": "ui",
+   "target": -14,
+   "variants": [
+    {
+     "render": {
+      "M": -14,
+      "I": -18.24,
+      "peak": -1.92,
+      "len": 2.2
+     },
+     "encoded": {
+      "M": -14.05,
+      "I": -18.28,
+      "peak": -1.45,
+      "len": 2.2
+     }
+    }
+   ]
+  },
+  "sting_lose": {
+   "cat": "ui",
+   "target": -15,
+   "variants": [
+    {
+     "render": {
+      "M": -15,
+      "I": -18.13,
+      "peak": -2.97,
+      "len": 1.8
+     },
+     "encoded": {
+      "M": -14.99,
+      "I": -18.13,
+      "peak": -2.81,
+      "len": 1.8
+     }
+    }
+   ]
+  },
+  "sting_victory": {
+   "cat": "ui",
+   "target": -13.5,
+   "variants": [
+    {
+     "render": {
+      "M": -13.5,
+      "I": -17.72,
+      "peak": -1.51,
+      "len": 2.6
+     },
+     "encoded": {
+      "M": -13.55,
+      "I": -17.79,
+      "peak": -1.17,
+      "len": 2.6
+     }
+    }
+   ]
+  },
+  "match_point": {
+   "cat": "ui",
+   "target": -16,
+   "variants": [
+    {
+     "render": {
+      "M": -16,
+      "I": -19.14,
+      "peak": -3.35,
+      "len": 1
+     },
+     "encoded": {
+      "M": -16.03,
+      "I": -19.16,
+      "peak": -3.35,
+      "len": 1
+     }
+    }
+   ]
+  },
+  "score_tick": {
+   "cat": "ui",
+   "target": -24,
+   "variants": [
+    {
+     "render": {
+      "M": -24,
+      "I": -24,
+      "peak": -7.57,
+      "len": 0.12
+     },
+     "encoded": {
+      "M": -24.07,
+      "I": -24.07,
+      "peak": -9.01,
+      "len": 0.12
+     }
+    }
+   ]
+  },
+  "medal": {
+   "cat": "ui",
+   "target": -20,
+   "variants": [
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -7.39,
+      "len": 0.35
+     },
+     "encoded": {
+      "M": -19.99,
+      "I": -19.99,
+      "peak": -8.31,
+      "len": 0.35
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -7.74,
+      "len": 0.35
+     },
+     "encoded": {
+      "M": -20.03,
+      "I": -20.03,
+      "peak": -7.84,
+      "len": 0.35
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -8.04,
+      "len": 0.35
+     },
+     "encoded": {
+      "M": -20,
+      "I": -20,
+      "peak": -8.03,
+      "len": 0.35
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -9.38,
+      "len": 0.35
+     },
+     "encoded": {
+      "M": -20.05,
+      "I": -20.05,
+      "peak": -9.34,
+      "len": 0.35
+     }
+    },
+    {
+     "render": {
+      "M": -20,
+      "I": -20,
+      "peak": -8.86,
+      "len": 0.35
+     },
+     "encoded": {
+      "M": -19.99,
+      "I": -19.99,
+      "peak": -9.33,
+      "len": 0.35
+     }
+    }
+   ]
+  },
+  "streak": {
+   "cat": "ui",
+   "target": -18,
+   "variants": [
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -7.15,
+      "len": 0.35
+     },
+     "encoded": {
+      "M": -17.96,
+      "I": -17.96,
+      "peak": -7.02,
+      "len": 0.35
+     }
+    },
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -7.64,
+      "len": 0.35
+     },
+     "encoded": {
+      "M": -18.06,
+      "I": -18.06,
+      "peak": -7.81,
+      "len": 0.35
+     }
+    },
+    {
+     "render": {
+      "M": -18,
+      "I": -18,
+      "peak": -8.06,
+      "len": 0.35
+     },
+     "encoded": {
+      "M": -18.05,
+      "I": -18.05,
+      "peak": -7.95,
+      "len": 0.35
+     }
+    }
+   ]
+  }
+ }
+}
