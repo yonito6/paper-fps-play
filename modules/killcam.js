@@ -790,6 +790,12 @@ function hideLive() {
   const hideObj = o => { if (o && o.visible) { live.misc.push(o); o.visible = false; } };
   hideObj(DC.body); hideObj(DC.gun); if (REC.avatar) { hideObj(REC.avatar.g); hideObj(REC.avatar.gun); }
   for (const n of NADES) hideObj(n.m); for (const q of ROCKETS) hideObj(q.m); for (const q of PROJ) hideObj(q.m);
+  // Everything else that is drawn FOR the live bots but lives outside their roots (gfxmat decides it before this frame, from the bots
+  // still being visible): the additive rim shells (a see-through glowing body outline at the live bot's position = the "transparent
+  // ghost" sliding through the replay), the instanced contact shadows (a shadow with nobody above it; the replay actors keep their
+  // own disc), and the paper-death leftovers of a bot dying right now (torso half, crumpled-head ball).
+  for (const o of scene.children) if (o.visible && (o.name === 'gmRimMesh' || o.name === 'gm_contact')) hideObj(o);
+  for (const r of robots) { const D = r.pd; if (!D) continue; hideObj(D.clone); if (D.ball) hideObj(D.ball.m); }
 }
 function showLive() {
   for (let i = 0; i < live.bots.length; i += 3) { const r = live.bots[i]; r.root.visible = live.bots[i + 1]; r.gun.visible = live.bots[i + 2]; }

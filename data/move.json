@@ -9,10 +9,8 @@
   "accelAir": 1.6,
   "slideFriction": 1.3,
   "jump": 7.9,
-  "doubleJump": 7.9,
   "coyoteTime": 0.1,
   "gravity": 20,
-  "dashGravity": 6,
   "height": 1.8,
   "crouchHeight": 1.2,
   "radius": 0.4,
@@ -22,6 +20,124 @@
   "overdriveSpeed": 1.25,
   "knifeSpeed": 1.12,
   "chillSpeed": 0.55,
-  "chargeSpeed": 0.75
+  "chargeSpeed": 0.75,
+  "maxLedgeMul": 2.0,
+  "reach": 0.7,
+  "minLedgeDepth": 0.35,
+  "leanOffset": 0.38,
+  "leanRollDeg": 9,
+  "leanTime": 0.15,
+  "interactRange": 1.6
+ },
+ "slide": {
+  "duration": 0.65,
+  "cooldown": 1.5,
+  "startSpeed": "sprint",
+  "endFrac": 0.32,
+  "minSprintFrac": 0.9,
+  "spreadMul": 2.5,
+  "adsAllowed": false,
+  "surfaces": {
+   "default": {
+    "speedMul": 1.0,
+    "durMul": 1.0,
+    "loud": 0.5,
+    "sound": "slide_scrape"
+   },
+   "glossy_paper": {
+    "speedMul": 1.25,
+    "durMul": 1.3,
+    "loud": 0.8,
+    "sound": "slide_swish"
+   },
+   "cutting_mat": {
+    "speedMul": 1.25,
+    "durMul": 1.3,
+    "loud": 0.8,
+    "sound": "slide_swish"
+   },
+   "felt": {
+    "speedMul": 0.8,
+    "durMul": 0.55,
+    "loud": 0.0,
+    "sound": "slide_silent"
+   },
+   "coffee_stain": {
+    "speedMul": 0.5,
+    "durMul": 0.3,
+    "loud": 1.0,
+    "sound": "slide_sticky"
+   },
+   "book_cover": {
+    "speedMul": 1.0,
+    "durMul": 1.0,
+    "loud": 0.6,
+    "sound": "slide_clack"
+   },
+   "keys": {
+    "speedMul": 1.0,
+    "durMul": 1.0,
+    "loud": 0.6,
+    "sound": "slide_clack"
+   }
+  },
+  "fromFootstep": {
+   "glass": "glossy_paper",
+   "ice": "glossy_paper",
+   "rubber": "cutting_mat",
+   "carpet": "felt",
+   "grass": "felt",
+   "wood": "book_cover",
+   "metal": "keys",
+   "grate": "keys"
+  }
+ },
+ "mantle": {
+  "baseTime": 0.3,
+  "timePerMetre": 0.1
+ },
+ "climb": {
+  "note": "map pieces carry climb:<tag>; the v2 map places them",
+  "tags": {
+   "bookmark_ribbon": {
+    "mode": "climb",
+    "speed": 3.2,
+    "maxHeight": 6
+   },
+   "rope_ladder": {
+    "mode": "climb",
+    "speed": 3.0,
+    "maxHeight": 8
+   },
+   "tape_strip": {
+    "mode": "climb",
+    "speed": 2.2,
+    "maxHeight": 4
+   },
+   "stacked_boxes": {
+    "mode": "mantle",
+    "maxHeight": 4.5
+   },
+   "pencil": {
+    "mode": "climb",
+    "speed": 2.6,
+    "maxHeight": 5,
+    "slipsBack": true
+   }
+  }
+ },
+ "quiet": {
+  "key": "Alt",
+  "speedMul": 0.53
+ },
+ "tearThrough": {
+  "enabled": false,
+  "minOpenFrac": 0.3,
+  "range": 1.6,
+  "time": 0.5,
+  "classes": [
+   "P1"
+  ],
+  "note": "prototype: pure rules proven in qa/paper/move.js, in-game raycast prompt seen working by hand but not yet reproducible in the suite (see NOTES.md); flip to true after that"
  }
 }

@@ -236,7 +236,12 @@
   }
   // dress a body cloned from ASSET.soldier (death cam, killcam avatar) as your paper character in your team colour
   const solid = m => { m.transparent = false; m.opacity = 1; m.depthWrite = true; m.alphaTest = 0; };
-  U.dressSelf = (root, team) => { const T = U.charTex[U.char] || {}; root.traverse(o => { o.userData.paperModel = true; if (!o.isMesh || !o.material) return; const m = o.material; if (T[team || 'atk']) m.map = T[team || 'atk']; if (m.color) m.color.setRGB(1, 1, 1); if (m.emissive) m.emissive.setRGB(0, 0, 0); solid(m); m.roughness = .9; m.metalness = 0; m.needsUpdate = true; o.castShadow = true; }); };
+  // The body must be drawn EXACTLY like every live soldier: the same paper character shader (06-paper-look artCharShade: paper
+  // lighting, envMapIntensity .15) and it receives shadows. A clone straight from the asset loses the shader hook (Material.clone
+  // drops onBeforeCompile), so it fell back to the generic lit shader at full environment light: a pale, glowing, shadow-free body in
+  // the death cam (the "transparent ghost") + two shader programs compiled at the moment of death (the hitch).
+  U.dressSelf = (root, team) => { const T = U.charTex[U.char] || {}; root.traverse(o => { o.userData.paperModel = true; if (!o.isMesh || !o.material) return; const m = o.material; if (T[team || 'atk']) m.map = T[team || 'atk']; if (m.color) m.color.setRGB(1, 1, 1); if (m.emissive) m.emissive.setRGB(0, 0, 0); solid(m); m.roughness = .9; m.metalness = 0; m.needsUpdate = true; o.castShadow = true; o.receiveShadow = true; });
+    try { if (typeof artCharShade === 'function') artCharShade({ model: root, root: new THREE.Group() }); } catch (e) { console.warn('[paper] dressSelf shade', e); } };
   U.paperTeam = (r, f) => paperTeam(r, f);
   function paperTeam(r, force) {
     const t = r.mxTeam === 'def' ? 'def' : r.mxTeam === 'atk' ? 'atk' : (r._team0 || 'def'), T = U.charTex[r.paperChar];

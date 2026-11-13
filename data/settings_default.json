@@ -5,9 +5,9 @@
     "adsMode": "hold",
     "binds": {
       "forward": ["KeyW", ""], "back": ["KeyS", ""], "left": ["KeyA", ""], "right": ["KeyD", ""],
-      "jump": ["Space", ""], "crouch": ["KeyC", ""], "crouchHold": ["ControlLeft", "ControlRight"], "sprint": ["ShiftLeft", "ShiftRight"], "walk": ["KeyZ", ""], "dash": ["KeyE", ""],
+      "jump": ["Space", ""], "crouch": ["KeyC", ""], "crouchHold": ["ControlLeft", "ControlRight"], "sprint": ["ShiftLeft", "ShiftRight"], "walk": ["KeyZ", ""], "interact": ["KeyE", ""],
       "fire": ["Mouse0", ""], "ads": ["Mouse2", ""], "reload": ["KeyR", ""], "grenade": ["KeyG", ""], "overdrive": ["KeyF", ""],
-      "primary": ["Digit1", ""], "secondary": ["Digit2", ""], "knife": ["Digit3", ""], "weapon4": ["Digit4", ""], "swap": ["KeyQ", ""], "dropBomb": ["KeyB", ""],
+      "primary": ["Digit1", ""], "secondary": ["Digit2", ""], "knife": ["Digit3", ""], "weapon4": ["Digit4", ""], "swap": ["KeyB", ""], "dropBomb": ["KeyB", ""],
       "interact": ["KeyX", ""], "scoreboard": ["Tab", ""], "pause": ["Escape", ""], "ptt": ["KeyV", ""]
     }
   },

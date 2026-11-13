@@ -156,7 +156,7 @@
     return false;
   }
   window.MODE.canUse = canUse;
-  if (typeof tryDash === 'function') { const _dash = tryDash; tryDash = function () { if (canUse() || MX.holdAct) return; return _dash.apply(this, arguments); }; }
+  if (typeof tryTearThrough === 'function') { const _tt = tryTearThrough; tryTearThrough = function () { if (canUse() || MX.holdAct) return; return _tt.apply(this, arguments); }; }   // (E plants / defuses first; no tear-through or lean then)
 
   /* ---------- the charge in the world ---------- */
   function chargeMesh(planted) {

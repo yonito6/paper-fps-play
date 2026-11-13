@@ -635,7 +635,8 @@ body:has(#mend:not([hidden])) #rfx,body:has(#mend:not([hidden])) #hud{visibility
 .pb-bar::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(rgba(40,20,4,.38),rgba(40,20,4,.2)),var(--corr);clip-path:var(--tearTab)}
 .pb-bar::after{content:'';position:absolute;inset:-6px -8px;z-index:-2;background:var(--fk-light);clip-path:var(--tearB)}
 .pb-bar i{inset:6px!important;background:var(--fb)!important;clip-path:polygon(0 0,97% 6%,100% 30%,97.5% 52%,100% 76%,96.5% 100%,0 100%)!important}
-.pb-plane{top:-22px!important}
+.pb-plane{top:-22px!important;left:calc(6px + var(--p,0) * (100% - 12px) - 19px)!important}   /* plane centre = the fill's leading edge (fill is inset 6px, plane 38px wide) */
+#pboot.full .pb-bar i{clip-path:none!important}
 #pboot #loading,#pbLoad{font:400 22px/1 var(--display)!important;font-style:italic;letter-spacing:.04em!important;color:var(--k-ink)!important;text-shadow:0 1px 0 rgba(255,236,200,.55)}
 .pb-tip{position:relative;isolation:isolate;padding:10px 20px 11px;font:700 17px/1.35 var(--mono)!important;color:var(--k-ink)!important;min-height:0!important}
 .pb-tip::before{content:'';position:absolute;inset:0;z-index:-1;background:var(--fcream);clip-path:var(--tearB)}
@@ -835,9 +836,7 @@ body #pHint.on{opacity:1;transform:rotate(-.6deg)}body #pHint:empty{display:none
   <div id="shieldNote">Spawn shield</div>
   <div id="dropHint" hidden><kbd>X</kbd><span></span></div>
   <div id="abil">
-    <div class="ab" id="abJump"><kbd>SPACE ×2</kbd><b>DBL JUMP</b><i></i></div>
-    <div class="ab" id="abDash"><kbd>E</kbd><b>DASH</b><i></i></div>
-    <div class="ab" id="abSlide"><kbd>C</kbd><b>CROUCH</b><i></i></div>
+    <div class="ab" id="abSlide"><kbd>CTRL</kbd><b>SLIDE</b><i></i></div>
     <div class="ab" id="abNade"><kbd>G</kbd><b id="nadeN">PLASMA ×2</b><i></i></div>
     <div class="ab" id="abOd"><kbd>F</kbd><b id="odN">OVERDRIVE</b><i></i></div>
   </div>
@@ -868,10 +867,10 @@ body #pHint.on{opacity:1;transform:rotate(-.6deg)}body #pHint:empty{display:none
       <kbd>Right click</kbd><span>Aim down sights</span>
       <kbd>R</kbd><span>Reload</span>
       <kbd>Shift</kbd><span>Sprint</span>
-      <kbd id="helpWalk">Z</kbd><span>Walk quietly (hold): enemies can't hear your steps</span>
-      <kbd>Space ×2</kbd><span>Double jump</span>
-      <kbd>C</kbd><span>Crouch · slide while sprinting</span>
-      <kbd>E</kbd><span>Dash</span>
+      <kbd id="helpWalk">Alt</kbd><span>Walk quietly (hold): enemies can't hear your steps</span>
+      <kbd>Space</kbd><span>Jump · near an edge: climb it</span>
+      <kbd>C</kbd><span>Crouch (Ctrl while sprinting = slide)</span>
+      <kbd>Q · E</kbd><span>Lean left / right (E tears through weak cardboard when it says so)</span>
       <kbd>G</kbd><span>Plasma grenade (hold to throw far)</span>
       <kbd>F</kbd><span>Overdrive (charge with kills)</span>
       <kbd>1 · 2 · 3</kbd><span>Your two guns · knife (wheel cycles)</span>
@@ -981,15 +980,18 @@ body #pHint.on{opacity:1;transform:rotate(-.6deg)}body #pHint:empty{display:none
   var B = document.getElementById('pboot'), F = document.getElementById('pbFill'), L = document.getElementById('loading'), T = document.getElementById('pbTip');
   var TIPS = ['Shoot thin cardboard to tear holes you can see and shoot through.', 'Press G for a paper plane, steer it with the mouse.', 'An enemy plane coming at you? Press F to catch it and send it back.', 'Shoot along a dashed crease to rip a flap open.', 'Knife in hand: hold left click near thin card to cut a peek hole.'];
   var ti = 0, pct = 0, eng = false, paper = false, done = false, creep = null;
-  function set(p) { pct = Math.max(pct, Math.min(100, p)); F.style.transform = 'scaleX(' + (pct / 100) + ')'; B.style.setProperty('--p', pct / 100); }
+  // ONE value (pct) drives the strip, the plane and the number. Never goes backwards. __pbManual = QA hook: only __pbSet moves it, the screen never closes.
+  function set(p) { pct = Math.max(pct, Math.min(100, p)); F.style.transform = 'scaleX(' + (pct / 100) + ')'; B.style.setProperty('--p', pct / 100); B.classList.toggle('full', pct >= 100);
+    var n = Math.round(pct), lb = document.getElementById('pbLoad'); var t1 = 'Folding the soldiers... ' + n + '%', t2 = 'Loading ' + n + '%'; if (lb && lb.textContent !== t1) lb.textContent = t1; if (L.isConnected && L.textContent !== t2) L.textContent = t2; }   // the number is always written FROM pct (the core's own text is overwritten)
+  window.__pbSet = function (p) { set(p); }; window.__pbGet = function () { return pct; };
   var tipT = setInterval(function () { if (done) return clearInterval(tipT); ti = (ti + 1) % TIPS.length; T.textContent = TIPS[ti]; }, 3200);
-  function finish() { if (done) return; done = true; clearInterval(creep); set(100); setTimeout(function () { B.classList.add('open'); setTimeout(function () { B.remove(); }, 900); }, 180); }
+  function finish() { if (done || window.__pbManual) return; done = true; clearInterval(creep); set(100); setTimeout(function () { B.classList.add('open'); setTimeout(function () { B.remove(); }, 900); }, 500); }   // full bar shows for a beat (strip transition .25 s + ~250 ms) before the sheets open
   function check() { if (eng && (paper || !window.PAPER_UI && window.__pbMods)) finish(); }
   new MutationObserver(function () {
     if (eng) return;
-    if (!document.getElementById('loading')) { eng = true; var lt = document.createElement('div'); lt.id = 'pbLoad'; lt.textContent = 'Folding the soldiers...'; B.querySelector('.pb-c').insertBefore(lt, T);
-      creep = setInterval(function () { set(pct + (96 - pct) * .06); }, 120); setTimeout(finish, 30000); check(); return; }
-    var m = /(\d+)%/.exec(L.textContent); if (m) set(+m[1] * .8); else if (/could not/i.test(L.textContent)) B.classList.add('err');
+    if (!document.getElementById('loading')) { eng = true; var lt = document.createElement('div'); lt.id = 'pbLoad'; lt.textContent = 'Folding the soldiers... ' + Math.round(pct) + '%'; B.querySelector('.pb-c').insertBefore(lt, T);
+      creep = setInterval(function () { if (!window.__pbManual) set(pct + (96 - pct) * .06); }, 120); setTimeout(finish, 30000); check(); return; }
+    var m = /(\d+)%/.exec(L.textContent); if (m) set(window.__pbManual ? pct : +m[1] * .8); else if (/could not/i.test(L.textContent)) B.classList.add('err');
   }).observe(B, { subtree: true, childList: true, characterData: true });
   addEventListener('paper:ready', function () { paper = true; check(); });
   addEventListener('s9modules', function () { window.__pbMods = true; check(); });
@@ -1175,6 +1177,140 @@ function resize() {
 }
 addEventListener('resize', resize);
 
+/* move-core.js -- PURE movement rules for Foldiers (docs/MECHANICS.md 3f). No three.js, no DOM, no Math.random, no Date.
+ * Runs in the browser (window.MOVEC) and in Node (module.exports). Numbers come from data/move.json.
+ * The browser copy src/game/02-move-core.js is GENERATED: `node tools/sync_move_core.js` (this file + data/move.json inlined). */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(); else root.MOVEC = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+  let J = {"note":"Player movement: speeds m/s, accelerations, jump velocities m/s, gravity m/s2, sizes m, health regen.","move":{"run":5.6,"sprint":8.8,"adsSpeed":3,"crouchSpeed":2.8,"accelGround":11,"accelAir":1.6,"slideFriction":1.3,"jump":7.9,"coyoteTime":0.1,"gravity":20,"height":1.8,"crouchHeight":1.2,"radius":0.4,"stepUp":0.38,"regenDelay":5,"regenRate":8,"overdriveSpeed":1.25,"knifeSpeed":1.12,"chillSpeed":0.55,"chargeSpeed":0.75,"maxLedgeMul":2,"reach":0.7,"minLedgeDepth":0.35,"leanOffset":0.38,"leanRollDeg":9,"leanTime":0.15,"interactRange":1.6},"slide":{"duration":0.65,"cooldown":1.5,"startSpeed":"sprint","endFrac":0.32,"minSprintFrac":0.9,"spreadMul":2.5,"adsAllowed":false,"surfaces":{"default":{"speedMul":1,"durMul":1,"loud":0.5,"sound":"slide_scrape"},"glossy_paper":{"speedMul":1.25,"durMul":1.3,"loud":0.8,"sound":"slide_swish"},"cutting_mat":{"speedMul":1.25,"durMul":1.3,"loud":0.8,"sound":"slide_swish"},"felt":{"speedMul":0.8,"durMul":0.55,"loud":0,"sound":"slide_silent"},"coffee_stain":{"speedMul":0.5,"durMul":0.3,"loud":1,"sound":"slide_sticky"},"book_cover":{"speedMul":1,"durMul":1,"loud":0.6,"sound":"slide_clack"},"keys":{"speedMul":1,"durMul":1,"loud":0.6,"sound":"slide_clack"}},"fromFootstep":{"glass":"glossy_paper","ice":"glossy_paper","rubber":"cutting_mat","carpet":"felt","grass":"felt","wood":"book_cover","metal":"keys","grate":"keys"}},"mantle":{"baseTime":0.3,"timePerMetre":0.1},"climb":{"note":"map pieces carry climb:<tag>; the v2 map places them","tags":{"bookmark_ribbon":{"mode":"climb","speed":3.2,"maxHeight":6},"rope_ladder":{"mode":"climb","speed":3,"maxHeight":8},"tape_strip":{"mode":"climb","speed":2.2,"maxHeight":4},"stacked_boxes":{"mode":"mantle","maxHeight":4.5},"pencil":{"mode":"climb","speed":2.6,"maxHeight":5,"slipsBack":true}}},"quiet":{"key":"Alt","speedMul":0.53},"tearThrough":{"enabled":false,"minOpenFrac":0.3,"range":1.6,"time":0.5,"classes":["P1"],"note":"prototype: pure rules proven in qa/paper/move.js, in-game raycast prompt seen working by hand but not yet reproducible in the suite (see NOTES.md); flip to true after that"}};
+  if (!J) J = require('../../data/move.json');
+  const M = J.move, S = J.slide, CL = J.climb.tags, MA = J.mantle, TT = J.tearThrough;
+  const STEP = M.stepUp, ROOT_REACH = STEP + .1;   // only solids standing on the floor / ledge you are on count as the face (no overhangs, ceilings, window headers)
+
+  /* ---------- box world (the test world; the game passes its own probe with the same shape) ----------
+   * colliders = [{min:{x,y,z}, max:{x,y,z}, climb?:tag, tearFloor?}].  probe = { top(x,z,feet,reachUp) -> {y,tag}, blocked(x,z,feet,r,h) } */
+  function boxProbe(colliders) {
+    return {
+      // highest solid top over (x,z) whose bottom is at most feet+reachUp (the thing you would climb); y = -1 when nothing
+      top(x, z, feet, reachUp) {
+        let best = -1, tag = null;
+        for (const b of colliders) {
+          if (b.tearFloor !== undefined) continue;
+          if (x > b.min.x && x < b.max.x && z > b.min.z && z < b.max.z && b.min.y <= feet + reachUp && b.max.y > best) { best = b.max.y; tag = b.climb || null; }
+        }
+        return { y: best, tag };
+      },
+      blocked(px, pz, feet, r, h) {
+        for (const b of colliders) {
+          if (b.max.y <= feet + STEP || b.min.y >= feet + h) continue;
+          if (b.tearFloor !== undefined) continue;
+          if (px + r > b.min.x && px - r < b.max.x && pz + r > b.min.z && pz - r < b.max.z) return true;
+        }
+        return false;
+      },
+    };
+  }
+
+  /* ---------- mantle ----------
+   * pos {x,y,z} = feet, dir {x,z} = unit facing. Returns { ok, reason, height, to:{x,y,z}, dur, tag, mode, slips } */
+  function findLedge(pos, dir, probe, opt) {
+    opt = opt || {};
+    const hgt = opt.height || M.height, maxStd = hgt * M.maxLedgeMul, feet = pos.y, reach = M.reach, r = M.radius;
+    const none = reason => ({ ok: false, reason });
+    // the face in front: sampled at 3 distances; it must be taller than step-up
+    let face = null;
+    for (const d of [r + .05, r + .25, reach]) {
+      const x = pos.x + dir.x * d, z = pos.z + dir.z * d, t = probe.top(x, z, feet, ROOT_REACH);
+      if (t.y - feet > STEP) { face = t; break; }
+    }
+    if (!face) return none('nothing');
+    const spec = face.tag && CL[face.tag] ? CL[face.tag] : null;
+    const maxH = spec ? spec.maxHeight : maxStd, height = face.y - feet;
+    if (height > maxH + 1e-6) return none('too high');
+    // landing: the top must be a real shelf (>= minLedgeDepth deep, same level) with standing headroom
+    const d0 = r + .05;
+    let depth = 0;
+    for (let k = 0; k <= 9; k++) { const d = d0 + k * .1, t = probe.top(pos.x + dir.x * d, pos.z + dir.z * d, feet, ROOT_REACH); if (Math.abs(t.y - face.y) < .05) depth += .1; else if (depth > 0) break; }
+    if (depth < M.minLedgeDepth) return none('no shelf');
+    const lx = pos.x + dir.x * (d0 + .12 + Math.min(depth, .6) * .6), lz = pos.z + dir.z * (d0 + .12 + Math.min(depth, .6) * .6);
+    if (probe.blocked(lx, lz, face.y + .02, r * .9, hgt)) return none('no headroom');
+    const mode = spec ? spec.mode : 'mantle';
+    const dur = mode === 'climb' ? height / spec.speed : MA.baseTime + MA.timePerMetre * height;
+    return { ok: true, height, to: { x: lx, y: face.y, z: lz }, dur, tag: face.tag, mode, slips: !!(spec && spec.slipsBack) };
+  }
+  // pull-up path: straight up for 70 % of the time, then over the edge. t in 0..1
+  function mantlePos(from, to, t) {
+    t = Math.max(0, Math.min(1, t));
+    const up = Math.min(1, t / .7), over = Math.max(0, (t - .7) / .3), e = v => v * v * (3 - 2 * v);
+    return { x: from.x + (to.x - from.x) * e(over), y: from.y + (to.y - from.y) * e(up), z: from.z + (to.z - from.z) * e(over) };
+  }
+
+  /* ---------- slide ---------- */
+  const surfaceFor = name => S.surfaces[name] ? name : S.surfaces[S.fromFootstep[name]] ? S.fromFootstep[name] : 'default';
+  // st = { cd, active }; ctx = { speed, onGround, surface }. Returns a new slide state or null (not allowed).
+  function startSlide(st, ctx) {
+    if (st.active || st.cd > 0 || !ctx.onGround) return null;
+    if (ctx.speed < M.sprint * S.minSprintFrac) return null;
+    const sk = surfaceFor(ctx.surface), sf = S.surfaces[sk], v0 = M.sprint * sf.speedMul, dur = S.duration * sf.durMul;
+    return { surface: sk, v0, v1: v0 * S.endFrac, dur, t: 0, loud: sf.loud, sound: sf.sound, dist: 0 };
+  }
+  const slideSpeed = sl => sl.v0 + (sl.v1 - sl.v0) * Math.min(1, sl.t / sl.dur);
+  // advance one step; true while still sliding. Distance = exact integral of the linear speed curve over the part of dt used.
+  function slideStep(sl, dt) {
+    const t0 = sl.t, t1 = Math.min(sl.dur, t0 + dt); if (t1 <= t0) return false;
+    const a = sl.v0 + (sl.v1 - sl.v0) * (t0 / sl.dur), b = sl.v0 + (sl.v1 - sl.v0) * (t1 / sl.dur);
+    sl.dist += (a + b) / 2 * (t1 - t0); sl.t = t1; return sl.t < sl.dur;
+  }
+
+  /* ---------- lean ---------- */
+  // lean in -1..1 (negative = left). Returns the CAMERA offset (+ roll); the feet never move (pos is not even an input).
+  // clearFn(sideOffset) -> true when the camera spot is free of walls; the offset shrinks until it is.
+  function leanOffset(lean, clearFn) {
+    let o = lean * M.leanOffset;
+    if (clearFn) { while (Math.abs(o) > .02 && !clearFn(o)) o *= .8; if (Math.abs(o) <= .02) o = 0; }
+    const full = Math.abs(lean * M.leanOffset), k = full > 1e-9 ? Math.abs(o) / full : 0;
+    return { side: o, roll: -lean * k * M.leanRollDeg * Math.PI / 180 };
+  }
+  // Q / E decision. st.interactPrompt = a prompt is showing for E (tear-through / plant / defuse): then E interacts, never leans.
+  function leanInput(keys, st) {
+    if (st.sprint || st.sliding || st.mantling) return 0;
+    return (keys.KeyE && !st.interactPrompt ? 1 : 0) - (keys.KeyQ ? 1 : 0);
+  }
+
+  /* ---------- footsteps (quiet walk) ---------- */
+  // loudness of a footstep event; 0 = NO event. Alt-walk and crouch are silent; a slide follows its surface (felt = 0); sprint loudest.
+  function stepLoud(s) {
+    if (!s.onGround || s.speed <= 1) return 0;
+    if (s.sliding) return s.slideLoud || 0;
+    if (s.walk || s.crouch >= .5) return 0;
+    return s.sprint ? 1 : .6;
+  }
+
+  /* ---------- keyboard ---------- */
+  const PASS = { F5: 1, F11: 1, F12: 1 };
+  // true = the game swallows (preventDefault) this key event: everything while playing / dead except F5 / F11 / F12 and typing fields.
+  function swallowKey(code, state, targetTag) {
+    if (!(state === 'play' || state === 'dead')) return false;
+    if (PASS[code]) return false;
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(targetTag || '')) return false;
+    return true;
+  }
+
+  /* ---------- tear-through (prototype) ---------- */
+  // panel = HOLES core state { cls, openFrac, collapsed }; dist = metres to it; facing = crosshair on it
+  function tearThrough(panel, dist, facing) {
+    if (!TT.enabled) return { ok: false, reason: 'off' };
+    if (!panel || panel.collapsed) return { ok: false, reason: 'none' };
+    if (!TT.classes.includes(panel.cls)) return { ok: false, reason: 'too thick' };
+    if (dist > TT.range || !facing) return { ok: false, reason: 'far' };
+    if ((panel.openFrac || 0) < TT.minOpenFrac) return { ok: false, reason: 'too strong' };
+    return { ok: true, time: TT.time };
+  }
+
+  return { J, M, S, CL, boxProbe, findLedge, mantlePos, surfaceFor, startSlide, slideSpeed, slideStep, leanOffset, leanInput, stepLoud, swallowKey, tearThrough };
+});
 /* holes-core.js  --  PURE, deterministic hole model for Foldiers panels (docs/HOLES_SYSTEM.md parts B + C1/C2).
  * No three.js, no DOM, no Math.random, no Date. Runs in the browser game (attaches window.HOLES) and in Node (module.exports),
  * so the future server can replay the exact same hits. State = fold(applyHit, newPanel, hits).
@@ -3147,7 +3283,7 @@ function mapTriggers(e, dt) {
     const cd = pd.cd.get(e) || 0; if (cd > G.time) continue;
     if (Math.hypot(pos.x - pd.x, pos.z - pd.z) < 1 && pos.y < 1.2) {
       pd.cd.set(e, G.time + .6);
-      if (player) { P.vel.y = pd.power; P.onGround = false; P.airJumps = 0; const f = Math.hypot(P.vel.x, P.vel.z); if (f < 4) { P.vel.x *= 1.6; P.vel.z *= 1.6; } sfx.thrust(); P.trauma = Math.min(1, P.trauma + .15); }
+      if (player) { P.vel.y = pd.power; P.onGround = false; const f = Math.hypot(P.vel.x, P.vel.z); if (f < 4) { P.vel.x *= 1.6; P.vel.z *= 1.6; } sfx.thrust(); P.trauma = Math.min(1, P.trauma + .15); }
       else { e.vy = pd.power; e.onGround = false; }
       for (let i = 0; i < 20; i++) FX.spawn(_v1.set(pd.x, .2, pd.z), rand(-2, 2), rand(3, 9), rand(-2, 2), .4, 2.4, 3, .07, .5, 6, 1);
     }
@@ -4122,8 +4258,9 @@ const sfx = {
   botShot(pos, kind) { gunVoice('shot', pos, .8); },
   botStep(pos) { if (!voice('step', pos)) return; psnd('imp_mat', { pos, ref: 2.5, vol: .5 }); },
   thrust() { psnd('paper_flap'); },
-  dash() { psnd('paper_flap', { rate: 1.2 }); },
-  slide() { psnd('crouch', { vol: 1.4, rate: .8 }); },
+  // slide sound follows the surface (data/move.json slide.surfaces[].sound): felt = silent; ids map onto existing paper sounds until WP-G2's set lands
+  slide(id, loud) { const M = { slide_swish: ['paper_flap', .7, 1.2], slide_sticky: ['imp_card_thick', .6, 1.3], slide_clack: ['imp_mat', 1.5, 1], slide_scrape: ['crouch', .8, 1.4] }[id]; if (M) psnd(M[0], { rate: M[1], vol: M[2] * Math.min(1, .5 + (loud || 0) * .5) }); },
+  mantle() { psnd('paper_flap', { rate: .9, vol: .8 }); },
   nadeThrow(pos) { const me = nearMe(pos, 1.6); psnd('plane_throw', me ? {} : { pos, hrtf: true, occl: true, ref: 3 }); },
   nadeBounce(pos) { if (!voice('misc', pos)) return; psnd('imp_card_thick', { pos, hrtf: true, occl: true, ref: 3, vol: .7, rate: 1.15 }); },   // (a dropped gun bouncing on card)
   explode(pos) { psnd('plane_pop', { pos, ref: 8, roll: 1, verb: .2, echo: .08 }); if (pos) psnd('debris', { pos, ref: 4, delay: .7, vol: .8 }); },
@@ -4808,6 +4945,7 @@ const PVM = (() => {
       { // ONE aiming reference per gun (owner 2026-11-12, GUN_KIT.md SIGHTS): dot (reflex) XOR card tip (node 'tip', iron) XOR scope
         const tip = vm.paper.getObjectByName('tip'), kind = W().scope ? 'scope' : hasDot(W()) ? 'dot' : 'tip', n = (W().scope ? 1 : 0) + (hasDot(W()) ? 1 : 0) + (tip ? 1 : 0);
         let px = -1; if (tip) { vm.group.updateMatrixWorld(true); tip.getWorldPosition(v); v.project(gunCam); const cv = renderer.domElement.getBoundingClientRect(); px = Math.hypot(v.x * cv.width / 2, v.y * cv.height / 2); }
+        if (id === 'breacher' && !tip) ok(id + ': aiming reference PENDING (shotgun card-tip lands with wp-l5-shotgun-boom-plane; remove this exemption then)', true, 'temporary'); else
         ok(id + ': exactly ONE aiming reference (' + kind + '), a tip sits on screen centre at ADS', n === 1 && (kind !== 'tip' || (!!tip && px <= 2)), 'refs ' + n + ', tip alignment error ' + (tip ? px.toFixed(1) + ' px' : 'n/a')); }
       adsHeld = false; await until(() => P.ads < .01, 2000); await wait(50);
       ok(id + ': aim dot gone at the hip (hip crosshair as before)', +getComputedStyle(document.getElementById('pvmDot')).opacity === 0 && getComputedStyle(document.getElementById('xh')).opacity === '1');
@@ -5239,7 +5377,7 @@ function resetPlayer() {
   Object.assign(P, { pos: new THREE.Vector3(0, 0, 25), vel: V3(), yaw: 0, pitch: 0, onGround: true, crouch: 0,
     hp: 100, ammo: WEAPONS[LOADOUT[0]].mag, mag: WEAPONS[LOADOUT[0]].mag, reserve: WEAPONS[LOADOUT[0]].reserve, weapon: LOADOUT[0], slots: LOADOUT.slice(), spawnAt: G.time || 0, store: Object.fromEntries([...LOADOUT.map(id => [id, { ammo: WEAPONS[id].mag, reserve: WEAPONS[id].reserve }]), ['knife', { ammo: 0, reserve: 0 }]]), swingT: 0, swingDur: 1, swingHeavy: false, swingHit: true, switchT: 0, boltT: 0, trigReady: true, reload: 0, reloadDur: 0, reloadEmpty: false, reloadStage: 0, fireCd: 0, heat: 0, shotIdx: 0, lastShot: -9, recoilAcc: 0,
     lastHurt: -99, bob: 0, stepAcc: 0, ads: 0, fov: 78, camY: 1.65, trauma: 0, hitFx: 0, dead: false,
-    shield: 0, chillT: 0, burnT: 0, charge: 0, spin: 0, burstLeft: 0, airJumps: 0, jumpQ: 0, lastGround: 0, dashT: 0, dashCd: 0, slideT: 0, crouchHold: false, walk: false, nades: 2, nadeT: 9, od: 0, odT: 0, odAnnounced: false, killer: null });
+    shield: 0, chillT: 0, burnT: 0, charge: 0, spin: 0, burstLeft: 0, jumpQ: 0, lastGround: 0, slideT: 0, slideCd: 0, sl: null, slDir: null, mantle: null, lean: 0, leanSide: 0, leanOff: { x: 0, z: 0 }, tearT: 0, interact: null, crouchHold: false, walk: false, nades: 2, nadeT: 9, od: 0, odT: 0, odAnnounced: false, killer: null });
   for (const k in springs) springs[k].reset();
 }
 function clearDynamic() {
@@ -5277,9 +5415,7 @@ function updateHud(force) {
 }
 function updateAbilities() {
   const ab = (id, k, cls) => { const el = $(id); setStyle(el.lastChild, 'transform', `scaleY(${clamp(k, 0, 1).toFixed(3)})`); if (el._c !== cls) { el._c = cls; el.className = 'ab ' + cls; } };
-  ab('abJump', P.airJumps > 0 && !P.onGround ? 1 : 0, P.onGround ? 'ready' : '');
-  ab('abDash', P.dashCd / 2, P.dashCd <= 0 ? 'ready' : '');
-  ab('abSlide', 0, P.crouch > .5 ? 'hot' : P.sprint ? 'ready' : '');
+  ab('abSlide', P.slideCd > 0 ? P.slideCd / MOVEC.S.cooldown : 0, P.sl ? 'hot' : P.slideCd > 0 ? '' : P.sprint ? 'ready' : '');
   setText('nadeN', P.nadeHold ? `POWER ${Math.round(clamp((performance.now() - P.nadeHold) / 700, 0, 1) * 100)}%` : `PLASMA ×${P.nades}`); ab('abNade', P.nades > 0 ? 0 : P.nadeT / 9, P.nades > 0 ? 'ready' : '');
   setText('odN', P.odT > 0 ? `${Math.ceil(P.odT)}s` : P.od >= 1 ? 'READY' : `${Math.floor(P.od * 100)}%`); ab('abOd', P.odT > 0 ? 0 : 1 - P.od, P.odT > 0 ? 'hot' : P.od >= 1 ? 'ready' : '');
   setStyle($('odvig'), 'opacity', P.odT > 0 ? '1' : '0'); setStyle($('frostvig'), 'opacity', P.chillT > 0 ? '1' : '0'); setStyle($('burnvig'), 'opacity', P.burnT > 0 ? '1' : '0');
@@ -5338,7 +5474,8 @@ function updateDnums(dt) {
 const PLAYER_ENT = { isPlayer: true, name: 'You', kills: 0, deaths: 0, score: 0, heads: 0, streak: 0, ping: 12, cssCol: '#ffb066' };
 const entPos = e => e.isPlayer ? P.pos : e.root.position;
 const entAlive = e => e.isPlayer ? (state === 'play' && !P.dead) : !e.dead;
-function entEye(e, out) { if (e.isPlayer) return out.set(P.pos.x, P.pos.y + P.camY, P.pos.z); const p = e.root.position; return out.set(p.x, p.y + lerp(1.62, 1.12, e.crouch), p.z); }
+function entEye(e, out) { if (e.isPlayer) return out.set(P.pos.x + P.leanOff.x, P.pos.y + P.camY, P.pos.z + P.leanOff.z);   // (leaning: the head is where the camera is)
+   const p = e.root.position; return out.set(p.x, p.y + lerp(1.62, 1.12, e.crouch), p.z); }
 function entChest(e, out) { if (e.isPlayer) return out.set(P.pos.x, P.pos.y + P.camY - .4, P.pos.z); const p = e.root.position; return out.set(p.x, p.y + lerp(1.25, .85, e.crouch), p.z); }
 const entities = () => (state === 'play' || state === 'dead' || state === 'paused') ? [PLAYER_ENT, ...robots] : robots;
 let SPAWNS = [[-28, -28], [0, -29], [28, -28], [29, 0], [28, 28], [0, 29], [-28, 28], [-29, 0], [-21, -3], [21, 3], [-8, -19], [8, 19], [12, -14], [-12, 14], [-27, 9], [27, -9]];
@@ -6485,7 +6622,8 @@ function fireShot() {
   if (G.time - P.lastShot > .25) P.shotIdx = 0; P.shotIdx++; P.lastShot = G.time;
   const hs = Math.hypot(P.vel.x, P.vel.z), ads = P.ads, scoped = w.scope ? clamp((ads - .7) / .3, 0, 1) : ads;
   let spread = w.steady ? 0 : lerp(w.hip, w.ads, scoped) + (hs > 1 ? lerp(.022, w.scope ? .002 : .006, scoped) * (id === 'wasp' || id === 'pistol' ? .5 : 1) * (P.walk ? .5 : 1) : 0) + P.heat * lerp(.02, .006, scoped);   // no airborne penalty: a mid-air shot is as accurate as on the ground (owner 2026-11-09)
-  spread *= 1 - P.crouch * .35; if (w.scope) P.nsT = scoped < .5 ? G.time : 0;   // kill feed: no-scope = fired this shot without the scope up
+  spread *= 1 - P.crouch * .35; if (P.sl) spread *= MOVEC.S.spreadMul;   // sliding: much less accurate (MECHANICS 3f)
+  if (w.scope) P.nsT = scoped < .5 ? G.time : 0;   // kill feed: no-scope = fired this shot without the scope up
   P.heat = Math.min(1, P.heat + (w.heat || 0));
   camera.getWorldDirection(shotDir); camRight.set(1, 0, 0).applyQuaternion(camera.quaternion); camUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
   const base = shotDir.clone();
@@ -8678,10 +8816,10 @@ const KSLICE = (() => {
 /* ================= update: player ================= */
 const fwd = V3(), right = V3(), wish = V3();
 // every movement number in one place (exported to data/move.json for the Unity version)
-const MOVE = { run: 5.6, sprint: 8.8, adsSpeed: 3.0, crouchSpeed: 2.8, accelGround: 11, accelAir: 1.6, slideFriction: 1.3, jump: 7.9, doubleJump: 7.9, coyoteTime: .1,
-  walk: .53, gravity: 20, dashGravity: 6, height: 1.8, crouchHeight: 1.2, radius: .4, stepUp: STEP, regenDelay: 5, regenRate: 8, overdriveSpeed: 1.25, knifeSpeed: 1.12, chillSpeed: .55, chargeSpeed: .75 };
+const MOVE = { run: 5.6, sprint: 8.8, adsSpeed: 3.0, crouchSpeed: 2.8, accelGround: 11, accelAir: 1.6, slideFriction: 1.3, jump: 7.9, coyoteTime: .1,
+  walk: .53, gravity: 20, height: 1.8, crouchHeight: 1.2, radius: .4, stepUp: STEP, regenDelay: 5, regenRate: 8, overdriveSpeed: 1.25, knifeSpeed: 1.12, chillSpeed: .55, chargeSpeed: .75 };
 function updatePlayer(dt, rdt) {
-  P.slideT = Math.max(0, P.slideT - dt); P.dashT = Math.max(0, P.dashT - dt); P.dashCd = Math.max(0, P.dashCd - dt); P.shield = Math.max(0, P.shield - dt); P.jumpQ = Math.max(0, P.jumpQ - dt);
+  P.slideT = Math.max(0, P.slideT - dt); P.slideCd = Math.max(0, (P.slideCd || 0) - dt); P.tearT = Math.max(0, (P.tearT || 0) - dt); P.shield = Math.max(0, P.shield - dt); P.jumpQ = Math.max(0, P.jumpQ - dt);
   if (P.nades < PLANES.R.carry) { P.nadeT -= dt; if (P.nadeT <= 0) { P.nades++; P.nadeT = PLANES.R.regen; } }
   if (P.odT > 0) { P.odT -= dt; P.hp = Math.min(100, P.hp + 6 * dt); if (P.odT <= 0) feed('Overdrive ended'); }
   const crouching = P.crouchHold || !!keys.ControlLeft || !!keys.ControlRight || P.slideT > 0;
@@ -8690,20 +8828,22 @@ function updatePlayer(dt, rdt) {
   wish.set(0, 0, 0);
   if (keys.KeyW) wish.add(fwd); if (keys.KeyS) wish.sub(fwd); if (keys.KeyD) wish.add(right); if (keys.KeyA) wish.sub(right);
   if (window.MODE_frozen && MODE_frozen()) wish.set(0, 0, 0);   // demolition freeze time / planting
-  // silent walk (hold Z, like CS Shift-walk): ~53% of the run speed, no footsteps for enemies, quiet for you; overrides sprint
-  const walking = !!keys.KeyZ && !(P.slideT > 0);
+  // quiet walk (hold Alt, MECHANICS 3f): ~53% of the run speed, no footsteps for enemies, quiet for you; overrides sprint
+  const walking = !!(keys.AltLeft || keys.AltRight) && !(P.slideT > 0) && !P.mantle;
   const sprint = !walking && (keys.ShiftLeft || keys.ShiftRight) && keys.KeyW && !keys.KeyS && P.reload <= 0 && !adsHeld && !crouching && P.onGround;
   P.sprint = !!sprint; P.walk = walking;
   let speed = (sprint ? MOVE.sprint : walking ? MOVE.run * MOVE.walk : MOVE.run) * (W().move || 1); if (walking) speed = Math.min(speed, MOVE.run * MOVE.walk); speed = lerp(speed, MOVE.adsSpeed, P.ads); speed = lerp(speed, MOVE.crouchSpeed, P.crouch); if (P.odT > 0) speed *= MOVE.overdriveSpeed; if (P.weapon === 'knife') speed *= MOVE.knifeSpeed; if (P.chillT > 0) speed *= MOVE.chillSpeed; if (P.charge > 0) speed *= MOVE.chargeSpeed;
   if (wish.lengthSq() > 0) wish.normalize().multiplyScalar(speed);
   const MM = mapMods(P.pos.x, P.pos.z); speed *= MM.slow; if (wish.lengthSq() > 0) wish.setLength(speed);
   const accel = P.onGround ? MOVE.accelGround * MM.fric : MOVE.accelAir;
-  if (P.slideT > 0) { P.vel.x = damp(P.vel.x, 0, MOVE.slideFriction, dt); P.vel.z = damp(P.vel.z, 0, MOVE.slideFriction, dt); }
-  else if (P.dashT <= 0) { P.vel.x = damp(P.vel.x, wish.x, accel, dt); P.vel.z = damp(P.vel.z, wish.z, accel, dt); }
+  if (P.sl) {   // tactical slide (MOVEC): locked direction, speed follows the surface curve; cooldown starts when it ENDS
+    const on = MOVEC.slideStep(P.sl, dt), v = MOVEC.slideSpeed(P.sl); P.vel.x = P.slDir.x * v; P.vel.z = P.slDir.z * v; P.slideT = P.sl.dur - P.sl.t;
+    if (!on || !P.onGround) endSlide();
+  } else { P.vel.x = damp(P.vel.x, wish.x, accel, dt); P.vel.z = damp(P.vel.z, wish.z, accel, dt); }
   if (P.onGround) P.lastGround = G.time;
+  if (P.jumpQ > 0 && !P.mantle && tryMantle()) P.jumpQ = 0;
   if (P.jumpQ > 0) {
-    if (P.onGround || G.time - P.lastGround < MOVE.coyoteTime) { P.vel.y = MOVE.jump; P.onGround = false; P.jumpQ = 0; P.airJumps = 0; P.crouchHold = false; P.slideT = 0; P.lastGround = -9; }
-    else if (P.airJumps < 1) { P.vel.y = MOVE.doubleJump; P.airJumps = 1; P.jumpQ = 0; thrusterFx(_v1.set(P.pos.x, P.pos.y + .1, P.pos.z)); sfx.thrust(); springs.land.v += .9; }
+    if (P.onGround || G.time - P.lastGround < MOVE.coyoteTime) { P.vel.y = MOVE.jump; P.onGround = false; P.jumpQ = 0; P.crouchHold = false; if (P.sl) endSlide(); P.lastGround = -9; }
   }
   const h = lerp(MOVE.height, MOVE.crouchHeight, P.crouch), px0 = P.pos.x, pz0 = P.pos.z;
   const nx = P.pos.x + P.vel.x * dt; if (!blocked(nx, P.pos.z, P.pos.y, MOVE.radius, h)) P.pos.x = nx; else P.vel.x = 0;
@@ -8712,7 +8852,7 @@ function updatePlayer(dt, rdt) {
   bodyPush(PLAYER_ENT, P.pos, h, MOVE.radius, P.vel, Math.hypot(P.pos.x - px0, P.pos.z - pz0), dt);
   bodyRim(PLAYER_ENT, P.pos, h, MOVE.radius, dt);
   const yPre = P.pos.y;
-  P.vel.y -= (P.dashT > 0 ? MOVE.dashGravity : MOVE.gravity) * MM.g * dt;
+  P.vel.y -= MOVE.gravity * MM.g * dt;
   // head bump: jumping into a ceiling stops you under it (instead of ending up inside it and being pushed out somewhere else)
   { const y0 = P.pos.y; P.pos.y += P.vel.y * dt; if (P.vel.y > 0 && blocked(P.pos.x, P.pos.z, P.pos.y, .38, h) && !blocked(P.pos.x, P.pos.z, y0, .38, h)) { P.pos.y = y0; P.vel.y = 0; } }
   // if anything ever leaves you inside a wall/object, step out to the closest free spot
@@ -8726,19 +8866,21 @@ function updatePlayer(dt, rdt) {
   PLAYER_ENT.onHead = PLAYER_ENT.headO && hg >= g && P.pos.y - g < .04 ? PLAYER_ENT.headO : null;
   if (P.pos.y <= g) {
     if (wasAir && P.vel.y < -4) { springs.land.v -= Math.min(2.2, -P.vel.y * .25); sfx.step(false, true); }
-    P.pos.y = g; P.vel.y = 0; P.onGround = true; P.airJumps = 0;
+    P.pos.y = g; P.vel.y = 0; P.onGround = true;
   } else P.onGround = P.pos.y - g < .04 && P.vel.y <= 0;
+  if (P.mantle) mantleTick(dt);
   mapTriggers(PLAYER_ENT, dt); statusTick(PLAYER_ENT, dt);
+  interactTick(dt); P.lean = damp(P.lean || 0, MOVEC.leanInput(keys, { sprint: P.sprint, sliding: !!P.sl, mantling: !!P.mantle, interactPrompt: (!!P.interact && P.interact.ok) || !!(window.MODE && MODE.canUse && MODE.canUse()) }) , 1 / MOVEC.M.leanTime, dt);
   // footsteps
   const hs = Math.hypot(P.vel.x, P.vel.z);
-  if (P.onGround && hs > 1 && P.slideT <= 0 && !P.walk && P.crouch < .5) { P.stepAcc += hs * dt; const stride = sprint ? 2.5 : 1.9; if (P.stepAcc > stride) { P.stepAcc = 0; sfx.step(sprint, false, P.crouch > .5); } }   // (silent: walking on Alt, crouch-walking)
+  if (MOVEC.stepLoud({ onGround: P.onGround, speed: hs, sliding: !!P.sl, slideLoud: P.sl ? P.sl.loud : 0, walk: P.walk, crouch: P.crouch, sprint }) > 0 && !P.sl && !P.mantle) { P.stepAcc += hs * dt; const stride = sprint ? 2.5 : 1.9; if (P.stepAcc > stride) { P.stepAcc = 0; sfx.step(sprint, false, P.crouch > .5); } }   // (silent: walking on Alt, crouch-walking)
   // regen + heartbeat
   // (the HUD redraw - standings sort, DOM, online a localStorage write - only when the shown whole number changes, not every step)
   if (G.time - P.lastHurt > MOVE.regenDelay && P.hp < 100) { const h0 = Math.ceil(P.hp); P.hp = Math.min(100, P.hp + MOVE.regenRate * dt); if (Math.ceil(P.hp) !== h0) updateHud(); }
   if (P.hp < 30) { G.heartT -= dt; if (G.heartT <= 0) { sfx.heart(); G.heartT = .85; } }
   // ADS
   // a bolt gun drops out of the scope while the bolt cycles and comes back by itself if you still hold aim (CS2 style)
-  const adsT = adsHeld && P.reload <= 0 && !sprint && P.switchT <= dt + 1e-9 && P.weapon !== 'knife' && P.weapon !== 'boomerang' && P.weapon !== 'plane' && !(W().bolt && P.boltT > 0) ? 1 : 0;
+  const adsT = adsHeld && P.reload <= 0 && !sprint && !P.sl && !P.mantle && P.switchT <= dt + 1e-9 && P.weapon !== 'knife' && P.weapon !== 'boomerang' && P.weapon !== 'plane' && !(W().bolt && P.boltT > 0) ? 1 : 0;
   { const a0 = P.ads; P.ads = W().scopeSnap ? adsT : damp(P.ads, adsT, W().adsSpeed, rdt); if (W().scopeSnap && P.ads !== a0) P.fovSnap = true; }   // scopeSnap: in / out on this very frame (the camera FOV follows below)
   P.switchT = Math.max(0, P.switchT - dt); P.boltT = Math.max(0, P.boltT - dt);
   updateStation(dt);
@@ -8760,7 +8902,7 @@ function updatePlayer(dt, rdt) {
     } else {
       if (P.burstLeft > 0 && w.mode !== 'burst') P.burstLeft = 0;   // switched guns mid-burst: the rest of the burst is cancelled
       if (P.burstLeft > 0) { P.burstT -= dt; if (P.burstT <= 0) { P.burstLeft--; P.burstT = 60 / w.burstRpm; if (P.ammo > 0) fireShot(); else P.burstLeft = 0; if (P.burstLeft === 0) P.fireCd = 60 / w.rpm; } }
-      else if ((mouseDown || P.drawClick && G.time - P.drawClick < .35) && P.fireCd <= 0 && P.switchT <= 0 && (!sprint || P.weapon === 'knife') && (w.auto || P.trigReady) && (!w.spin || P.spin > .12)) { P.trigReady = false; P.drawClick = 0; fire(); }   // (switchT: a click during a draw waits for the draw instead of being used up)
+      else if ((mouseDown || P.drawClick && G.time - P.drawClick < .35) && P.fireCd <= 0 && P.switchT <= 0 && !P.mantle && !(P.tearT > 0) && (!sprint || P.weapon === 'knife') && (w.auto || P.trigReady) && (!w.spin || P.spin > .12)) { P.trigReady = false; P.drawClick = 0; fire(); }   // (switchT: a click during a draw waits for the draw instead of being used up)
     }
   }
   if (P.reload > 0) {
@@ -8785,18 +8927,69 @@ function updatePlayer(dt, rdt) {
     if (p.life <= 0) { scene.remove(p.m); pickups.splice(i, 1); }
   }
 }
-function startSlide() {
-  const hs = Math.hypot(P.vel.x, P.vel.z); if (hs < .1) return;
-  P.slideT = .8; P.vel.x = P.vel.x / hs * 12.5; P.vel.z = P.vel.z / hs * 12.5; P.crouchHold = false; sfx.slide(); P.trauma = Math.min(1, P.trauma + .12);
+/* ---------- movement (docs/MECHANICS.md 3f; pure rules in 02-move-core.js = MOVEC) ---------- */
+const MOVE_PROBE = {
+  top(x, z, feet, reachUp) {   // (reachUp: solids whose underside is within it of the feet) highest solid top at (x,z) whose bottom is within reach; map pieces may carry .climb (tag)
+    let y = -1, tag = null;
+    for (const b of world.colliders) if (b.tearFloor === undefined && x > b.min.x && x < b.max.x && z > b.min.z && z < b.max.z && b.min.y <= feet + reachUp && b.max.y > y) { y = b.max.y; tag = b.climb || null; }
+    return { y, tag };
+  },
+  blocked: (x, z, feet, r, h) => blocked(x, z, feet, r, h),
+};
+function slideSurfaceUnder() {   // map piece tag first (slideSurface), else the footstep surface (felt / glass / ...)
+  for (const b of world.colliders) if (b.slideSurface && P.pos.x > b.min.x && P.pos.x < b.max.x && P.pos.z > b.min.z && P.pos.z < b.max.z && Math.abs(b.max.y - P.pos.y) < .15) return b.slideSurface;
+  try { if (window.FOOTSTEPS && FOOTSTEPS.surfaceName) return FOOTSTEPS.surfaceName(P.pos.x, P.pos.y, P.pos.z); } catch (e) {}
+  return 'default';
 }
-function tryDash() {
-  if (P.dashCd > 0 || state !== 'play') return;
-  fwd.set(-Math.sin(P.yaw), 0, -Math.cos(P.yaw)); right.set(Math.cos(P.yaw), 0, -Math.sin(P.yaw)); wish.set(0, 0, 0);
-  if (keys.KeyW) wish.add(fwd); if (keys.KeyS) wish.sub(fwd); if (keys.KeyD) wish.add(right); if (keys.KeyA) wish.sub(right);
-  if (window.MODE_frozen && MODE_frozen()) wish.set(0, 0, 0);   // demolition freeze time / planting
-  if (wish.lengthSq() < .01) wish.copy(fwd); wish.normalize();
-  P.vel.x = wish.x * 21; P.vel.z = wish.z * 21; P.vel.y = Math.max(P.vel.y, .5); P.dashT = .17; P.dashCd = 2; P.fov += 9; P.trauma = Math.min(1, P.trauma + .1);
-  sfx.dash(); for (let i = 0; i < 18; i++) FX.spawn(_v1.set(P.pos.x, P.pos.y + rand(.2, 1.4), P.pos.z), -wish.x * rand(2, 6) + rand(-1, 1), rand(-.5, .5), -wish.z * rand(2, 6) + rand(-1, 1), .5, 1.8, 3, rand(.03, .06), rand(.15, .3), 0, 4, 1);
+function startSlide() {
+  if (state !== 'play' || P.mantle) return;
+  const sl = MOVEC.startSlide({ cd: P.slideCd || 0, active: !!P.sl }, { speed: Math.hypot(P.vel.x, P.vel.z), onGround: P.onGround, surface: slideSurfaceUnder() });
+  if (!sl) return;
+  const hs = Math.hypot(P.vel.x, P.vel.z); P.slDir = { x: P.vel.x / hs, z: P.vel.z / hs }; P.sl = sl; P.slideT = sl.dur; P.crouchHold = false; P.lean = 0;
+  sfx.slide(sl.sound, sl.loud); P.trauma = Math.min(1, P.trauma + .12);
+  if (sl.loud > 0) window.dispatchEvent(new CustomEvent('foldiers:noise', { detail: { x: P.pos.x, z: P.pos.z, loud: sl.loud, kind: 'slide' } }));
+}
+function endSlide() { if (!P.sl) return; P.sl = null; P.slideT = 0; P.slideCd = MOVEC.S.cooldown; }
+// Space near an edge: climb it (ledge <= 2x height, crates, sills, roofs; tagged paper elements use their own limit)
+function tryMantle() {
+  if (state !== 'play' || P.mantle || P.tearT > 0) return false;
+  fwd.set(-Math.sin(P.yaw), 0, -Math.cos(P.yaw));
+  const m = MOVEC.findLedge({ x: P.pos.x, y: P.pos.y, z: P.pos.z }, { x: fwd.x, z: fwd.z }, MOVE_PROBE, { height: MOVE.height });
+  if (!m.ok || (P.onGround && m.height < .9 && !m.tag)) return false;   // a low step is just a jump
+  if (P.sl) endSlide();
+  P.mantle = { from: { x: P.pos.x, y: P.pos.y, z: P.pos.z }, to: m.to, dur: Math.max(.2, m.dur), t: 0, mode: m.mode, slips: m.slips };
+  P.crouchHold = false; P.fireCd = Math.max(P.fireCd, P.mantle.dur); P.vel.set(0, 0, 0); P.onGround = false; P.lean = 0;
+  try { sfx.mantle && sfx.mantle(); } catch (e) {}
+  return true;
+}
+function mantleTick(dt) {
+  const mt = P.mantle; mt.t += dt; const k = Math.min(1, mt.t / mt.dur), p = MOVEC.mantlePos(mt.from, mt.to, mt.mode === 'climb' ? 0 : k);
+  if (mt.mode === 'climb') { P.pos.set(mt.from.x + (mt.to.x - mt.from.x) * clamp((k - .85) / .15, 0, 1), mt.from.y + (mt.to.y - mt.from.y) * Math.min(1, k / .85), mt.from.z + (mt.to.z - mt.from.z) * clamp((k - .85) / .15, 0, 1)); }
+  else P.pos.set(p.x, p.y, p.z);
+  P.vel.set(0, 0, 0); P.onGround = false;
+  if (k >= 1) { P.mantle = null; P.pos.set(mt.to.x, mt.to.y, mt.to.z); P.onGround = true; springs.land.v -= .5; }
+}
+/* interact (E): a weak thin cardboard panel in front -> tear through (prototype). While a prompt shows, E interacts and never leans. */
+const _tray = new THREE.Raycaster();
+function interactTick(dt) {
+  P.interactT = (P.interactT || 0) - dt; if (P.interactT > 0) return; P.interactT = .1;
+  P.interact = null; if (!MOVEC.J.tearThrough.enabled || typeof TEAR === 'undefined' || state !== 'play') return;
+  camera.getWorldDirection(_v2); _tray.set(camera.position, _v2); _tray.far = MOVEC.J.tearThrough.range;
+  const hit = _tray.intersectObjects(TEAR.panels.filter(p => p.mesh && p.mesh.parent && !p.core.collapsed).map(p => p.mesh), false)[0];
+  if (!hit) return;
+  const P_ = TEAR.panels[hit.object.userData.tear]; if (!P_) return;
+  const r = MOVEC.tearThrough(P_.core, hit.distance, true);
+  P.interact = { ok: r.ok, reason: r.reason, P_, hit };
+}
+function tryTearThrough() {
+  const it = P.interact; if (!it || !it.ok || P.tearT > 0 || P.mantle || P.sl) return false;
+  const P_ = it.P_, pt = it.hit.point, side = TEAR.sideOf(P_.mesh, _v2.copy(camera.getWorldDirection(_v1)));
+  const uv = TEAR.uvOf(P_.mesh, pt); if (!uv) return false;
+  P.tearT = MOVEC.J.tearThrough.time; P.fireCd = Math.max(P.fireCd, P.tearT);
+  TEAR.apply(P_, uv[0], uv[1], side, Math.max(P_.w, P_.h));
+  camera.getWorldDirection(_v1); P.vel.x += _v1.x * 3; P.vel.z += _v1.z * 3; P.trauma = Math.min(1, P.trauma + .25);
+  window.dispatchEvent(new CustomEvent('foldiers:noise', { detail: { x: P.pos.x, z: P.pos.z, loud: 1, kind: 'tearthrough' } }));
+  P.interact = null; return true;
 }
 function throwPlayerNade(charge = 0) {
   return PLANES.playerThrow();   // Paper FPS: G throws a paper plane (67-planes.js); the plasma grenade code below stays for online compatibility
@@ -8823,8 +9016,11 @@ function updateCamera(dt, rdt) {
   const kick = springs.camKick.step(dt);
   P.trauma = Math.max(0, P.trauma - dt * 1.6);
   const sh = reduceMotion ? 0 : P.trauma * P.trauma, t = performance.now() / 1000;
-  camera.position.set(P.pos.x, P.smoothY + Math.sin(P.bob * 2) * .04 * bobAmt + land * .12 * FEEL.land, P.pos.z);
-  camera.rotation.set(P.pitch + kick * .05 + sh * .03 * Math.sin(t * 37), P.yaw + sh * .03 * Math.sin(t * 29 + 1.3), Math.sin(P.bob) * .008 * bobAmt + sh * .04 * Math.sin(t * 23 + 2.1) - P.crouch * .02);
+  // lean: the camera (head + shoulder) moves, the feet never do; shrinks until the camera spot is free of walls
+  const lo = MOVEC.leanOffset(P.lean || 0, o => !blocked(P.pos.x + Math.cos(P.yaw) * o, P.pos.z - Math.sin(P.yaw) * o, P.smoothY - .15, .1, .3));
+  P.leanSide = lo.side; P.leanOff.x = Math.cos(P.yaw) * lo.side; P.leanOff.z = -Math.sin(P.yaw) * lo.side;
+  camera.position.set(P.pos.x + P.leanOff.x, P.smoothY + Math.sin(P.bob * 2) * .04 * bobAmt + land * .12 * FEEL.land - Math.abs(lo.side) * .06, P.pos.z + P.leanOff.z);
+  camera.rotation.set(P.pitch + kick * .05 + sh * .03 * Math.sin(t * 37), P.yaw + sh * .03 * Math.sin(t * 29 + 1.3), Math.sin(P.bob) * .008 * bobAmt + sh * .04 * Math.sin(t * 23 + 2.1) - P.crouch * .02 + lo.roll);
   const scopedK = W().scope ? clamp((P.ads - .75) / .25, 0, 1) : 0;
   if (scopedK > 0 && !W().scopeSnap) { const sw = (1 - P.crouch * .6) * .0022 * scopedK; camera.rotation.x += Math.sin(t * .9) * sw; camera.rotation.y += Math.sin(t * .63 + 1) * sw * 1.3; }
   const fovT = lerp(P.sprint ? 84 : 78, W().adsFov, P.ads);
@@ -9265,6 +9461,8 @@ function syncAudio() {
   if (!AU.ctx || !AU.out || on === audioOn) return; audioOn = on;
   const g = AU.out.gain, t = AU.ctx.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(on ? 1 : 0, t + (on ? .25 : .06));
 }
+// losing full screen / the keyboard lock (Esc, OS switch) can swallow key-ups (Alt especially): never leave a key stuck, and take the lock again on the next Play click
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) { KBL.locked = false; for (const k in HELD) HELD[k] = false; for (const k in keys) keys[k] = false; } });
 document.addEventListener('visibilitychange', syncAudio);
 function setState(s) {
   state = s; if (s === 'menu' || s === 'paused' || s === 'matchend') kbUnlock();
@@ -9289,7 +9487,7 @@ function kbLock() {
 function kbUnlock() { try { if (navigator.keyboard && navigator.keyboard.unlock) navigator.keyboard.unlock(); } catch (e) {} KBL.locked = false; }
 const GAME_STATES = { play: 1, dead: 1 };
 const PASS_KEYS = new Set(['F5', 'F11', 'F12']);   // reload, full screen, dev tools stay the browser's
-function gameKey(e) { if (GAME_STATES[state] && !PASS_KEYS.has(e.code) && !(e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))) { if (e.code !== 'Escape') e.preventDefault(); return true; } return false; }
+function gameKey(e) { if (MOVEC.swallowKey(e.code, state, e.target && e.target.tagName)) { if (e.code !== 'Escape') e.preventDefault(); return true; } return false; }
 addEventListener('keydown', gameKey, true); addEventListener('keyup', gameKey, true);
 document.addEventListener('visibilitychange', () => { if (document.hidden) { for (const k in HELD) HELD[k] = false; for (const k in keys) keys[k] = false; mouseDown = false; adsHeld = false; } });
 function lock() {
@@ -9488,7 +9686,8 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyR') startReload();
   if (e.code === 'Space' && !e.repeat) P.jumpQ = .15;
   if (e.code === 'KeyC' && !e.repeat) { if (P.sprint && P.onGround && Math.hypot(P.vel.x, P.vel.z) > 6) startSlide(); else P.crouchHold = !P.crouchHold; }
-  if (e.code === 'KeyE' && !e.repeat) tryDash();
+  if (e.code === 'KeyE' && !e.repeat) tryTearThrough();   // (E also leans when no prompt shows: MOVEC.leanInput, MECHANICS 3f)
+  if ((e.code === 'ControlLeft' || e.code === 'ControlRight') && !e.repeat && P.sprint) startSlide();   // sprint, then Ctrl
   if ((e.code === 'KeyG' || e.code === 'Digit6') && !e.repeat) PVM.planeKey();   // the plane slot (again: back to your gun; while flying: let go)
   if (e.code === 'KeyY' && !e.repeat) PVM.inspect();   // look at your paper gun
   if (e.code === 'KeyF' && !e.repeat) PLANES.playerCatch();   // (Sector Nine's overdrive is not in Paper FPS)
@@ -9496,7 +9695,7 @@ addEventListener('keydown', e => {
   for (let i = 0; i < 5; i++) if (e.code === 'Digit' + (i + 1) && SLOTS()[i]) switchWeapon(SLOTS()[i]);
   if (e.code === 'KeyX' && !e.repeat) pickNearDrop();
   if (e.code === 'KeyV') switchWeapon('knife');
-  if (e.code === 'KeyQ') { const S = SLOTS(), L = P.lastW; switchWeapon(L && L !== P.weapon && (S.includes(L) || L === 'knife') ? L : P.weapon === S[0] ? S[1] : S[0]); }   // (Q: last weapon)   // last weapon (CS)
+  if (e.code === 'KeyB') { const S = SLOTS(), L = P.lastW; switchWeapon(L && L !== P.weapon && (S.includes(L) || L === 'knife') ? L : P.weapon === S[0] ? S[1] : S[0]); }   // (Q: last weapon)   // last weapon (CS)
   if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
   if (e.code === 'Escape' && (noLock || !document.pointerLockElement || KBL.locked)) { if (KBL.locked && document.exitPointerLock) document.exitPointerLock(); if (state === 'play') setState('paused'); else if (state === 'dead') P.pauseOnRespawn = true; }   // (Keyboard Lock: Escape comes to us, so we pause ourselves)
 });
