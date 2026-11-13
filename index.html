@@ -7924,20 +7924,29 @@ const PAPER_DEATHS = (() => {
   }
   function reset(r) { if (r.pd) { cleanup(r, r.pd); r.pd = null; } r.root.scale.set(1, 1, 1); if (r.B && r.B.head) r.B.head.scale.setScalar(1); }
   // compile the clipping variant of the character material before the match (behind the loading wipe)
+  // renderer.compile() builds programs with the clipping-plane count of the LAST draw (it never calls clipping.setState), so a clipped
+  // variant (numClippingPlanes 1) compiled that way is the wrong one and the real one built at the first halve/cut kill (wp-shaders):
+  // draw the scene once for real into the current target instead
+  const drawWarm = () => { renderer.shadowMap.needsUpdate = true; renderer.render(scene, camera); };   // (the shadow pass builds the clipped depth variants too)
   function warm() {
+    const prevRT = renderer.getRenderTarget();
     try {
+      // compile into the SAME target the game draws into (composer buffer, linear output): compiling for the screen gives the sRGB-output
+      // program (cache-key token 3001) and the real one (3000) was built at the first blast/cut/halve kill (wp-shaders)
+      renderer.setRenderTarget(rt);
       renderer.localClippingEnabled = true; PFX.init(); initPool();
       const rs = robots.filter(x => x.root); if (!rs.length) return;
       const pl = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e4), list = [], vis = rs.map(x => x.root.visible);
       for (const r of rs) for (const o of bodyMats(r)) list.push(o);   // every distinct body material (both teams), clipped variant
       for (const o of list) o.material.clippingPlanes = [pl]; rs.forEach(x => { x.root.visible = true; });
-      try { renderer.compile(scene, camera); } finally { rs.forEach((x, i) => { x.root.visible = vis[i]; }); for (const o of list) o.material.clippingPlanes = null; }
+      try { drawWarm(); } finally { rs.forEach((x, i) => { x.root.visible = vis[i]; }); for (const o of list) o.material.clippingPlanes = null; }
       // run the real halve path once per team on a robot (clone + clipped skinned materials), compiled behind the wipe, then undone
       const seen = {}; for (const r of rs) { const key = r.mxTeam || 'x'; if (seen[key]) continue; seen[key] = 1;
         const vv = r.root.visible, ts = r.act && r.act.death ? r.act.death.timeScale : 1; r.root.visible = true; const D = { k: 'halve', warm: true, dir: new THREE.Vector3(0, 0, 1) };
-        try { halve(r, D); renderer.compile(scene, camera); } finally { cleanup(r, D); r.root.visible = vv; if (r.act && r.act.death) r.act.death.timeScale = ts; } }
+        try { halve(r, D); drawWarm(); } finally { cleanup(r, D); r.root.visible = vv; if (r.act && r.act.death) r.act.death.timeScale = ts; } }
       for (const team of ['def', 'atk']) for (const k of ['ball', 'head', 'plane']) { const e = piece({ mxTeam: team }, k, _q.copy(camera.position), 1); if (e) { try { renderer.compile(scene, camera); } finally { release(e); } } }
     } catch (e) { console.warn('paper deaths warm', e); }
+    finally { try { renderer.setRenderTarget(prevRT); } catch (e) {} }
   }
   /* self test (qa/paper/core.js): each death kind plays on a red bot and ends with the body gone */
   async function selfTest() {
