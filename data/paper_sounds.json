@@ -341,13 +341,6 @@
    ],
    "lufs": -14.5
   },
-  "hit_shield": {
-   "cat": "hit",
-   "v": [
-    [1644378,8820]
-   ],
-   "lufs": -17
-  },
   "kill_confirm": {
    "cat": "hit",
    "v": [

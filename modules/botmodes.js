@@ -214,7 +214,7 @@
     const M = S.M; if (!M) return;
     switch (e.k) {
       case 'round':
-        S.stats.rounds.push({ round: e.round, myTeam: S.myTeam });
+        S.stats.rounds.push({ round: e.round, myTeam: S.myTeam }); try { clearDrops(); } catch (er) {}   // Demolition: dropped guns last all round, a new round clears them
         for (const r of bots()) { r.mxAct = null; if (r.dead || true) { respawnBot(r, true); r.respawnT = 1e9; } }
         newRoundPlan(); break;
       case 'respawn': { const r = ent(e.id); if (r && r !== PLAYER_ENT && r.dead) { respawnBot(r); r.respawnT = 1e9; } break; }

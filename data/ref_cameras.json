@@ -1,0 +1,546 @@
+{
+ "_doc": "REF-MATCH GATE cameras (qa/paper/refmatch.js). Game space: x right, y up, z south (metres). pos/look = game camera, lens_mm on a 36 mm sensor -> hfov = 2*atan(18/lens); the renderer gets the vertical fov for 1672x941. Scene cameras = the hero cameras of docs/MAP_ASSEMBLY.md (map director, 2026-11-13); 'solved' = what tools/look/vp_solve.py reads from her image (vanishing points): the honest check that the stored camera fits the picture. ignore = boxes (x0,y0,x1,y1 px) left out of every score (HUD, hands/gun, soldier on hero-only plates). novel = extra renders nobody can paint for (yaw deg around pos, dx/dy/dz metres).",
+ "size": [
+  1672,
+  941
+ ],
+ "refs": {
+  "ref1": {
+   "title": "D0 Ref1 corner (ruler bridge, blue shop)",
+   "type": "scene",
+   "image": "docs/reference/set2/01-REF1-clean-plate.png",
+   "hero": "docs/reference/ref1_rifle_ruler_bridge.png",
+   "pos": [
+    -4.5,
+    2.9,
+    -2.0
+   ],
+   "look": [
+    -14,
+    4.6,
+    -10
+   ],
+   "lens_mm": 24,
+   "source": "MAP_ASSEMBLY.md D0 (re-solved by D0, floor residual 0.07 %)",
+   "novel": [
+    {
+     "yaw": 25
+    },
+    {
+     "dx": 2.5,
+     "dy": 1.0
+    }
+   ],
+   "solved": {
+    "segments": 286,
+    "vp1_lines": 121,
+    "vp2_lines": 38,
+    "vp1": [
+     -6090,
+     273
+    ],
+    "vp2": [
+     1191,
+     431
+    ],
+    "f_px": 1565.8,
+    "hfov": 56.2,
+    "vfov": 33.5,
+    "lens_mm": 33.7,
+    "pitch_deg": -1.7,
+    "roll_deg": 1.2,
+    "horizon_y": 423,
+    "weak": false,
+    "stored_hfov": 73.7,
+    "stored_pitch_deg": -7.8
+   }
+  },
+  "d1": {
+   "title": "D1 Book Heights",
+   "type": "scene",
+   "image": "docs/reference/set2/03-Book-Heights-clean.png",
+   "hero": "docs/reference/set2/02-Book-Heights-hero.png",
+   "pos": [
+    -34,
+    2.4,
+    -24
+   ],
+   "look": [
+    -8,
+    3.0,
+    -29
+   ],
+   "lens_mm": 28,
+   "source": "MAP_ASSEMBLY.md D1 (hero drifted 16 grey levels: clean plate 03 is the truth)",
+   "novel": [
+    {
+     "yaw": 25
+    },
+    {
+     "dx": 2.5,
+     "dy": 1.0
+    }
+   ],
+   "solved": {
+    "segments": 435,
+    "vp1_lines": 219,
+    "vp2_lines": 51,
+    "vp1": [
+     144,
+     417
+    ],
+    "vp2": [
+     1755,
+     505
+    ],
+    "f_px": 799.0,
+    "hfov": 92.6,
+    "vfov": 61.0,
+    "lens_mm": 17.2,
+    "pitch_deg": -1.1,
+    "roll_deg": 3.1,
+    "horizon_y": 455,
+    "weak": false,
+    "stored_hfov": 65.5,
+    "stored_pitch_deg": -1.3
+   }
+  },
+  "d2": {
+   "title": "D2 Keyboard Quarter",
+   "type": "scene",
+   "image": "docs/reference/set2/05-Keyboard-Quarter-clean.png",
+   "hero": "docs/reference/set2/04-Keyboard-Quarter-hero.png",
+   "pos": [
+    -1.5,
+    1.1,
+    12
+   ],
+   "look": [
+    0,
+    3.2,
+    -30
+   ],
+   "lens_mm": 24,
+   "source": "MAP_ASSEMBLY.md D2",
+   "novel": [
+    {
+     "yaw": 25
+    },
+    {
+     "dx": 2.5,
+     "dy": 1.0
+    }
+   ],
+   "solved": {
+    "segments": 402,
+    "vp1_lines": 160,
+    "vp2_lines": 94,
+    "vp1": [
+     -67765,
+     722
+    ],
+    "vp2": [
+     931,
+     409
+    ],
+    "f_px": 2554.7,
+    "hfov": 36.2,
+    "vfov": 20.9,
+    "lens_mm": 55.0,
+    "pitch_deg": -1.4,
+    "roll_deg": -0.3,
+    "horizon_y": 410,
+    "weak": false,
+    "stored_hfov": 73.7,
+    "stored_pitch_deg": -2.9
+   }
+  },
+  "d3": {
+   "title": "D3 Coffee Plaza",
+   "type": "scene",
+   "image": "docs/reference/set2/07-Coffee-Plaza-clean.png",
+   "hero": "docs/reference/set2/06-Coffee-Plaza-hero.png",
+   "pos": [
+    -6,
+    1.65,
+    21
+   ],
+   "look": [
+    4,
+    3.0,
+    -8
+   ],
+   "lens_mm": 24,
+   "source": "MAP_ASSEMBLY.md D3",
+   "novel": [
+    {
+     "yaw": 25
+    },
+    {
+     "dx": 2.5,
+     "dy": 1.0
+    }
+   ],
+   "solved": {
+    "segments": 162,
+    "vp1_lines": 60,
+    "vp2_lines": 19,
+    "vp1": [
+     55277,
+     893
+    ],
+    "vp2": [
+     572,
+     459
+    ],
+    "f_px": 3789.4,
+    "hfov": 24.9,
+    "vfov": 14.2,
+    "lens_mm": 81.6,
+    "pitch_deg": -0.1,
+    "roll_deg": 0.5,
+    "horizon_y": 461,
+    "weak": true,
+    "stored_hfov": 73.7,
+    "stored_pitch_deg": -2.5
+   }
+  },
+  "d4": {
+   "title": "D4 Window House interior",
+   "type": "scene",
+   "image": "docs/reference/set2/09-Window-Alley-interior-clean.png",
+   "hero": "docs/reference/set2/08-Window-Alley-interior-hero.png",
+   "pos": [
+    -26,
+    1.65,
+    27.5
+   ],
+   "look": [
+    -17,
+    3.4,
+    20
+   ],
+   "lens_mm": 20,
+   "source": "MAP_ASSEMBLY.md D4",
+   "novel": [
+    {
+     "yaw": 25
+    },
+    {
+     "dx": 1.5,
+     "dy": 0.8
+    }
+   ],
+   "solved": {
+    "segments": 308,
+    "vp1_lines": 101,
+    "vp2_lines": 57,
+    "vp1": [
+     1510,
+     575
+    ],
+    "vp2": [
+     1708,
+     576
+    ],
+    "error": "VPs on the same side of the centre: not an orthogonal pair (f^2 < 0)",
+    "stored_hfov": 84.0,
+    "stored_pitch_deg": -8.5
+   }
+  },
+  "d5": {
+   "title": "D5 Pencil-case base (spawn)",
+   "type": "scene",
+   "image": "docs/reference/set2/11-Pencil-case-base-clean.png",
+   "hero": "docs/reference/set2/10-Pencil-case-base-hero.png",
+   "pos": [
+    -52,
+    1.65,
+    4
+   ],
+   "look": [
+    -38,
+    3.0,
+    -2
+   ],
+   "lens_mm": 20,
+   "source": "MAP_ASSEMBLY.md D5",
+   "novel": [
+    {
+     "yaw": 25
+    },
+    {
+     "dx": 2.0,
+     "dy": 1.0
+    }
+   ],
+   "solved": {
+    "segments": 203,
+    "vp1_lines": 49,
+    "vp2_lines": 32,
+    "vp1": [
+     1816,
+     499
+    ],
+    "vp2": [
+     -201,
+     453
+    ],
+    "f_px": 1008.6,
+    "hfov": 79.3,
+    "vfov": 50.0,
+    "lens_mm": 21.7,
+    "pitch_deg": 0.4,
+    "roll_deg": 1.3,
+    "horizon_y": 477,
+    "weak": false,
+    "stored_hfov": 84.0,
+    "stored_pitch_deg": -5.1
+   }
+  },
+  "d6": {
+   "title": "D6 Felt back road (hero only: HUD, hands, gun, climbing soldier masked out)",
+   "type": "scene",
+   "image": "docs/reference/set2/Felt back road cardboard alley.png",
+   "pos": [
+    -36,
+    1.65,
+    34
+   ],
+   "look": [
+    -33,
+    2.6,
+    0
+   ],
+   "lens_mm": 24,
+   "source": "MAP_ASSEMBLY.md D6 (honest limit: her road points at the tower, the map's tower is 29 deg right)",
+   "ignore": [
+    [
+     760,
+     460,
+     1672,
+     941
+    ],
+    [
+     770,
+     250,
+     860,
+     445
+    ],
+    [
+     690,
+     0,
+     990,
+     70
+    ],
+    [
+     20,
+     840,
+     330,
+     915
+    ],
+    [
+     1390,
+     840,
+     1672,
+     905
+    ],
+    [
+     800,
+     430,
+     870,
+     480
+    ]
+   ],
+   "novel": [
+    {
+     "yaw": 25
+    },
+    {
+     "dx": 2.5,
+     "dy": 1.0
+    }
+   ],
+   "solved": {
+    "segments": 162,
+    "vp1_lines": 33,
+    "vp2_lines": 22,
+    "vp1": [
+     1726,
+     473
+    ],
+    "vp2": [
+     -1853,
+     903
+    ],
+    "f_px": 1546.5,
+    "hfov": 56.8,
+    "vfov": 33.8,
+    "lens_mm": 33.3,
+    "pitch_deg": 4.0,
+    "roll_deg": -6.9,
+    "horizon_y": 580,
+    "weak": true,
+    "stored_hfov": 73.7,
+    "stored_pitch_deg": -1.6
+   }
+  },
+  "smg": {
+   "title": "SMG turnaround (her sheet vs the game's assets/paper/guns/smg.glb)",
+   "type": "turnaround",
+   "subject": "glb",
+   "glb": "assets/paper/guns/smg.glb",
+   "image": "docs/reference/turnarounds/smg_turnaround.png",
+   "forward": [
+    0,
+    0,
+    -1
+   ],
+   "panels": {
+    "side": {
+     "box": [
+      70,
+      20,
+      700,
+      335
+     ],
+     "cam": [
+      1,
+      0,
+      0
+     ]
+    },
+    "top": {
+     "box": [
+      800,
+      70,
+      1460,
+      200
+     ],
+     "cam": [
+      0,
+      1,
+      0.02
+     ],
+     "rot": 0
+    },
+    "front": {
+     "box": [
+      470,
+      270,
+      610,
+      590
+     ],
+     "cam": [
+      0,
+      0,
+      -1
+     ]
+    },
+    "rear": {
+     "box": [
+      720,
+      270,
+      840,
+      590
+     ],
+     "cam": [
+      0,
+      0,
+      1
+     ]
+    },
+    "three-quarter": {
+     "box": [
+      960,
+      280,
+      1430,
+      590
+     ],
+     "cam": [
+      0.75,
+      0.35,
+      0.6
+     ]
+    }
+   },
+   "source": "panel boxes read off her sheet 2026-11-13; camera directions assume the GLB points its muzzle down -z (viewmodel convention): NOT verified against the GLB yet"
+  },
+  "soldier": {
+   "title": "Soldier turnaround (her sheet vs the game's assets/paper/chars/trooper.glb)",
+   "type": "turnaround",
+   "subject": "glb",
+   "image": "docs/reference/turnarounds/soldier_trooper_turnaround.png",
+   "panels": {
+    "front": {
+     "box": [
+      20,
+      15,
+      460,
+      420
+     ],
+     "cam": [
+      0,
+      0,
+      -1
+     ]
+    },
+    "left": {
+     "box": [
+      480,
+      15,
+      660,
+      420
+     ],
+     "cam": [
+      -1,
+      0,
+      0
+     ]
+    },
+    "back": {
+     "box": [
+      680,
+      15,
+      1090,
+      420
+     ],
+     "cam": [
+      0,
+      0,
+      1
+     ]
+    },
+    "right": {
+     "box": [
+      1130,
+      15,
+      1300,
+      420
+     ],
+     "cam": [
+      1,
+      0,
+      0
+     ]
+    },
+    "three-quarter": {
+     "box": [
+      1310,
+      15,
+      1760,
+      420
+     ],
+     "cam": [
+      -0.7,
+      0.15,
+      -0.7
+     ]
+    }
+   },
+   "source": "panel boxes = tools/look/validate.py (WP-A3); the GLB is rendered as loaded (menu-state bots walk, so the bot model cannot stand still for a turnaround); faces -z assumed; the GLB is skinned (Box3 ignores bones -> 0.02 m box), so size_m 1.8 sets the camera distance",
+   "glb": "assets/paper/chars/trooper.glb",
+   "size_m": 1.8
+  }
+ }
+}

@@ -1,7 +1,6 @@
-/* Sector Nine add-on: HIT REACTIONS + IMPACT EFFECTS (modules/hitfx.js)  -> window.S9HitFX
+/* Foldiers add-on: HIT REACTIONS + IMPACT EFFECTS (modules/hitfx.js)  -> window.S9HitFX
    What it adds (the way CS2 / Valorant / Apex / CoD sell a hit):
-   - Impact burst on every body hit, by what the body is made of: dark stylized blood mist + spray (humans), teal glowing goo
-     (Xeno), spores (Mushroom Man), sparks + oil (Robot Butler), bone chips + ghost wisps (Skeleton), neon shards (Glitch).
+   - Impact burst on every body hit: dark stylized mist + spray (Low violence = armour sparks only).
      Bigger burst on a headshot, a finishing burst on a kill. Settings > Gameplay > "Low violence" = armour sparks only, no marks.
    - Small splats on the wall behind the target and the floor under it (own pooled, multiplicative decal mesh; fades out).
    - Hit-react animation: additive bone offsets on the skinned rig per hit location (head snaps back, torso twists toward the
@@ -28,7 +27,7 @@ const warn = e => { HX.errors++; if (HX.errors < 6) console.warn('[hitfx]', e); 
 const L3 = (pool, n, col, size, life, speed, spread, up, grav, drag, grow, alpha, back) => ({ pool, n, col, size, life, speed, spread, up, grav, drag, grow, alpha, back });
 let D = {
   tiers: { performance: 'low', balanced: 'mid', high: 'high', ultra: 'high' }, lowViolence: 'sparks',
-  skins: { default: 'flesh', butler: 'metal', mushroom: 'spore', skeleton: 'bone', glitch: 'glitch', xeno: 'goo' },
+  skins: { default: 'flesh' },
   materials: {
     flesh: { sound: 'flesh', decal: { tint: [.22, .05, .05], strength: .85 },   // dark maroon, particulate, gone in ~0.3 s (mirror of data/hitfx.json)
       hit: [L3('smoke', [0, 2, 3], [.16, .028, .03], [.07, .11], [.12, .18], [.3, .8], .5, .1, .3, 6, .25, .45, true), L3('smoke', [0, 3, 4], [.12, .03, .032], [.1, .17], [.18, .28], [.5, 1.3], .75, .2, .4, 5, .45, .42, true),
@@ -225,9 +224,7 @@ function buildSounds() {
   // flesh: dull low thump + a short wet slap of filtered noise
   jobs.push(() => SND.flesh = make(.22, (d, sr, n) => { let ph = 0, lp = 0; for (let i = 0; i < n; i++) { const t = i / sr, f = 70 + 120 * Math.exp(-t / .02); ph += 6.2832 * f / sr; const e = Math.exp(-t / .05) * Math.min(1, t / .001); const nz = Math.random() * 2 - 1; lp += .28 * (nz - lp); d[i] = Math.tanh(Math.sin(ph) * 2.2) * e * .9 + lp * Math.exp(-t / .028) * 1.4; } }));
   jobs.push(() => SND.head = make(.3, (d, sr, n) => { let ph = 0, lp = 0, bp = 0; for (let i = 0; i < n; i++) { const t = i / sr, f = 90 + 220 * Math.exp(-t / .015); ph += 6.2832 * f / sr; const nz = Math.random() * 2 - 1; lp += .4 * (nz - lp); bp += .7 * (nz - bp); d[i] = Math.tanh(Math.sin(ph) * 2.6) * Math.exp(-t / .07) + (nz - bp) * Math.exp(-t / .006) * .8 + lp * Math.exp(-t / .04) * 1.2; } }));
-  jobs.push(() => SND.goo = make(.28, (d, sr, n) => { let lp = 0, ph = 0; for (let i = 0; i < n; i++) { const t = i / sr, nz = Math.random() * 2 - 1, k = .05 + .2 * Math.exp(-t / .05); lp += k * (nz - lp); ph += 6.2832 * (180 + 90 * Math.sin(t * 60)) / sr; d[i] = lp * 2.2 * Math.exp(-t / .07) + Math.sin(ph) * .3 * Math.exp(-t / .05); } }));
   jobs.push(() => SND.metal = make(.3, (d, sr, n) => { const fs = [1130, 1870, 2650, 3410]; for (let i = 0; i < n; i++) { const t = i / sr; let v = 0; for (let k = 0; k < fs.length; k++) v += Math.sin(6.2832 * fs[k] * t + k) * Math.exp(-t / (.06 + k * .015)) / (k + 1); d[i] = v + (Math.random() * 2 - 1) * Math.exp(-t / .004) * .7; } }));
-  jobs.push(() => SND.bone = make(.18, (d, sr, n) => { let bp = 0; for (let i = 0; i < n; i++) { const t = i / sr, nz = Math.random() * 2 - 1; bp += .55 * (nz - bp); d[i] = (nz - bp) * Math.exp(-t / .012) + Math.sin(6.2832 * 620 * t) * Math.exp(-t / .03) * .5 + (Math.random() < .002 ? .8 : 0) * Math.exp(-t / .08); } }));
   const idle = window.requestIdleCallback || (f => setTimeout(f, 30));
   const next = () => { const f = jobs.shift(); if (!f) { SND.ready = true; SND.building = false; return; } try { f(); } catch (e) { warn(e); } idle(next); }; idle(next);
 }

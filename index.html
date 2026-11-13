@@ -262,12 +262,7 @@ tr.me td{color:#ffd27a;background:rgba(255,154,60,.08)} td:nth-child(n+3),th:nth
 #killbadge{position:absolute;left:50%;top:calc(50% + 58px);transform:translateX(-50%);display:flex;align-items:center;gap:12px;opacity:0;pointer-events:none}
 #killbadge.show{animation:kbIn 2.4s cubic-bezier(.2,1.4,.4,1) forwards}
 @keyframes kbIn{0%{opacity:0;transform:translateX(-50%) scale(1.8)}12%{opacity:1;transform:translateX(-50%) scale(.94)}20%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1)}}
-.kb-emblem svg{filter:drop-shadow(0 0 12px var(--kbg)) drop-shadow(0 0 2px var(--kbg));overflow:visible}
-#killbadge{--kbg:rgba(125,255,179,.75);--kbt:#7dffb3}#killbadge.kb-gold{--kbg:rgba(255,170,70,.8);--kbt:#ffd27a}#killbadge.kb-violet{--kbg:rgba(190,140,255,.8);--kbt:#d6b8ff}
-.kb-ring{transform-origin:60px 60px;animation:kbSpin 3.2s linear infinite}@keyframes kbSpin{to{transform:rotate(360deg)}}
-.kb-shine{animation:kbShine 1.6s .25s ease-out}@keyframes kbShine{from{transform:translateX(0) rotate(20deg)}to{transform:translateX(210px) rotate(20deg)}}
-.kb-emblem{animation:kbSlam .55s cubic-bezier(.2,1.6,.4,1)}@keyframes kbSlam{0%{transform:scale(2.2) rotate(-40deg);opacity:0}60%{transform:scale(.92) rotate(4deg);opacity:1}100%{transform:none}}
-.kb-text{display:grid;gap:1px}.kb-text b{font-family:var(--display);font-size:30px;letter-spacing:.1em;color:var(--kbt);text-shadow:0 0 18px var(--kbg)}
+.kb-text{display:grid;gap:1px}.kb-text b{font-family:var(--display);font-size:30px;letter-spacing:.1em}
 .kb-text span{font-size:13px;letter-spacing:.12em;color:var(--ink)}.kb-text em{font-style:normal;font-family:var(--display);font-size:20px;color:var(--sodium)}
 #medals{position:absolute;left:50%;top:calc(50% + 160px);transform:translateX(-50%);display:flex;gap:14px;pointer-events:none}
 .medal{display:grid;justify-items:center;gap:2px;opacity:0;animation:mdIn 2.4s ease-out forwards}
@@ -499,7 +494,6 @@ tr.me td{color:#ffd27a;background:rgba(255,154,60,.08)} td:nth-child(n+3),th:nth
 #kfeed .kf.k{--face:var(--face-blue);color:#fff!important}#kfeed .kf.d{--face:var(--face-red);color:#fff!important}
 #kfeed .kn{font-weight:800}#kfeed .ki{color:currentColor!important}
 #callout{font-family:var(--display)!important;font-style:italic;color:#fff!important;text-shadow:0 3px 0 rgba(0,0,0,.35)!important;letter-spacing:.03em!important}
-#killbadge .kb-emblem,#killbadge .kb-ring,#killbadge .kb-shine{display:none!important}
 #killbadge .kb-text{--face:var(--face-cream);padding:8px 22px 7px!important;clip-path:none!important;filter:none!important;background:none!important;text-align:center}
 #killbadge .kb-text b{font-family:var(--display)!important;font-style:italic;font-weight:400!important;color:var(--k-blue)!important;text-shadow:none!important;letter-spacing:.03em!important}#killbadge.kb-gold .kb-text b{color:var(--k-red)!important}
 #killbadge .kb-text span{color:var(--k-ink)!important;font-family:var(--mono)!important;font-weight:800}#killbadge .kb-text em{color:var(--k-ink)!important;font-family:var(--display)!important}
@@ -803,7 +797,7 @@ body #pHint.on{opacity:1;transform:rotate(-.6deg)}body #pHint:empty{display:none
 <div class="hud" id="hud" hidden>
   <div id="compass"><div id="cstrip"></div><div id="cneedle"></div></div>
   <div class="corner tl">
-    <div class="label" id="hMode">FFA · Sector Nine · EU-West</div>
+    <div class="label" id="hMode">Free for all</div>
     <div class="big" id="hPlace">1<small>ST</small></div>
     <div class="label" id="hKD">0 kills · 0 deaths</div>
     <div id="combo">x1.0<b>STREAK</b></div>
@@ -919,7 +913,7 @@ body #pHint.on{opacity:1;transform:rotate(-.6deg)}body #pHint:empty{display:none
     </div>
     <div class="note">Head shots do 2.4× damage and the sniper kills in one shot. A white glint means a sniper is lining you up. Green pads heal you, the orange core on the platform fills your overdrive, and the glowing crate refills ammo.</div>
     <div class="settings" id="setMenu"></div>
-    <div class="note touchnote">Sector Nine needs a keyboard and mouse. Open it on a computer to play.</div>
+    <div class="note touchnote">Foldiers needs a keyboard and mouse. Open it on a computer to play.</div>
   </div>
 </div>
 
@@ -1289,7 +1283,7 @@ addEventListener('resize', resize);
   }
 
   /* ---------- keyboard ---------- */
-  const PASS = { F5: 1, F11: 1, F12: 1 };
+  const PASS = { F5: 1, F12: 1 };   // F11 is the game's now (never leaves full screen)
   // true = the game swallows (preventDefault) this key event: everything while playing / dead except F5 / F11 / F12 and typing fields.
   function swallowKey(code, state, targetTag) {
     if (!(state === 'play' || state === 'dead')) return false;
@@ -4179,7 +4173,7 @@ const PSND = (() => {
   // once the bank AND the audio context exist: hand the shared buffers to the engine tables (gun voices, killcam hit confirms)
   S.attach = () => { if (!S.ready) return;
     for (const k in GUN_VOICE) { const id = gunId(k); if (id && S.buf[id]) GSND[k] = S.buf[id][0]; }
-    if (S.buf.hit_body) AU.hitBuf = { body: S.buf.hit_body[0], head: S.buf.hit_head[0], shield: S.buf.hit_shield[0] }; };
+    if (S.buf.hit_body) AU.hitBuf = { body: S.buf.hit_body[0], head: S.buf.hit_head[0] }; };
   const R = (a, b) => a + Math.random() * (b - a);
   S.has = id => !!S.buf[id];
   S.buffer = (id, v) => { const L = S.buf[id]; if (!L) return null; return L[v == null ? Math.floor(Math.random() * L.length) : Math.min(L.length - 1, v)]; };
@@ -4220,12 +4214,12 @@ const sfx = {
   magIn() { const w = wclass(curW()); if (w === 'shotgun') { psnd('shell_in'); psnd('shell_in', { delay: .16 }); psnd('gun_pump', { delay: .34, vol: .9 }); } else { psnd('mag_in', { rate: w === 'smg' ? 1.1 : 1 }); if (w === 'rifle') psnd('tape_rip', { delay: .12, vol: .55 }); } },
   bolt() { psnd('gun_bolt'); },
   adsIn() { const el = document.getElementById('wxCatch'); if (el && el.classList.contains('on') && !(AU.promptT > performance.now() - 1500)) { AU.promptT = performance.now(); psnd('plane_prompt', { ui: !AU.out }); return; } psnd('ads_in'); },
-  // hit confirm for YOUR hit (2D, straight to the master, gunfire ducks a moment): body / HEADSHOT / limb / wallbang / shield.
+  // hit confirm for YOUR hit (2D, straight to the master, gunfire ducks a moment): body / HEADSHOT / limb / wallbang.
   // Context (zone, wallbang, kill) comes from the damage hook (audioHooks: damageBot). Consecutive hits rise slightly in pitch.
-  hit(crit, shield) { if (!AU.ctx) return; const c = AU.ctx, now = c.currentTime, H = AU.hitS || (AU.hitS = { last: 0, chain: 0 }), C = AU.hitCtx || {}; AU.hitCtx = null;
+  hit(crit) { if (!AU.ctx) return; const c = AU.ctx, now = c.currentTime, H = AU.hitS || (AU.hitS = { last: 0, chain: 0 }), C = AU.hitCtx || {}; AU.hitCtx = null;
     if (now - H.last < .05 && !(crit && !H.crit)) return;
     H.chain = now - H.last < .45 ? Math.min(H.chain + 1, 6) : 0; H.last = now; H.crit = !!crit;
-    const id = shield ? 'hit_shield' : C.wb ? 'hit_wall' : crit ? 'hit_head' : C.zone === 'limb' ? 'hit_limb' : 'hit_body', rate = 1 + H.chain * .022;
+    const id = C.wb ? 'hit_wall' : crit ? 'hit_head' : C.zone === 'limb' ? 'hit_limb' : 'hit_body', rate = 1 + H.chain * .022;
     psnd(id, { dest: AU.master, rate, jit: .01, vol: 1 }); if (C.wb && crit) psnd('hit_head', { dest: AU.master, rate, jit: .01, vol: .6, lp: 3500 });
     HIT_DUCK(now); AU.lastHit = { id, t: now }; },
   // kill markers (your kill): paper rip + confetti sparkle + two card notes; headshot kill brighter
@@ -4342,7 +4336,7 @@ const DRY_FIRE = { smg: { vol: 1 }, rifle: { vol: 1 }, sniper: { vol: 1 }, shotg
 const DRY_OF = { pistol: 'smg', wasp: 'smg', judge: 'smg', sniper: 'sniper', obelisk: 'sniper', helix: 'sniper', breacher: 'shotgun', poopgun: 'shotgun' };
 const dryClass = id => DRY_OF[id] || 'rifle';
 // (kept for the killcam / 90-flow test exports) the hit-confirm buffers
-function hitSample(kind) { return PSND.buffer(kind === 'head' ? 'hit_head' : kind === 'shield' ? 'hit_shield' : 'hit_body', 0) || AU.ctx.createBuffer(1, 64, AU.ctx.sampleRate); }
+function hitSample(kind) { return PSND.buffer(kind === 'head' ? 'hit_head' : 'hit_body', 0) || AU.ctx.createBuffer(1, 64, AU.ctx.sampleRate); }
 for (const k in GUN_VOICE) if (!sfx[k]) sfx[k] = function (...a) { gunVoice(k, a[0] && a[0].isVector3 ? a[0] : null); };
 { const BOTV = { sniper: 'sniper', obelisk: 'obelisk', helix: 'rail', breacher: 'shotgun', wasp: 'smg', pistol: 'pistol', carbine: 'shot', triad: 'burst', judge: 'judge', titan: 'minigun', arc: 'arc', inferno: 'flame', cryo: 'cryo', void: 'voidfire', nova: 'launch', stinger: 'crossbow', ricochet: 'disc', seeker: 'seeker' };
   // every weapon has its own voice: the table above, else the weapon's own sound name
@@ -4367,7 +4361,7 @@ function audioHooks() {
   const H = AU.hooks = {};
   // 1) a hit on a bot / remote player: zone + wallbang + kill for YOUR hit confirm; the crumple heard AT the body for everyone else's
   if (typeof damageBot === 'function') { const o = damageBot; damageBot = function (r, dmg, crit, point, dir, zone, attacker, weapon) {
-      if (r && !r.dead && !(r.shield > 0)) {
+      if (r && !r.dead && !(r.shield > 0)) {   // (spawn protection is invisible and silent: no hit confirm while it lasts)
         const mine = attacker === PLAYER_ENT, wb = !!(r.wbT && typeof G !== 'undefined' && r.wbT === G.time && r.wbBy === attacker);
         if (mine) AU.hitCtx = { zone, wb, kill: r.hp - dmg <= 0, weapon };
         else if (point && !SILENT_HIT_W.has(weapon) && voice('impact', point)) { const now = performance.now(); if (!(AU.bodyT > now - 45)) { AU.bodyT = now; psnd(crit ? 'head_impact' : 'body_impact', { pos: point, ref: 3, roll: 1.2, vol: .8 }); } } }
@@ -5069,7 +5063,6 @@ function hitGeometry() {
     thigh: new THREE.CapsuleGeometry(.095, .3, 2, 8), shin: new THREE.CapsuleGeometry(.08, .32, 2, 8), arm: new THREE.CapsuleGeometry(.07, .2, 2, 8),
     blob: new THREE.PlaneGeometry(1.2, 1.2), blobMat: new THREE.MeshBasicMaterial({ alphaMap: tex(T.glow), color: 0x000000, transparent: true, opacity: .55, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 }),
     flashMat: new THREE.SpriteMaterial({ map: tex(T.glow), color: new THREE.Color(3, 1.8, .8), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }),
-    shieldMat: new THREE.SpriteMaterial({ map: tex(T.glow), color: new THREE.Color(.3, 1.4, 2.4), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: .5 }),
     glintMat: new THREE.SpriteMaterial({ map: tex(T.star), color: new THREE.Color(9, 8, 6), blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, transparent: true }) };
 }
 const robots = []; let targetsDirty = true; const targets = [];
@@ -5102,7 +5095,7 @@ function buildBot(profile) {
   const muzzle = new THREE.Object3D(); muzzle.position.copy(gunInner.userData.muzzle || new THREE.Vector3(0, .12, .5)); gun.add(muzzle);
   const flash = new THREE.Sprite(HB.flashMat); flash.scale.setScalar(.2); flash.visible = false; muzzle.add(flash);
   const glint = new THREE.Sprite(HB.glintMat); glint.scale.setScalar(.01); glint.visible = false; glint.renderOrder = 9; gun.add(glint); glint.position.set(0, .2, .1);
-  const bubble = new THREE.Sprite(HB.shieldMat); bubble.scale.set(1.6, 2.4, 1); bubble.position.y = 1; bubble.visible = false; root.add(bubble);
+  const bubble = new THREE.Object3D(); bubble.visible = false;   // inert placeholder (no shield visual; the killcam still sets .visible on it)
   const blob = new THREE.Mesh(HB.blob, HB.blobMat); blob.rotation.x = -Math.PI / 2; blob.position.y = .03; blob.renderOrder = 1; root.add(blob);
   // animation: lower body (locomotion) and upper body (weapon handling) blend independently
   const mixer = new THREE.AnimationMixer(model), act = {};
@@ -5586,7 +5579,7 @@ function warmShaders() {
 }
 async function startMatch(mapId) {
   await loadMap(mapId || nextMapId());
-  KILL_LIMIT = 30; $('hMode').textContent = 'FFA · Sector Nine · EU-West';
+  KILL_LIMIT = 30; $('hMode').textContent = 'Free for all';
   clearDynamic(); newRoster();
   Object.assign(PLAYER_ENT, { kills: 0, deaths: 0, score: 0, heads: 0, streak: 0 });
   resetPlayer(); P.pos.copy(pickSpawn(PLAYER_ENT)); P.yaw = Math.atan2(P.pos.x, P.pos.z); P.shield = 2;
@@ -5991,31 +5984,13 @@ const MEDALS = {
 };
 const MEDAL_SVG = c => `<svg viewBox="0 0 40 40" width="34" height="34"><path d="M20 2l15 8.7v18.6L20 38 5 29.3V10.7z" fill="none" stroke="${c}" stroke-width="2.4"/><path d="M20 9l9 5.2v11.6L20 31l-9-5.2V14.2z" fill="${c}" opacity=".85"/></svg>`;
 let badgeT = 0, medalQ = [];
-// kill badge: an alien insignia - clawed metal star, a ring of runes turning around a hex core with a glowing skull
+// kill badge: a paper tag with the title, victim and points (no emblem, no glow)
 const KB_TITLE = { blast: 'Obliterated', freeze: 'Shattered', burn: 'Incinerated', shock: 'Overloaded', vapor: 'Vaporized', slice: 'Sliced', riddled: 'Shredded', head: 'Headshot', spin: 'Eliminated' };
-function kbSvg(c1, c2, c3) {
-  const pts = []; for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2 - Math.PI / 2, r = i % 2 ? 37 : (i % 4 === 0 ? 58 : 50); pts.push((60 + Math.cos(a) * r).toFixed(1) + ',' + (60 + Math.sin(a) * r).toFixed(1)); }
-  const hex = Array.from({ length: 6 }, (_, i) => { const a = i / 6 * Math.PI * 2 + Math.PI / 6; return (60 + Math.cos(a) * 25).toFixed(1) + ',' + (60 + Math.sin(a) * 25).toFixed(1); }).join(' ');
-  return `<svg viewBox="0 0 120 120" width="104" height="104"><defs>
-    <linearGradient id="kbM" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b6470"/><stop offset=".45" stop-color="#1a1e25"/><stop offset=".55" stop-color="#2c333d"/><stop offset="1" stop-color="#0c0e12"/></linearGradient>
-    <radialGradient id="kbC" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="${c1}"/><stop offset=".7" stop-color="${c2}"/><stop offset="1" stop-color="#05070a"/></radialGradient>
-    <linearGradient id="kbS" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-    <clipPath id="kbClip"><polygon points="${pts.join(' ')}"/></clipPath></defs>
-    <polygon points="${pts.join(' ')}" fill="url(#kbM)" stroke="${c1}" stroke-width="1.6" stroke-linejoin="round"/>
-    <g class="kb-ring"><circle cx="60" cy="60" r="33" fill="none" stroke="${c3}" stroke-width="3" stroke-dasharray="1.5 2.5 5 1.5 1 4 7 2 2 3" opacity=".9"/>
-      <circle cx="60" cy="60" r="29" fill="none" stroke="${c1}" stroke-width=".8" stroke-dasharray="12 3 2 3" opacity=".7"/></g>
-    <polygon points="${hex}" fill="url(#kbC)" stroke="${c1}" stroke-width="1.4"/>
-    <path d="M60 41c-9 0-14 7-14 15 0 7 4 11 7 14l2 7h10l2-7c3-3 7-7 7-14 0-8-5-15-14-15z" fill="#06080b" opacity=".92"/>
-    <path d="M50 56c3-1 7 0 8 4-3 2-7 1-8-4zM70 56c-3-1-7 0-8 4 3 2 7 1 8-4z" fill="${c3}"/>
-    <path d="M57 72h6M58 75h4" stroke="${c3}" stroke-width="1.2" opacity=".8"/>
-    <g clip-path="url(#kbClip)"><rect class="kb-shine" x="-60" y="-10" width="40" height="140" fill="url(#kbS)" transform="rotate(20 60 60)"/></g></svg>`;
-}
 function showKillBadge(victim, pts, medals) {
   const b = $('killbadge'), kind = victim.deathKind || 'spin', head = medals.includes('headshot') || kind === 'head', multi = medals.some(m => ['double', 'triple', 'multi', 'rampage'].includes(m));
-  const [c1, c2, c3, cls] = head ? ['#ffd27a', '#c0391b', '#fff1c4', 'gold'] : multi ? ['#c79bff', '#5a24b8', '#f1e4ff', 'violet'] : ['#7dffb3', '#118a5e', '#e8fff4', 'alien'];
+  const cls = head ? 'gold' : multi ? 'violet' : 'plain';
   b.className = 'kb-' + cls;
-  b.innerHTML = `<div class="kb-emblem">${kbSvg(c1, c2, c3)}</div>
-    <div class="kb-text"><b>${(medals.includes('wallbang') ? (head ? 'Wallbang headshot' : 'Wallbang') : head ? 'Headshot' : KB_TITLE[kind] || 'Eliminated').toUpperCase()}</b><span></span><em>+${pts}</em></div>`;
+  b.innerHTML = `<div class="kb-text"><b>${(medals.includes('wallbang') ? (head ? 'Wallbang headshot' : 'Wallbang') : head ? 'Headshot' : KB_TITLE[kind] || 'Eliminated').toUpperCase()}</b><span></span><em>+${pts}</em></div>`;
   b.querySelector('.kb-text span').textContent = victim.name;
   b.classList.remove('show'); void b.offsetWidth; b.classList.add('show'); badgeT = 2.4; $('banner').style.opacity = 0; bannerT = 0;
   const row = $('medals'); row.innerHTML = '';
@@ -6743,13 +6718,13 @@ function damageBot(r, dmg, crit, point, dir, zone, attacker, weapon) {
   if (r.remote) {
     // the other player's machine owns their health: send the hit, show feedback now
     if (!byMe) return;
-    if (r.shield > 0) { hitmarker(false, false); sfx.hit(false, true); return; }
+    if (r.shield > 0) return;   // spawn protection: silent, no effect
     netHit(dmg, crit, weapon, r.netId, r.wbT && G.time - r.wbT < .05); r.hitT = .35; r.flinch = 1; G.dmg = (G.dmg || 0) + Math.min(dmg, 100); if (crit) G.headHits = (G.headHits || 0) + 1;
     hitmarker(crit, r.hp - dmg <= 0); sfx.hit(crit); damageNumber(point, dmg, crit);
     for (let i = 0; i < (crit ? 12 : 7); i++) FX.spawn(point, -dir.x * 3 + rand(-3, 3), rand(0, 4), -dir.z * 3 + rand(-3, 3), 7, 4.2, 1.6, rand(.025, .05), rand(.15, .35), 12, 1);
     return;
   }
-  if (r.shield > 0) { for (let i = 0; i < 6; i++) FX.spawn(point, rand(-2, 2), rand(0, 2), rand(-2, 2), .4, 2, 3.2, .05, .3, 4, 1); if (byMe) { hitmarker(false, false); sfx.hit(false, true); } return; }
+  if (r.shield > 0) return;   // spawn protection: silent, no effect (no shield sparks or sound)
   r.hp -= dmg; r.lastHurt = G.time; r.flinch = 1; r.hitT = .35; r.act.hit.reset().play();
   if (attacker && attacker !== r) {
     r.aggro = attacker; r.aggroT = G.time;
@@ -8494,49 +8469,53 @@ function knifeHitCheck() {
   if (1 - P.swingT / P.swingDur <= KNIFE_IMPACT(P.swingHeavy) + KNIFE_WINDOW) P.swingHit = false;   // nothing in the arc yet: test again next frame
 }
 
-/* ================= weapon drops: a fallen fighter's gun hovers where they died for a few seconds; X swaps it into your hands ================= */
-const DROPS = [], DROP_LIFE = 10;
+/* ================= weapon drops: a fallen fighter's gun lies on a paper mat where they died; X swaps it into your hands. TDM/FFA: it folds away after a few seconds; Demolition: it stays all round ================= */
+const DROPS = [], DROP_LIFE = 7, DROP_FOLD = 1.1;   // TDM/FFA: 7 s on the floor (the last 1.1 s is the paper fold-away); Demolition: no timer
+const dropForever = () => !!(window.S9BotModes && S9BotModes.on && S9BotModes.M && S9BotModes.M.mode === 'demo');
 const SLOTS = () => P.slots || LOADOUT;
 function spawnDrop(id, at, from, dir) {
   if (!id || id === 'knife' || !WEAPONS[id] || !WM[id]) return;
   const w = WEAPONS[id], g = new THREE.Group(); g.position.set(at.x, groundAt(at.x, at.z, at.y + .6, .3), at.z); scene.add(g);   // on the floor even if they died mid-jump
   const gun = rifleTP(id); gun.scale.multiplyScalar(1.15); gun.updateMatrixWorld(true);
   const bb = new THREE.Box3().setFromObject(gun); gun.position.sub(bb.getCenter(new THREE.Vector3()));   // centred on its own middle, measured before it has a parent
-  const hold = new THREE.Group(); hold.add(gun); g.add(hold);
-  const col = new THREE.Color(...(w.glow || [2, 1.5, .5]));
-  const ring = new THREE.Mesh(new THREE.RingGeometry(.42, .5, 40), new THREE.MeshBasicMaterial({ color: col, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
-  ring.rotation.x = -Math.PI / 2; ring.position.y = .04; g.add(ring);
+  const hold = new THREE.Group(); hold.add(gun);
+  // a flat paper mat under the gun once it lands (no glow); it folds away with the gun at the end (TDM/FFA)
+  const fold = new THREE.Group(); fold.visible = false; g.add(fold);
+  const mat = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), PAPER.mat('white', { side: THREE.DoubleSide, tile: 0 })); mat.rotation.x = -Math.PI / 2; mat.position.y = .015; mat.userData.noProbe = true; mat.receiveShadow = true; fold.add(mat);
   // starts where the dead player's hand was and falls: lands lying on its side
   if (from && (Math.hypot(from.x - g.position.x, from.z - g.position.z) > 1.2 || Math.abs(from.y - g.position.y) > 2.5)) from = null;
   const h0 = from ? clamp(from.y - g.position.y, .15, 1.6) : 1.1; hold.position.set(from ? from.x - g.position.x : 0, h0, from ? from.z - g.position.z : 0);
   const yaw = rand(0, 6.28), fly = dir ? new THREE.Vector3(dir.x, 0, dir.z).normalize().multiplyScalar(rand(.8, 1.6)) : new THREE.Vector3();
-  hold.rotation.set(0, yaw, 0); ring.material.opacity = 0;
+  hold.rotation.set(0, yaw, 0); g.add(hold);
   const rest = new THREE.Box3();
-  DROPS.push({ id, g, hold, ring, beam: null, t: 0, vy: rand(1.2, 2.2), vx: fly.x, vz: fly.z, landed: false, yaw, roll: 0, rollTo: (Math.random() < .5 ? 1 : -1) * Math.PI / 2, rest, bounce: 0 });
+  DROPS.push({ id, g, hold, fold, mat, folded: 0, onMat: false, t: 0, vy: rand(1.2, 2.2), vx: fly.x, vz: fly.z, landed: false, yaw, roll: 0, rollTo: (Math.random() < .5 ? 1 : -1) * Math.PI / 2, rest, bounce: 0 });
   if (DROPS.length > 8) removeDrop(DROPS[0]);
 }
-function removeDrop(d) { scene.remove(d.g); d.g.traverse(o => { if (o.material && o.material.transparent && o.material.blending === THREE.AdditiveBlending) o.material.dispose(); }); const i = DROPS.indexOf(d); if (i >= 0) DROPS.splice(i, 1); }
+function removeDrop(d) { scene.remove(d.g); d.g.traverse(o => { if (o.geometry) o.geometry.dispose(); }); const i = DROPS.indexOf(d); if (i >= 0) DROPS.splice(i, 1); }
 function clearDrops() { while (DROPS.length) removeDrop(DROPS[0]); if ($('dropHint')) $('dropHint').hidden = true; }
 let nearDrop = null;
 function updateDrops(dt) {
   nearDrop = null; let best = 2.3;
   for (let i = DROPS.length - 1; i >= 0; i--) {
-    const d = DROPS[i]; d.t += dt; if (d.t > DROP_LIFE) { removeDrop(d); continue; }
+    const d = DROPS[i]; d.t += dt; const forever = dropForever(); if (!forever && d.t > DROP_LIFE) { removeDrop(d); continue; }
     if (!d.landed) {   // falling: gravity, a little drift, tumbling onto its side
       d.vy -= 18 * dt; const H = d.hold.position; H.y += d.vy * dt; H.x += d.vx * dt; H.z += d.vz * dt;
       d.roll = Math.min(1, d.roll + dt * 2.6); d.hold.rotation.set(0, d.yaw, d.rollTo * d.roll * d.roll); d.hold.rotation.x = Math.sin(d.roll * Math.PI) * .5;
       d.hold.updateMatrixWorld(true); d.rest.setFromObject(d.hold); const low = d.rest.min.y - d.g.position.y;
-      if (low <= .005 && d.vy < 0) { H.y -= low - .005; if (d.bounce < 1 && d.vy < -2.5) { d.vy *= -.28; d.bounce++; d.vx *= .5; d.vz *= .5; sfx.nadeBounce(d.g.position.clone()); } else { d.landed = true; d.hold.rotation.set(0, d.yaw, d.rollTo); d.hold.updateMatrixWorld(true); d.rest.setFromObject(d.hold); H.y -= d.rest.min.y - d.g.position.y - .005; d.ring.position.set(H.x, .03, H.z); } }
+      if (low <= .005 && d.vy < 0) { H.y -= low - .005; if (d.bounce < 1 && d.vy < -2.5) { d.vy *= -.28; d.bounce++; d.vx *= .5; d.vz *= .5; sfx.nadeBounce(d.g.position.clone()); } else { d.landed = true; d.hold.rotation.set(0, d.yaw, d.rollTo); d.hold.updateMatrixWorld(true); d.rest.setFromObject(d.hold); H.y -= d.rest.min.y - d.g.position.y - .005; } }
     }
-    const left = DROP_LIFE - d.t, warn = clamp(1 - (left - 1) / 3, 0, 1), fade = clamp(left / 1.4, 0, 1), fe = fade * fade * (3 - 2 * fade);
-    d.ring.scale.setScalar((1 + Math.sin(d.t * lerp(3, 11, warn)) * lerp(.06, .12, warn)) * lerp(.35, 1, fe));
-    d.ring.material.opacity = d.landed ? lerp(.75, 1, warn) * Math.min(1, (d.t - .2) * 2) * fe : 0;
-    if (left < 1.4) {   // dematerialise: shrinks into its own light while sparks of its colour drift up
-      d.hold.scale.setScalar(Math.max(.001, fe)); const gw = WEAPONS[d.id].glow || [2, 2, 2];
-      
-      d.hold.getWorldPosition(_dz); for (let k = 0; k < 2; k++) FX.spawn(_dz, rand(-.5, .5), rand(1, 2.6), rand(-.5, .5), gw[0] * 1.5, gw[1] * 1.5, gw[2] * 1.5, rand(.04, .08), rand(.5, .9), -1.2, 1.2, 1);
+    const left = forever ? 99 : DROP_LIFE - d.t;
+    if (d.landed && !d.onMat) {   // lay the mat under the gun: the gun moves into the mat's group so both fold around the same spot
+      d.onMat = true; const bb = new THREE.Box3().setFromObject(d.hold), W = clamp(bb.max.x - bb.min.x, .5, 1.6) + .2, D = clamp(bb.max.z - bb.min.z, .35, 1.0) + .3;
+      d.mat.scale.set(W, D, 1); d.fold.position.set(d.hold.position.x, 0, d.hold.position.z); d.hold.position.set(0, d.hold.position.y, 0); d.fold.add(d.hold); d.fold.visible = true;
     }
-    if (state === 'play' && !P.dead) { const dx = P.pos.x - d.g.position.x - d.hold.position.x, dz = P.pos.z - d.g.position.z - d.hold.position.z, dist = Math.hypot(dx, dz); if (dist < best && Math.abs(P.pos.y - d.g.position.y) < 2) { best = dist; nearDrop = d; } }
+    if (d.onMat) {   // last DROP_FOLD seconds: the mat + gun fold in half along the length, then across, and shrink away like a folded note
+      const f = forever ? 0 : clamp(1 - left / DROP_FOLD, 0, 1), f1 = clamp(f * 2, 0, 1), f2 = clamp(f * 2 - 1, 0, 1), sm = x => x * x * (3 - 2 * x), fin = clamp((f - .78) / .22, 0, 1);
+      if (f > 0 && !d.folded) { d.folded = 1; sfx.nadeBounce(d.g.position.clone().add(d.fold.position)); }
+      d.fold.scale.set(1 - .5 * sm(f1), 1 - .3 * sm(f1), 1 - .5 * sm(f2)); if (fin > 0) d.fold.scale.multiplyScalar(Math.max(.001, 1 - sm(fin)));
+      d.fold.rotation.z = -.3 * sm(f1) * (1 - fin); d.fold.rotation.x = .25 * sm(f2) * (1 - fin); d.fold.position.y = .12 * sm(f2);
+    }
+    if (state === 'play' && !P.dead) { const dx = P.pos.x - d.g.position.x - d.hold.position.x - d.fold.position.x * (d.onMat ? 1 : 0), dz = P.pos.z - d.g.position.z - d.hold.position.z - d.fold.position.z * (d.onMat ? 1 : 0), dist = Math.hypot(dx, dz); if (dist < best && Math.abs(P.pos.y - d.g.position.y) < 2) { best = dist; nearDrop = d; } }
   }
   const h = $('dropHint'); if (!h) return;
   const show = !!nearDrop && !SLOTS().includes(nearDrop.id);
@@ -9350,7 +9329,7 @@ function animateBot(r, dt) {
   r.gun.translateZ(-r.shotKick * .06 + .05); r.gun.translateY(.02);
   r.flash.visible = r.flashT > 0; if (r.flash.visible) r.flash.material.rotation = rand(0, 6.28);
   // shield shimmer, hit flash
-  r.shield = Math.max(0, r.shield - dt); r.bubble.visible = r.shield > 0;
+  r.shield = Math.max(0, r.shield - dt); r.bubble.visible = false;
   if (r.hitT > .25) r.body.emissive.setRGB(.8, .7, .6); else if (!r.dead) { if (r.chillT > 0) r.body.emissive.setRGB(.15, .45, .7); else if (r.burnT > 0) r.body.emissive.setRGB(.6, .2, .04); else r.body.emissive.copy(r.color).lerp(BOT_WHITE, BOT_FILLW).multiplyScalar(BOT_FILL); }
 }
 // a dead operator's armour breaks down into drifting light in their colour
@@ -9462,7 +9441,8 @@ function syncAudio() {
   const g = AU.out.gain, t = AU.ctx.currentTime; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(on ? 1 : 0, t + (on ? .25 : .06));
 }
 // losing full screen / the keyboard lock (Esc, OS switch) can swallow key-ups (Alt especially): never leave a key stuck, and take the lock again on the next Play click
-document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) { KBL.locked = false; for (const k in HELD) HELD[k] = false; for (const k in keys) keys[k] = false; } });
+function releaseAll() { for (const k in HELD) HELD[k] = false; for (const k in keys) keys[k] = false; mouseDown = false; adsHeld = false; lookDrag = false; if (BOOM.rDown) { BOOM.rDown = false; BOOM.rRel = true; } const b = $('board'); if (b) b.hidden = true; }   // no key or mouse button stays down after focus loss
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) { KBL.locked = false; releaseAll(); } else kbLock(); });
 document.addEventListener('visibilitychange', syncAudio);
 function setState(s) {
   state = s; if (s === 'menu' || s === 'paused' || s === 'matchend') kbUnlock();
@@ -9486,19 +9466,24 @@ function kbLock() {
 }
 function kbUnlock() { try { if (navigator.keyboard && navigator.keyboard.unlock) navigator.keyboard.unlock(); } catch (e) {} KBL.locked = false; }
 const GAME_STATES = { play: 1, dead: 1 };
-const PASS_KEYS = new Set(['F5', 'F11', 'F12']);   // reload, full screen, dev tools stay the browser's
+const PASS_KEYS = new Set(['F5', 'F12']);   // reload (asks first) + dev tools stay the browser's; F11 is the game's
 function gameKey(e) { if (MOVEC.swallowKey(e.code, state, e.target && e.target.tagName)) { if (e.code !== 'Escape') e.preventDefault(); return true; } return false; }
 addEventListener('keydown', gameKey, true); addEventListener('keyup', gameKey, true);
-document.addEventListener('visibilitychange', () => { if (document.hidden) { for (const k in HELD) HELD[k] = false; for (const k in keys) keys[k] = false; mouseDown = false; adsHeld = false; } });
-function lock() {
+document.addEventListener('visibilitychange', () => { if (document.hidden) releaseAll(); });
+addEventListener('pagehide', releaseAll);
+let lockTry = 0;
+// Chrome refuses a new pointer lock for ~1.3 s after Esc: retry quietly (never fall into drag-look mode for that); noLock only when there is no API
+function lock(retry) {
   kbLock();
-  const el = renderer.domElement; noLock = false;
+  const el = renderer.domElement; if (!retry) { noLock = false; lockTry = 0; }
   if (!el.requestPointerLock) { noLock = true; return; }
+  const again = () => { if (document.pointerLockElement || ++lockTry > 4) return; setTimeout(() => { if (!document.pointerLockElement && (state === 'play' || state === 'dead')) lock(true); }, 350 * lockTry); };
   try {
     let r = el.requestPointerLock({ unadjustedMovement: true });
-    if (r && r.catch) r.catch(() => { try { const r2 = el.requestPointerLock(); if (r2 && r2.catch) r2.catch(() => { noLock = true; }); } catch (e) { noLock = true; } });
-  } catch (e) { try { el.requestPointerLock(); } catch (e2) { noLock = true; } }
+    if (r && r.catch) r.catch(() => { try { const r2 = el.requestPointerLock(); if (r2 && r2.catch) r2.catch(again); } catch (e) { again(); } });
+  } catch (e) { try { el.requestPointerLock(); } catch (e2) { again(); } }
 }
+document.addEventListener('pointerlockerror', () => { if (!document.pointerLockElement && lockTry <= 4 && state === 'play') { lockTry++; setTimeout(() => { if (!document.pointerLockElement && state === 'play') lock(true); }, 350 * lockTry); } });
 function menuScene() { clearDynamic(); state = 'menu'; Object.assign(G, { time: 0, matchT: MATCH_TIME, ended: false }); newRoster(); }
 async function play() { initAudio(); lock(); await startMatch(); setState('play'); }
 // The audio graph is built in the MENU (the browser keeps it suspended until the Play click resumes it; all game sound goes through
@@ -9669,14 +9654,14 @@ renderer.domElement.addEventListener('mousedown', e => {
   if (P.weapon === 'plane') { if (e.button === 0) PVM.planeThrow(); if (!document.pointerLockElement) lock(); return; }   // the plane slot: click throws (right click does nothing)
   if (e.button === 0) { mouseDown = true; P.trigReady = true; if (P.switchT > 0) P.drawClick = G.time; if (noLock) lookDrag = true; }   // drawClick: a tap during a weapon draw fires when the draw ends
   if (e.button === 2) { if (P.weapon === 'knife') knifeAttack(true); else if (P.weapon === 'boomerang') { BOOM.rDown = true; BOOM.rT = 0; } else { adsHeld = true; sfx.adsIn(); } }
-  if (!document.pointerLockElement) lock();
+  if (!document.pointerLockElement) lock(); else if ((state === 'play' || state === 'dead') && !document.fullscreenElement) kbLock();   // left full screen (F11/Esc): take it back on the next click
 });
 addEventListener('mouseup', e => { if (e.button === 0) { mouseDown = false; lookDrag = false; } if (e.button === 2) { adsHeld = false; if (BOOM.rDown) { BOOM.rDown = false; BOOM.rRel = true; } } });
 // Ctrl is crouch, and Ctrl+W (crouch while walking) is the browser's close-tab shortcut: ask before leaving a live match,
 // and swallow every other Ctrl shortcut while playing (Ctrl+W/R/T can't be blocked by a page, the leave prompt catches those)
 addEventListener('beforeunload', e => { if (navigator.webdriver) return; if (state === 'play' || state === 'dead' || state === 'paused') { e.preventDefault(); e.returnValue = ''; return ''; } });
 addEventListener('keydown', e => {
-  if ((e.code === 'AltLeft' || e.code === 'AltRight') && state !== 'menu') e.preventDefault();   // Alt = silent walk: never the browser menu
+  if (((e.code === 'AltLeft' || e.code === 'AltRight') && state !== 'menu') || (e.altKey && (state === 'play' || state === 'dead'))) e.preventDefault();   // Alt = silent walk: never the browser menu, Alt+Left/Right never navigates back
   HELD[e.code] = true;
   if ((e.ctrlKey || e.metaKey) && (state === 'play' || state === 'dead')) e.preventDefault();
   if (e.code === 'Tab' && (state === 'play' || state === 'dead')) { e.preventDefault(); $('board').innerHTML = boardHTML(); $('board').hidden = false; }
@@ -9701,7 +9686,8 @@ addEventListener('keydown', e => {
 });
 addEventListener('wheel', e => { if (state !== 'play') return; const cyc = SLOTS().slice(), n = cyc.length, i = Math.max(0, cyc.indexOf(P.weapon)); switchWeapon(cyc[(i + (e.deltaY > 0 ? 1 : n - 1)) % n], true); }, { passive: true });
 addEventListener('keyup', e => { if ((e.code === 'AltLeft' || e.code === 'AltRight') && state !== 'menu') e.preventDefault(); keys[e.code] = false; HELD[e.code] = false; if (e.code === 'Tab') $('board').hidden = true; });
-addEventListener('blur', () => { for (const k in HELD) HELD[k] = false; if (state === 'play') { for (const k in keys) keys[k] = false; mouseDown = false; adsHeld = false; if (noLock) setState('paused'); } });
+addEventListener('blur', () => { releaseAll(); if (state === 'play' && noLock) setState('paused'); });
+addEventListener('auxclick', e => { if (state === 'play' || state === 'dead') e.preventDefault(); });   // mouse back/forward buttons never leave the page
 addEventListener('contextmenu', e => { if (state === 'play' || e.target === renderer.domElement) e.preventDefault(); });
 
 /* ================= main loop ================= */

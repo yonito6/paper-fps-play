@@ -1,4 +1,4 @@
-/* Sector Nine - Settings menu (Gameplay, Controls, Mouse, Crosshair, Video, Audio).
+/* Foldiers - Settings menu (Gameplay, Controls, Mouse, Crosshair, Video, Audio).
    Add-on module: loaded after index.html's main script. index.html keeps all its code inside an IIFE, so this module only
    talks to the game through window.__s9 (P, camera, renderer, AU, sfx, robots, keys, WEAPONS, state), the DOM (the old
    quick-settings sliders #msens/#mvol/#mq drive the game's own CFG), and input events (keys/mouse are re-mapped by
@@ -577,7 +577,7 @@ function importCode(code) {
     out.style = inner ? (dotOn ? 'crossdot' : 'cross') : 'dot'; if (!inner && !dotOn) { out.style = 'dot'; out.dot = 2; }
     return { ok: true, c: sanitize({ crosshair: out }).crosshair, msg: 'Valorant code imported (inner lines, dot, outline and colour).' };
   }
-  return { ok: false, msg: 'That code is not a Sector Nine (S9;...) or Valorant (0;...) crosshair code.' };
+  return { ok: false, msg: 'That code is not a Valorant (0;...) crosshair code.' };
 }
 
 /* ============ fullscreen ============ */
@@ -710,7 +710,7 @@ function buildPanel() {
   root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true'); root.setAttribute('aria-label', 'Settings');
   root.innerHTML = `
   <div class="s9s-head">
-    <div><div class="kicker">Sector Nine</div><h2>Settings</h2></div>
+    <div><div class="kicker">Foldiers</div><h2>Settings</h2></div>
     <div class="s9s-acts">
       <button class="s9s-btn" data-fs aria-pressed="false" title="Full screen / windowed (Alt+Enter)">${FS_SVG}<span class="s9s-fsl">Full screen</span><kbd class="hide-s">Alt+Enter</kbd></button>
       <button class="s9s-btn pri" data-close>Back<kbd>Esc</kbd></button>
@@ -804,7 +804,7 @@ function tabHTML(t) {
       rSeg('video.viewBob', 'View bob', 'How much the view rocks while you run and dips when you land. Off = level camera (only the look changes, never your aim).', [['full', 'Full'], ['subtle', 'Subtle'], ['off', 'Off']]) +
       rToggle('video.gunSway', 'Gun sway', 'The gun trails a little behind fast turns and leans into strafes. Off = gun fixed on screen.') +
       rToggle('video.hitFlinch', 'Hit flinch', 'The view nods away from the shooter when you are hit. Drawn only: your aim does not move.') +
-      `<div class="s9s-row"><div class="s9s-lab"><b>Motion blur</b><span>Sector Nine never uses motion blur, nothing to turn off.</span></div><div class="s9s-ctl"><span class="s9s-swl">Always off</span></div></div>`);
+      `<div class="s9s-row"><div class="s9s-lab"><b>Motion blur</b><span>There is no motion blur in Foldiers, nothing to turn off.</span></div><div class="s9s-ctl"><span class="s9s-swl">Always off</span></div></div>`);
   if (t === 'audio') return NOTE() + sec('Volume',
       rRange('audio.master', 'Master volume', '', { step: .01, k: 100, dp: 0, unit: '%' }) +
       rRange('audio.effects', 'Effects', 'Guns, hits, explosions, abilities.', { step: .01, k: 100, dp: 0, unit: '%' }) +
@@ -825,7 +825,7 @@ function xhTabHTML() {
       <div class="s9s-sec"><h3>Share code</h3><div class="s9s-row" style="grid-template-columns:1fr"><div class="s9s-ctl" style="justify-content:flex-start">
         <input class="s9s-code" id="s9code" aria-label="Crosshair code" spellcheck="false" autocomplete="off" value="${escH(exportCode())}">
         <button class="s9s-btn" data-xh="copy">Copy</button><button class="s9s-btn" data-xh="import">Import</button></div>
-        <div class="s9s-lab"><span>Paste a Sector Nine code (S9;…) or a Valorant code (0;P;…) and press Import.</span></div></div></div>
+        <div class="s9s-lab"><span>Paste a Valorant code (0;P;…) and press Import.</span></div></div></div>
       <div class="s9s-presets" aria-label="Presets">${XH_PRESETS.map(([n], i) => `<button data-preset="${i}"><canvas width="22" height="22" data-pi="${i}"></canvas>${n}</button>`).join('')}</div>
     </div><div style="display:grid;gap:18px;min-width:0">
       ${sec('Shape', styleSeg + colour + rRange('crosshair.length', 'Line length', '', { step: 1, dp: 0, unit: 'px' }) + rRange('crosshair.thickness', 'Line thickness', '', { step: 1, dp: 0, unit: 'px' }) +
