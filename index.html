@@ -1030,7 +1030,7 @@ const CFG = { sens: 1, vol: .8, q: 'balanced' };
 try { Object.assign(CFG, JSON.parse(localStorage.getItem('sector9-cfg2') || '{}')); } catch (e) {}
 if (!['high', 'balanced', 'performance'].includes(CFG.q)) CFG.q = 'balanced';
 const saveCfg = () => { try { localStorage.setItem('sector9-cfg2', JSON.stringify(CFG)); } catch (e) {} };
-const QUALITY = { high: { maxPR: 1, shadow: 1536, bloom: true, msaa: 0 }, balanced: { maxPR: .85, shadow: 2048, bloom: true, msaa: 0 }, performance: { maxPR: .7, shadow: 0, bloom: false, msaa: 0 } };
+const QUALITY = { high: { maxPR: 1, shadow: 1536, bloom: true, msaa: 0 }, balanced: { maxPR: .85, shadow: 2048, bloom: true, msaa: 0 }, performance: { maxPR: .7, shadow: 1024, bloom: false, msaa: 0 } };   // WP-D1: movers' shadow map at 1024 (4-tap PCF)
 
 /* ================= renderer & post ================= */
 const host = $('game');
@@ -2258,9 +2258,11 @@ function artBakeOnlyHook(m) {
   if (!ART_LOOK.bakeFull || m.userData.artBake || !m.lightMap) return; m.userData.artBake = 1;
   const prev = m.onBeforeCompile, prevKey = m.customProgramCacheKey;
   m.onBeforeCompile = sh => { if (prev && prev !== THREE.Material.prototype.onBeforeCompile) prev(sh); if (/artBakeOnly/.test(sh.fragmentShader)) return;
-    sh.fragmentShader = sh.fragmentShader.replace('irradiance += lightMapIrradiance;', 'irradiance = lightMapIrradiance; // artBakeOnly')
+    const dyn = typeof ART_SH_GLSL !== 'undefined'; if (dyn) Object.assign(sh.uniforms, ART_SH_U);   // WP-D1 movers' shadows (07-paper-shadows.js); deskLM squared the texel in place: sqrt = the encoded value
+    sh.fragmentShader = sh.fragmentShader.replace('#include <shadowmap_pars_fragment>', '#include <shadowmap_pars_fragment>' + String.fromCharCode(10) + (dyn ? ART_SH_GLSL : ''))
+      .replace('irradiance += lightMapIrradiance;', dyn ? 'irradiance = lightMapIrradiance * artDynShadow(sqrt(max(lightMapTexel.rgb, vec3(0.0)))); // artBakeOnly' : 'irradiance = lightMapIrradiance; // artBakeOnly')
       .replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n reflectedLight.directDiffuse = vec3(0.0); reflectedLight.directSpecular = vec3(0.0);'); };
-  m.customProgramCacheKey = () => (prevKey ? prevKey.call(m) : '') + '|artBake1'; m.needsUpdate = true;
+  m.customProgramCacheKey = () => (prevKey ? prevKey.call(m) : '') + '|artBake2'; m.needsUpdate = true;
 }
 // tear panels clone the GLB's base materials (26-desktown glMat): give those bases a library twin first so holes/flaps match the walls
 function artTearBases() {
@@ -2287,6 +2289,7 @@ function artMapPass() {
     });
   }
   try { artLoadFullLM(); } catch (e) { console.warn('[art] lm_full', e); }
+  try { if (typeof artShadowSetup === 'function') artShadowSetup(); } catch (e) { console.warn('[art] shadows', e); }
   // light: warm low sun, warm desk bounce from below, blue sky from above (the lightmap already holds sky + AO + sun bounce)
   if (typeof sun !== 'undefined' && sun) { sun.intensity = L.sun; sun.color.setHex(L.sunHex); ART_U.sun.value.copy(sun.position).normalize(); }
   scene.traverse(l => { if (l.isHemisphereLight) { l.color.setHex(L.hemiSky); l.groundColor.setHex(L.hemiGround); l.intensity = L.hemi; } });
@@ -2418,11 +2421,114 @@ function artFrame() {
   if (!ART_GUN.done) artGunLights();
   { const now = performance.now(), dt = Math.min(.1, (now - ART_LAST) / 1000 || 0); ART_LAST = now; try { artShadeBots(dt); } catch (e) {} }
   try { artGunShade(); } catch (e) {}
+  try { if (typeof artShadowFit === 'function') artShadowFit(); } catch (e) {}
   // the player's own gun / hands follow the player's sun-or-shade like the soldiers do
   if (typeof P !== 'undefined' && P.pos && ART_LOOK.bakeFull) { ART_RAY.t2 = (ART_RAY.t2 || 0) + 1; if (ART_RAY.t2 % 10 === 0) ART_GUN.want = artSunVisible(P.pos) ? 1 : .18; const v = ART_GUN.obj.value, w = ART_GUN.want == null ? 1 : ART_GUN.want; v.x += (w - v.x) * .08; v.y = .85 + .15 * v.x; }
   const k = ART_GUN.key; if (k && typeof camera !== 'undefined') { ART_GUN.q.copy(camera.quaternion).invert(); ART_GUN.v.copy(ART_U.sun.value).applyQuaternion(ART_GUN.q); if (ART_GUN.v.y < .15) ART_GUN.v.y = .15; k.position.copy(ART_GUN.v).multiplyScalar(3); if (ART_GUN.rim) ART_GUN.rim.position.set(-ART_GUN.v.x * 2.5, 1.2, -1.5); }
 }
 if (typeof frame === 'function') { const _fr = frame; frame = function () { try { artFrame(); } catch (e) {} return _fr.apply(this, arguments); }; }
+// ================= WP-D1 SHADOWS (docs/ART_METHOD.md section 4; owner must-have: "shadows like the references, not round black blobs")
+// Static world: its shadows are in the Cycles bake (render/paper/map/bake_map.py -> lm_full: exact to the sun, soft with distance, warm sky
+// bounce, AO under props), so nothing static draws into the shadow map any more. Movers (soldiers, planes, flaps, drops) draw into ONE
+// directional shadow map whose window follows the view (ART_SH.R m around the player, texel-snapped so it never shimmers): 2048 on High,
+// 1024 on Performance. The baked world receives it through artDynShadow() (hooked into the lmOnly materials by modules/papermat.js and
+// 06-paper-look.js artBakeOnlyHook): the shadow only removes the SUN share of the bake (where the bake is already in shade it adds nothing,
+// so a soldier under the bridge does not double-darken), and its colour is the refs' measured shadow colour (tools/look/shadow_stub.py on
+// ref1/ref2: 22-26 % of the lit surface in linear light, warm/magenta, never black). High = PCSS-lite: a 5-tap blocker search sets the
+// kernel from the caster-receiver gap (sharp at the boots, softer at the head's shadow); Performance = 4-tap PCF.
+// Cost: one shadow pass of the casters inside the window (soldiers outside it are switched off); 0 extra draw calls in the world pass.
+const ART_SH = { on: false, R: 20, tanA: .03, dens: .26, tint: [1.17, .86, .97], lo: .44, hi: .60,
+  e: new THREE.Vector3(), c: new THREE.Vector3(), f: new THREE.Vector3(), q: new THREE.Vector3(), m: new THREE.Matrix4(), x: new THREE.Vector3(), y: new THREE.Vector3(), z: new THREE.Vector3(), n: 0, casters: 0 };
+// lo / hi: lm_full texel luminance (sqrt-encoded) of baked shade (< .44) and full sun (> .60), from the histogram of lm_full_2k.png
+const ART_SH_U = { artShTint: { value: new THREE.Color(1, 1, 1) }, artShK: { value: new THREE.Vector4(0, ART_SH.lo, ART_SH.hi, 30) }, artShM: { value: 1 } };
+const ART_SH_GLSL = `
+uniform vec3 artShTint; uniform vec4 artShK; uniform float artShM;   // K: x strength (0 = off), y/z bake texel luminance shade..sun, w penumbra texels per unit depth
+#if defined( USE_SHADOWMAP ) && NUM_DIR_LIGHT_SHADOWS > 0
+float artShD(sampler2D m, vec2 uv) { return unpackRGBAToDepth(texture2D(m, uv)); }
+float artShadowPCSS(sampler2D m, vec2 size, float bias, vec4 sc) {
+  vec3 c = sc.xyz / sc.w; c.z += bias;
+  if (c.x < 0.0 || c.x > 1.0 || c.y < 0.0 || c.y > 1.0 || c.z > 1.0) return 1.0;
+  vec2 tx = 1.0 / size;
+  if (artShM < 0.5) {   // Performance: plain 4-tap PCF
+    return (step(c.z, artShD(m, c.xy + vec2(-.6, -.6) * tx)) + step(c.z, artShD(m, c.xy + vec2(.6, -.6) * tx))
+          + step(c.z, artShD(m, c.xy + vec2(-.6, .6) * tx)) + step(c.z, artShD(m, c.xy + vec2(.6, .6) * tx))) * 0.25; }
+  float a = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) * 6.2832; float ca = cos(a), sa = sin(a);
+  mat2 R = mat2(ca, sa, -sa, ca);
+  // blocker search (5 taps, 4 texels): no blocker = fully lit, the common case costs 5 reads
+  float zb = 0.0, nb = 0.0, d;
+  d = artShD(m, c.xy); if (d < c.z) { zb += d; nb += 1.0; }
+  d = artShD(m, c.xy + R * vec2(4.0, 0.0) * tx); if (d < c.z) { zb += d; nb += 1.0; }
+  d = artShD(m, c.xy + R * vec2(-4.0, 0.0) * tx); if (d < c.z) { zb += d; nb += 1.0; }
+  d = artShD(m, c.xy + R * vec2(0.0, 4.0) * tx); if (d < c.z) { zb += d; nb += 1.0; }
+  d = artShD(m, c.xy + R * vec2(0.0, -4.0) * tx); if (d < c.z) { zb += d; nb += 1.0; }
+  if (nb < 0.5) return 1.0;
+  float pen = clamp((c.z - zb / nb) * artShK.w, 0.6, 7.0);   // contact hardening: the penumbra grows with the caster-receiver gap
+  mat2 K = R * pen; float s = 0.0;
+  s += step(c.z, artShD(m, c.xy + K * vec2(-0.613, 0.617) * tx)); s += step(c.z, artShD(m, c.xy + K * vec2(0.170, -0.040) * tx));
+  s += step(c.z, artShD(m, c.xy + K * vec2(-0.299, -0.792) * tx)); s += step(c.z, artShD(m, c.xy + K * vec2(0.645, 0.493) * tx));
+  s += step(c.z, artShD(m, c.xy + K * vec2(-0.326, 0.359) * tx)); s += step(c.z, artShD(m, c.xy + K * vec2(0.842, 0.054) * tx));
+  s += step(c.z, artShD(m, c.xy + K * vec2(-0.818, -0.244) * tx)); s += step(c.z, artShD(m, c.xy + K * vec2(0.917, -0.388) * tx));
+  return s * 0.125;
+}
+#endif
+vec3 artDynShadow(vec3 lmEnc) {
+#if defined( USE_SHADOWMAP ) && NUM_DIR_LIGHT_SHADOWS > 0
+  if (artShK.x <= 0.0 || !receiveShadow) return vec3(1.0);
+  float v = artShadowPCSS(directionalShadowMap[0], directionalLightShadows[0].shadowMapSize, directionalLightShadows[0].shadowBias, vDirectionalShadowCoord[0]);
+  if (v > 0.999) return vec3(1.0);
+  float sunK = smoothstep(artShK.y, artShK.z, dot(lmEnc, vec3(0.2126, 0.7152, 0.0722)));   // 0 where the bake is already in shade
+  return mix(vec3(1.0), artShTint, (1.0 - v) * sunK * artShK.x);
+#else
+  return vec3(1.0);
+#endif
+}
+`;
+function artShadowSetup() {
+  if (!ART_LOOK.bakeFull || typeof sun === 'undefined' || !sun) return;
+  ART_SH.on = true; const t = ART_SH.tint, k = ART_SH.dens; ART_SH_U.artShTint.value.setRGB(t[0] * k, t[1] * k, t[2] * k); ART_SH_U.artShK.value.x = 1;
+  // nothing static casts: its shadows are baked (this also keeps the per-frame shadow pass to the movers)
+  const DD = DESKTOWN_DATA; if (DD && DD.gltf) DD.gltf.scene.traverse(o => { if (o.isMesh) o.castShadow = false; });
+  if (typeof MAPROOT !== 'undefined' && MAPROOT) MAPROOT.traverse(o => { if (o.isMesh) o.castShadow = false; });
+  for (const o of scene.children) if (o.isMesh && !(o.userData && o.userData.dyn)) o.castShadow = false;
+  ART_SH.n = 0;
+}
+// per frame: the shadow window follows the view; casters outside it are switched off (skinned soldiers are never frustum-culled)
+function artShadowFit() {
+  if (!ART_SH.on || typeof sun === 'undefined' || !sun || typeof camera === 'undefined' || !renderer.shadowMap.enabled) return;
+  const hi = ART.tier !== 'performance' && !(window.S9GFX && S9GFX.tier === 'performance'), size = hi ? 1536 : 1024;   // perf A/B (qa/paper/perfab.js): 2048 cost ~15 % fps on the RTX 3050 lane
+  if (sun.shadow.mapSize.x !== size) { sun.shadow.mapSize.set(size, size); if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; } }
+  ART_SH_U.artShM.value = hi ? 1 : 0;
+  const R = ART_SH.R, sc = sun.shadow.camera;
+  camera.getWorldDirection(ART_SH.f); ART_SH.f.y = 0; if (ART_SH.f.lengthSq() < 1e-4) ART_SH.f.set(0, 0, 1); ART_SH.f.normalize();
+  const c = ART_SH.c.copy(camera.position).addScaledVector(ART_SH.f, R * .45); c.y = Math.max(0, c.y - 1.6);   // (the ground ahead of the view)
+  // light-camera axes: three's shadow camera = lookAt(sun.position -> sun.target), up +Y; the window is an offset ortho box (the sun
+  // itself never moves: other code reads sun.position as the sun direction)
+  ART_SH.m.lookAt(sun.position, sun.target.position, sc.up); ART_SH.m.extractBasis(ART_SH.x, ART_SH.y, ART_SH.z);
+  const rel = ART_SH.e.copy(c).sub(sun.position), tex = 2 * R / size, cx = Math.round(rel.dot(ART_SH.x) / tex) * tex, cy = Math.round(rel.dot(ART_SH.y) / tex) * tex, cz = -rel.dot(ART_SH.z);
+  if (sc.left !== cx - R || sc.bottom !== cy - R) { sc.left = cx - R; sc.right = cx + R; sc.bottom = cy - R; sc.top = cy + R; sc.near = Math.max(.5, cz - 45); sc.far = cz + 30; sc.updateProjectionMatrix(); }
+  ART_SH_U.artShK.value.w = (sc.far - sc.near) * ART_SH.tanA / tex;   // penumbra texels per unit of shadow depth (sun ~1.7 deg + paper scatter)
+  // casters: soldiers inside the window (+2 m); the old hard disc under them is retired (gfxmat draws the warm capsule contact AO)
+  // shader warm-up (no compile mid-match): outside a match every soldier casts, and a 2 cm card under the floor at the window centre always
+  // casts, so the skinned AND plain depth programs exist before the first plane / ball / drop casts
+  const warm = typeof state !== 'undefined' && state !== 'play' && state !== 'dead';
+  if (!ART_SH.card) { ART_SH.card = new THREE.Mesh(new THREE.BoxGeometry(.02, .02, .02), new THREE.MeshBasicMaterial()); ART_SH.card.castShadow = true; ART_SH.card.userData.noProbe = true; ART_SH.card.frustumCulled = false; ART_SH.card.material.colorWrite = false; ART_SH.card.material.depthWrite = false; scene.add(ART_SH.card); }
+  if (!ART_SH.card2) { ART_SH.card2 = ART_SH.card.clone(); ART_SH.card2.material = Object.assign(ART_SH.card.material.clone(), { side: THREE.DoubleSide }); ART_SH.card2.castShadow = true; }   // (paper planes / flaps are DoubleSide)
+  if (ART_SH.card.parent !== scene) scene.add(ART_SH.card); if (ART_SH.card2.parent !== scene) scene.add(ART_SH.card2);
+  ART_SH.card.position.set(ART_SH.c.x, -1, ART_SH.c.z); ART_SH.card2.position.set(ART_SH.c.x + .1, -1, ART_SH.c.z);
+  let n = 0; if (typeof robots !== 'undefined') for (const r of robots) { if (!r.root) continue;
+    if (!r.artCast || r.artCastM !== r.model) { r.artCast = []; r.artCastM = r.model; (r.model || r.root).traverse(o => { if ((o.isMesh || o.isSkinnedMesh) && o.visible && o.material && !(typeof HB !== 'undefined' && HB && (o.material === HB.mat || o.geometry === HB.blob))) r.artCast.push(o); }); }
+    const q = ART_SH.q.copy(r.root.position).sub(sun.position), lx = q.dot(ART_SH.x) - cx, ly = q.dot(ART_SH.y) - cy, inside = r.root.visible !== false && r.artCast.length > 0 && (warm || Math.abs(lx) < R + 2 && Math.abs(ly) < R + 2 && r.root.position.distanceToSquared(camera.position) < 900);   // (<= 30 m from the view)
+    for (const o of r.artCast) o.castShadow = inside; if (inside) n++;
+    for (const ch of r.root.children) if (typeof HB !== 'undefined' && HB && ch.geometry === HB.blob) ch.visible = false; }
+  ART_SH.casters = n;
+  // static extras added after the map build never cast either: torn walls (baked), paperpost's soft banners 'art_banners' (they sat on
+  // the bake's own banner shadow = a double shadow, e.g. the dark band on the ruler face, + 2 draws and a DoubleSide depth shader per frame)
+  if (++ART_SH.n % 60 === 1) for (const o of scene.children) { if (o.userData && o.userData.tearMerged) o.castShadow = false;
+    else if (/^art_/.test(o.name || '')) o.traverse(m => { if (m.isMesh) m.castShadow = false; }); }
+  // the movers' shadow pass runs every 2nd frame (at 120+ fps a 1-frame-old shadow is invisible); every frame while warming up
+  if (warm || (ART_SH.n & 1) === 0) renderer.shadowMap.needsUpdate = true;
+}
+window.ART_SH = ART_SH; window.ART_SH_U = ART_SH_U;   // (tests / modules)
 /* ================= living weapons ================= */
 // glowing coils that heat up while firing, energy cells, and a live ammo display on the receiver
 const GUNFX = {};
@@ -3460,13 +3566,18 @@ function desktownFromData(PM) {
   const pmat = {}, proxyMat = note => { const n = String(note || '').toLowerCase(), k = /ruler|truss|bridge|stair|wood|tree|crate|box/.test(n) ? (/crate|box/.test(n) ? 'kraft' : 'wood') : /clip|scissor|tape/.test(n) ? 'black' : /cutting mat|floor/.test(n) ? 'mat' : /paper|note|awning|window|kiosk/.test(n) ? 'cream' : 'kraft';
     return pmat[k] || (pmat[k] = Object.assign(new THREE.MeshBasicMaterial({ visible: false }), { userData: { paper: k } })); };
   const box = new THREE.BoxGeometry(1, 1, 1); box.userData = {};
+  // DESTRUCTIBLE BY DEFAULT (63-destructible.js): every collider not flagged [noHole:..] gets hole/wear slabs + the baked mesh cuts the holes
+  const dmask = typeof DESTRUCT !== 'undefined' ? DESTRUCT.build(D, PM) : null; if (dmask) DESTRUCT.adopt(root, D, PM);
+  let ci = -1;
   for (const c of D.colliders) {
-    const kind = c[6]; if (kind === 'tear') continue;
+    ci++; const kind = c[6]; if (kind === 'tear') continue;
     const bx = new THREE.Box3(new THREE.Vector3(c[0], c[1], c[2]), new THREE.Vector3(c[3], c[4], c[5])); if (kind === 'walk' || kind === 'floor') bx.walk = true;
     world.colliders.push(bx);
     const m = new THREE.Mesh(box, proxyMat(c[7] + ' ' + kind)); m.scale.set(Math.max(.01, c[3] - c[0]), Math.max(.01, c[4] - c[1]), Math.max(.01, c[5] - c[2])); m.position.set((c[0] + c[3]) / 2, (c[1] + c[4]) / 2, (c[2] + c[5]) / 2);
     m.visible = false; m.userData.surface = /wood|ruler|crate/.test(String(c[7])) ? 'wood' : 'paper'; m.userData.keepGeo = true;
     { const pen = wallClass(c); if (pen) { bx.pen = pen; m.userData.penBoxes = [bx]; m.userData.wall = pen; } }   // WALLBANG class (docs/MECHANICS.md)
+    { const sm = dmask ? DESTRUCT.axesOf(ci) : 0;   // faces a slab answers on: this marks-only proxy must stay silent there (else it would shadow the slab)
+      if (sm) m.raycast = function (rc, out) { const t = []; THREE.Mesh.prototype.raycast.call(this, rc, t); for (const hh of t) { const n = hh.face && hh.face.normal, ax = n ? (Math.abs(n.x) > .5 ? 0 : Math.abs(n.y) > .5 ? 1 : 2) : -1; if (ax < 0 || !(sm & (1 << ax))) out.push(hh); } }; }
     m.updateMatrixWorld(); scene.add(m); world.meshes.push(m);
   }
   const gm = {}; root.traverse(o => { if (o.isMesh && o.material && o.material.name && !gm[o.material.name]) gm[o.material.name] = o.material; });
@@ -6881,8 +6992,9 @@ const TEAR = (() => {
     tex.minFilter = tex.magFilter = THREE.LinearFilter; tex.generateMipmaps = false; tex.flipY = false; tex.unpackAlignment = 1; tex.needsUpdate = true;
     const pg = { tex, x: 0, y: 0, rowH: 0, i: pages.length }; pages.push(pg); return pg;
   }
-  function alloc(wp, hp) {   // shelf packing; a full page opens the next one (v1 map uses ~17 % of one page)
+  function alloc(wp, hp, only0) {   // shelf packing; a full page opens the next one (v1 map uses ~17 % of one page). only0 (destructible slabs): page 0 only, null when full
     const S = R.atlas, w = wp + R.pad * 2, h = hp + R.pad * 2;
+    if (only0) { const pg = pages[0] || newPage(); pg.slabPx = pg.slabPx || 0; if (pg.slabPx + w * h > .45 * S * S) return null; /* slabs never take more than 45 % of page 0: the real tear panels / flaps must keep a page */ pg.slabPx += w * h; if (pg.x + w > S) { pg.x = 0; pg.y += pg.rowH; pg.rowH = 0; } if (pg.y + h > S) return null; const r = { pg, x: pg.x + R.pad, y: pg.y + R.pad }; pg.x += w; pg.rowH = Math.max(pg.rowH, h); return r; }
     for (const pg of pages) { if (pg.x + w > S) { pg.x = 0; pg.y += pg.rowH; pg.rowH = 0; } if (pg.y + h <= S && pg.x + w <= S) { const r = { pg, x: pg.x + R.pad, y: pg.y + R.pad }; pg.x += w; pg.rowH = Math.max(pg.rowH, h); return r; } }
     const pg = newPage(); return alloc(wp, hp);
   }
@@ -6908,9 +7020,9 @@ const TEAR = (() => {
   }
   // one panel's box in its local frame (normal +Z, centred), huv = its rectangle in the atlas page, tiled uv for the paper texture
   function panelGeo(P_, forRender) {
-    const w = P_.w, h = P_.h, t = P_.t, tile = P_.mat.userData.tile, g = new THREE.BoxGeometry(w, h, t);
+    const w = P_.w, h = P_.h, t = P_.t, tile = P_.mat.userData.tile, g = new THREE.BoxGeometry(w, h, t), ppmP = P_.ppm || R.ppm;
     if (!forRender) return g;
-    const p = g.attributes.position, uv = g.attributes.uv, n = g.attributes.normal, huv = new Float32Array(p.count * 2), S = R.atlas, ppm = R.ppm;
+    const p = g.attributes.position, uv = g.attributes.uv, n = g.attributes.normal, huv = new Float32Array(p.count * 2), S = R.atlas, ppm = ppmP;
     for (let i = 0; i < p.count; i++) {
       const x = p.getX(i), y = p.getY(i); huv[i * 2] = (P_.rect.x + (x + w / 2) * ppm) / S; huv[i * 2 + 1] = (P_.rect.y + (y + h / 2) * ppm) / S;
       if (tile) { const nz = Math.abs(n.getZ(i)) > .5; uv.setXY(i, nz ? (x + w / 2) / tile : (p.getZ(i) + x + w / 2) / tile, (y + h / 2) / tile); }
@@ -6929,7 +7041,7 @@ const TEAR = (() => {
   function flush() {
     flushQ = false; if (!dirtyMerge) return; dirtyMerge = false;
     for (const gr of groups.values()) { if (gr.mesh) { gr.mesh.parent && gr.mesh.parent.remove(gr.mesh); gr.mesh.geometry.dispose(); gr.mesh = null; } gr.list.length = 0; }
-    for (const P_ of panels) { if (!P_.mesh.parent) continue; const key = P_.mat.uuid + ':' + P_.rect.pg.i; let gr = groups.get(key);
+    for (const P_ of panels) { if (!P_.mesh.parent || P_.slab) continue; const key = P_.mat.uuid + ':' + P_.rect.pg.i; let gr = groups.get(key);
       if (!gr) { const [m, d] = tearMaterials(P_.mat, P_.rect.pg.tex); gr = { m, d, list: [], mesh: null }; groups.set(key, gr); } gr.list.push(P_); }
     for (const gr of groups.values()) { if (!gr.list.length) continue;
       const mesh = new THREE.Mesh(mergeGeos(gr.list.map(P_ => ({ geo: panelGeo(P_, true), matrix: P_.mesh.matrixWorld }))), gr.m);
@@ -6952,24 +7064,24 @@ const TEAR = (() => {
      cuts: [[u0,v0,u1,v1], ..] pre-cut windows (metres from the panel's bottom-left), flap: { u0, v0, u1, v1, hinge }, collapse (default true),
      cls: 'P0' paper | 'P1' thin card (default) | 'P2' double card | 'P3' thick board | 'P4' solid block (P2+ wear: several hits at a spot before it opens) } */
   function add(o) {
-    const id = panels.length, w = o.w, h = o.h, t = o.t || .05, ppm = R.ppm;
-    const cv = document.createElement('canvas'); cv.width = Math.max(8, Math.ceil(w * ppm)); cv.height = Math.max(8, Math.ceil(h * ppm));
-    const P_ = { id, w, h, t, cv, ctx: cv.getContext('2d'), mat: o.mat, floor: !!o.floor, cuts: o.cuts || [], rect: null, boxes: [], holes: [], slits: [], knife: [], hits: null, live: null, sheets: [] };
-    P_.rect = alloc(cv.width, cv.height);
+    const id = panels.length, w = o.w, h = o.h, t = o.t || .05, ppm = o.ppm || R.ppm, slab = !!o.slab;
+    // slab (DESTRUCTIBLE, 63-destructible.js): a collider's face pair; the baked map mesh is the picture (huv written into it), the mask canvas + atlas rect are made on the FIRST hit (lazy), no collider / merged mesh of its own
+    let cv = null; if (!slab) { cv = document.createElement('canvas'); cv.width = Math.max(8, Math.ceil(w * ppm)); cv.height = Math.max(8, Math.ceil(h * ppm)); }
+    const P_ = { id, w, h, t, ppm, cv, ctx: cv ? cv.getContext('2d') : null, mat: o.mat, floor: !!o.floor, slab, cuts: o.cuts || [], rect: null, boxes: [], holes: [], slits: [], knife: [], hits: null, live: null, sheets: [] };
+    if (!slab) P_.rect = alloc(cv.width, cv.height);
     const mesh = new THREE.Mesh(panelGeo(P_, false), proxyMat); mesh.visible = false;   // raycast / transform proxy; drawn by the merged mesh
-    if (o.floor) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(-Math.PI / 2, o.rot || 0, 0, 'YXZ'); } else { mesh.position.set(o.x, o.y + h / 2, o.z); mesh.rotation.y = o.rot || 0; }
+    if (slab) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(o.rx || 0, o.rot || 0, 0, 'YXZ'); } else if (o.floor) { mesh.position.set(o.x, o.y, o.z); mesh.rotation.set(-Math.PI / 2, o.rot || 0, 0, 'YXZ'); } else { mesh.position.set(o.x, o.y + h / 2, o.z); mesh.rotation.y = o.rot || 0; }
     mesh.userData.surface = 'paper'; mesh.userData.dyn = true; mesh.userData.tear = id;
     scene.add(mesh); mesh.updateMatrixWorld(true); world.meshes.push(mesh); P_.mesh = mesh; if (typeof targetsDirty !== 'undefined') targetsDirty = true;
-    P_.cls = o.cls || 'P1'; P_.def = { id, w, h, cls: P_.cls, floor: !!o.floor, cuts: P_.cuts, flap: o.flap || null, collapse: o.collapse !== false };
+    P_.cls = o.cls || 'P1'; P_.def = { id, w, h, cls: P_.cls, floor: !!o.floor, cuts: P_.cuts, flap: o.flap || null, collapse: slab ? false : o.collapse !== false };
     P_.core = H.newPanel(P_.def); P_.hits = P_.core.hits;
     P_.flap = o.flap ? Object.assign({ open: false, k: 0, side: 1, sheet: null, mesh: null }, o.flap) : null;
     if (P_.flap) P_.flap.lines = P_.core.flap.lines.map(L => ({ a: [L.a[0] / 1000, L.a[1] / 1000], b: [L.b[0] / 1000, L.b[1] / 1000], len: L.len / 1000 }));
-    const bx = new THREE.Box3().setFromObject(mesh); if (o.floor) { bx.walk = true; bx.tearFloor = id; } world.colliders.push(bx); P_.boxes = [bx];
+    if (!slab) { const bx = new THREE.Box3().setFromObject(mesh); if (o.floor) { bx.walk = true; bx.tearFloor = id; } world.colliders.push(bx); P_.boxes = [bx]; }
     mesh.raycast = function (rc, out) { _tmp.length = 0; THREE.Mesh.prototype.raycast.call(this, rc, _tmp);
-      for (const hh of _tmp) { const [u, v] = toLocal(P_, hh.point), open = rc.plane ? H.passAtMM(P_.core, u * 1000, v * 1000) : H.openAt(P_.core, u, v) && !(rc.knife && nearCut(P_, u, v));
+      for (const hh of _tmp) { if (slab && hh.face && Math.abs(hh.face.normal.z) < .5) continue; const [u, v] = toLocal(P_, hh.point), open = rc.plane ? H.passAtMM(P_.core, u * 1000, v * 1000) : H.openAt(P_.core, u, v) && !(rc.knife && nearCut(P_, u, v));
         if (!open) out.push(hh); else if (passed.length < 16) passed.push(hh.distance); } };
-    panels.push(P_); redraw(P_);
-    dirtyMerge = true; if (!flushQ) { flushQ = true; Promise.resolve().then(flush); }
+    panels.push(P_); if (!slab) { redraw(P_); dirtyMerge = true; if (!flushQ) { flushQ = true; Promise.resolve().then(flush); } }
     return P_;
   }
   // within 4 cm of a knife line (not inside a cut-out): the blade's aim still meets card there
@@ -6997,6 +7109,7 @@ const TEAR = (() => {
     redraw(P_);
     if (C.flap && C.flap.open && !flap0) { openFlap(P_); if (res !== 'collapse') res = 'flap'; }
     C.knife.forEach((L, i) => { const was = k0[i] || 0; if (L.closed && !(was & 2)) dropPiece(P_, P_.knife[i], i); else if (L.flap && !(was & 1) && !L.closed) knifeFlap(P_, P_.knife[i], i); });
+    if (P_.slab) return res;   // (a slab never collapses / splits its collider: the solid stays, only the picture + the rays open)
     if (C.collapsed) collapse(P_); else updateColliders(P_);
     return res;
   }
@@ -7030,8 +7143,16 @@ const TEAR = (() => {
   }
 
   /* ---------- mask: R = open, G = torn rim band. v points UP in the canvas rows (atlas flipY off). ---------- */
+  // destructible slabs: the mask canvas + atlas rect (page 0) are made when the slab is FIRST touched; false = the page is full (the slab keeps its state, shows no picture)
+  function ensureRaster(P_) {
+    if (P_.cv) return true; if (P_.noRaster) return false;
+    const cv = document.createElement('canvas'); cv.width = Math.max(8, Math.ceil(P_.w * P_.ppm)); cv.height = Math.max(8, Math.ceil(P_.h * P_.ppm));
+    const rect = alloc(cv.width, cv.height, true); if (!rect) { P_.noRaster = true; TEAR.stats.rasterFull = (TEAR.stats.rasterFull || 0) + 1; return false; }
+    P_.cv = cv; P_.ctx = cv.getContext('2d'); P_.rect = rect; if (P_.onRaster) P_.onRaster(P_); return true;
+  }
   function redraw(P_) {
-    const c = P_.ctx, ppm = R.ppm, X = u => u * ppm, Y = v => v * ppm;
+    if (P_.slab && !ensureRaster(P_)) return;
+    const c = P_.ctx, ppm = P_.ppm || R.ppm, X = u => u * ppm, Y = v => v * ppm;
     c.fillStyle = '#000'; c.fillRect(0, 0, P_.cv.width, P_.cv.height);
     if (P_.core.collapsed) { c.fillStyle = '#f00'; c.fillRect(0, 0, P_.cv.width, P_.cv.height); upQ.add(P_); return; }
     const path = (pts, close) => { c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(X(p[0]), Y(p[1])) : c.moveTo(X(p[0]), Y(p[1]))); if (close) c.closePath(); };
@@ -7174,7 +7295,7 @@ const TEAR = (() => {
   function reset() {
     for (const s of pool) release(s);
     for (const P_ of panels) { P_.core = H.newPanel(P_.def); P_.hits = P_.core.hits; P_.holes.length = 0; P_.slits.length = 0; P_.knife = []; P_.live = null; P_.gone = false; P_.boxKey = null;
-      if (P_.flap) { P_.flap.open = false; P_.flap.k = 0; P_.flap.sheet = null; P_.flap.mesh = null; } sync(P_); redraw(P_);
+      if (P_.flap) { P_.flap.open = false; P_.flap.k = 0; P_.flap.sheet = null; P_.flap.mesh = null; } sync(P_); if (P_.slab) { if (P_.cv) redraw(P_); continue; } redraw(P_);
       const bx = new THREE.Box3().setFromObject(P_.mesh); if (P_.floor) { bx.walk = true; bx.tearFloor = P_.id; } for (const b of P_.boxes) { const i = world.colliders.indexOf(b); if (i >= 0) world.colliders.splice(i, 1); } world.colliders.push(bx); P_.boxes = [bx]; }
     TEAR.stats.holes = 0; TEAR.stats.flaps = 0; TEAR.stats.collapses = 0;
   }
@@ -7202,8 +7323,146 @@ const TEAR = (() => {
   // draw-call / memory numbers for the perf test
   const renderStats = () => ({ merged: [...groups.values()].filter(g => g.mesh).length, pages: pages.length, panels: panels.length, sheets: pool.filter(s => s.busy).length, queued: upQ.size,
     atlasMB: +(pages.length * R.atlas * R.atlas * 2 / 1048576).toFixed(1) });
-  return { R, panels, passed, add, hit, blast, apply, cut, cutApply, setLive, openEndNear, uvOf, sideOf, redraw, floorOpen, openAt, openAtWorld, update, reset, clear, replay, stateKey, flush, renderStats,
+  const internals = { alloc, pages, holeHook, tearMaterials, upQ, ensureRaster };   // for 63-destructible.js (baked-mesh holes)
+  return { internals, R, panels, passed, add, hit, blast, apply, cut, cutApply, setLive, openEndNear, uvOf, sideOf, redraw, floorOpen, openAt, openAtWorld, update, reset, clear, replay, stateKey, flush, renderStats,
     thinK, maxLayers, passK, gunKey, stats: { holes: 0, flaps: 0, collapses: 0, uploads: 0, sheets: 0, wear: 0, breaches: 0 } };
+})();
+/* ================= DESTRUCTIBLE BY DEFAULT (owner 2026-11-13: "everything needs to be punchable and holes can penetrate to destroy ... this is the base of the game") =================
+   RULE: every map collider is holeable unless the DESIGNER flags it: a note containing "[noHole:<why>]" (map edge / spawn walls / the desk).
+   New geometry needs no tagging: build_map.py `col()` exports it unflagged = destructible. See render/paper/kit/LANGUAGE.md "Destructible by default".
+   How (one mechanism for ALL thick / thin pieces, same panel system as the tear walls, HOLES_SYSTEM.md Part B + G):
+   - each collider box -> up to 3 SLABS (one per axis; a slab = the face pair on that axis, the box's thickness on that axis). A slab is a normal TEAR panel
+     (core state, wear, breach, hole growth, penetration table, net events) with a material CLASS from the piece's thickness / name:
+     P0 paper (awning, banner, flag) | P1 thin card (<= 12 cm) | P2 double card / crates (<= 45 cm) | P3 thick board (ruler, truss, cup, tape, <= 1 m) | P4 solid block.
+     P0/P1 open on the first hit; P2-P4 wear (shots-to-breach table per gun) until a real see-through, shoot-through hole opens.
+   - the PICTURE is the baked map mesh itself: its vertices get a `huv` (hole-mask uv) of the slab they lie on, the baked materials get the same discard + torn-rim
+     shader as the tear panels (one extra branch in the EXISTING programs: no new program, no new draw call, no per-piece texture: the mask lives in the shared
+     page-0 atlas, allocated lazily on the first hit of a slab, so only shot-at pieces cost atlas space).
+   - the slab proxy (invisible box, 2 faces answer) replaces the old marks-only proxy on those faces; thin edge faces nobody can hit squarely keep the old proxy. */
+const DESTRUCT = (() => {
+  const S = { diag: {}, slabs: 0, colliders: 0, flagged: 0, verts: 0, tris: 0, adopted: 0, meshes: 0, rasterised: 0 };
+  const noHole = c => /\[nohole/i.test(String(c[7] || ''));
+  // material class from the piece's name + smallest dimension (metres)
+  function classOf(c) {
+    const n = String(c[7] || '').toLowerCase(), t = Math.min(c[3] - c[0], c[4] - c[1], c[5] - c[2]);
+    // the collider's own wallbang class (pen: thin | medium | thick, MECHANICS 3) is authoritative: a 'medium' card2 box must stop the SMG even when it is only 12 cm thick
+    const pen = c[8];
+    if (!/awning|banner|flag|bunting|cloth|sticky/.test(n) && (pen === 'thin' || pen === 'medium' || pen === 'thick')) return pen === 'thin' ? 'P1' : pen === 'medium' ? 'P2' : (t <= 1.0 ? 'P3' : 'P4');
+    if (/awning|banner|flag|bunting|cloth|sticky/.test(n)) return 'P0';
+    if (/pencil cup|\bcup\b|ruler|truss|tape roll|tree|trunk/.test(n)) return t <= .12 ? 'P2' : 'P3';
+    if (/pencil|clip|scissor|metal/.test(n)) return 'P4';
+    if (/crate|box/.test(n)) return 'P2';                       // hollow double-skin carton
+    if (/rail|fence|kiosk|plant|sign|post/.test(n)) return t <= .12 ? 'P1' : 'P2';
+    if (t <= .12) return 'P1'; if (t <= .45) return 'P2'; if (t <= 1.0) return 'P3'; return 'P4';
+  }
+  const SYN_ON = false;   // OFF: bucket-per-plane makes 7.8k slabs on this map (cap 1500 hit), 1500 extra raycast proxies = perf risk, audit did not improve (33 %). See NOTES.
+  const AX = ['x', 'y', 'z'];
+  // slab frame: [w axis, h axis] and the box rotation that maps panel-local x / y / z to the world (see TEAR.add slab)
+  const FRAME = { 2: { rx: 0, ry: 0, u: 0, v: 1 }, 0: { rx: 0, ry: Math.PI / 2, u: 2, v: 1 }, 1: { rx: -Math.PI / 2, ry: 0, u: 0, v: 2 } };
+  let slabsByCol = null, hooked = new Set(), uHole = null;
+  const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _n = new THREE.Vector3(), _inv = new THREE.Matrix4();
+  // PHASE 1: slabs for every non-flagged collider (call BEFORE the marks-only proxies are made). Returns axis masks per collider index.
+  function build(D, PM) {
+    slabsByCol = new Map(); const masks = new Array(D.colliders.length).fill(0);
+    D.colliders.forEach((c, i) => {
+      const kind = c[6]; if (kind === 'tear') return; if (noHole(c)) { S.flagged++; return; }
+      const dim = [c[3] - c[0], c[4] - c[1], c[5] - c[2]], ctr = [(c[0] + c[3]) / 2, (c[1] + c[4]) / 2, (c[2] + c[5]) / 2], cls = classOf(c), n = String(c[7] || '').toLowerCase();
+      const mat = PM(/paper|note|awning|window|kiosk|banner|flag/.test(n) ? 'cream' : /ruler|truss|wood|bridge/.test(n) ? 'wood' : 'kraft'); let any = false;
+      for (let a = 0; a < 3; a++) {
+        const f = FRAME[a], w = dim[f.u], h = dim[f.v], t = dim[a];
+        if (Math.min(w, h) < .1 || w * h < .04) continue;                                 // a sliver edge: nobody can hit it squarely
+        const ppm = Math.max(14, Math.min(48, Math.sqrt(90000 / (w * h))));               // big faces get a coarser mask (<= ~160k px)
+        const P_ = TEAR.add({ slab: true, cls, x: ctr[0], y: ctr[1], z: ctr[2], rx: f.rx, rot: f.ry, w, h, t: Math.max(.02, t), ppm, mat });
+        P_.slabInfo = { col: i, axis: a, cls }; P_.onRaster = writeHuv; P_.vlist = []; (slabsByCol.get(i) || slabsByCol.set(i, []).get(i))[a] = P_; masks[i] |= 1 << a; S.slabs++; any = true;
+      }
+      if (any) S.colliders++;
+    });
+    return masks;
+  }
+  // PHASE 2: the baked map meshes (root = gltf scene). Triangle -> slab by plane + box; huv attribute; the shader branch; the shadow depth material.
+  function adopt(root, D, PM) {
+    if (!slabsByCol) return; const cells = new Map(), CS = 6, key = (x, z) => Math.floor(x / CS) * 4096 + Math.floor(z / CS), TOL = .1;
+    D.colliders.forEach((c, i) => { if (!slabsByCol.has(i)) return; for (let x = Math.floor((c[0] - TOL) / CS); x <= Math.floor((c[3] + TOL) / CS); x++) for (let z = Math.floor((c[2] - TOL) / CS); z <= Math.floor((c[5] + TOL) / CS); z++) { const k = x * 4096 + z; (cells.get(k) || cells.set(k, []).get(k)).push(i); } });
+    const vol = i => { const c = D.colliders[i]; return (c[3] - c[0]) * (c[4] - c[1]) * (c[5] - c[2]); };
+    // VISUAL-ONLY surfaces (no collider under them: decor, banners, emblems, props the designer never boxed): "everything is punchable by default", so their
+    // axis-aligned triangles are bucketed per (mesh, axis, plane, 2 m cell) into raycast-only slabs (no walk collider: nothing changes for movement). Skips the
+    // out-of-world background ('_bg': sky, far town, clouds), faces lying on a designer-flagged [noHole] collider, and slanted triangles (reported in diag).
+    const SYN_CELL = 2, SYN_MAX = 1500, bnd = D.bounds || [-47.5, 0, -27.5, 47.5, 30, 33.5], synB = new Map(), flaggedCols = D.colliders.filter(noHole);
+    function synth(o, g, mw, own, ax, cc, vi3) {
+      if (!SYN_ON || cc[0] < bnd[0] - .5 || cc[0] > bnd[3] + .5 || cc[2] < bnd[2] - .5 || cc[2] > bnd[5] + .5 || cc[1] > bnd[4]) return;
+      for (const c of flaggedCols) { let inside = true; for (let k = 0; k < 3; k++) if (k !== ax && (cc[k] < c[k] - TOL || cc[k] > c[k + 3] + TOL)) { inside = false; break; }
+        if (inside && (Math.abs(cc[ax] - c[ax]) <= TOL || Math.abs(cc[ax] - c[ax + 3]) <= TOL)) return; }
+      const f = FRAME[ax], u = cc[f.u], v = cc[f.v], k = o.id + ':' + ax + ':' + Math.round(cc[ax] / .05) + ':' + Math.floor(u / SYN_CELL) + ':' + Math.floor(v / SYN_CELL);
+      let B = synB.get(k); if (!B) synB.set(k, B = { ax, plane: 0, n: 0, u0: 1e9, u1: -1e9, v0: 1e9, v1: -1e9, g, mw, idx: [], own, mat: o.material });
+      B.plane += cc[ax]; B.n++;
+      for (const P of [_a, _b, _c]) { const pu = P.getComponent(f.u), pv = P.getComponent(f.v); if (pu < B.u0) B.u0 = pu; if (pu > B.u1) B.u1 = pu; if (pv < B.v0) B.v0 = pv; if (pv > B.v1) B.v1 = pv; }
+      for (const vi of vi3) if (own[vi] < 0) { own[vi] = -2; B.idx.push(vi); }
+    }
+    function flushSynth(PM) {
+      let made = 0; const mat = PM('kraft');
+      for (const B of synB.values()) { if (made >= SYN_MAX) { S.synthCapped = (S.synthCapped || 0) + 1; continue; }
+        const f = FRAME[B.ax], w = B.u1 - B.u0, h = B.v1 - B.v0; if (Math.min(w, h) < .1 || w * h < .04 || !B.idx.length) continue;
+        const ctr = [0, 0, 0]; ctr[B.ax] = B.plane / B.n; ctr[f.u] = (B.u0 + B.u1) / 2; ctr[f.v] = (B.v0 + B.v1) / 2;
+        const ppm = Math.max(14, Math.min(48, Math.sqrt(90000 / (w * h))));
+        const P_ = TEAR.add({ slab: true, cls: 'P1', x: ctr[0], y: ctr[1], z: ctr[2], rx: f.rx, rot: f.ry, w, h, t: .04, ppm, mat });
+        P_.slabInfo = { col: -1, axis: B.ax, cls: 'P1', synth: true }; P_.onRaster = writeHuv; P_.vlist = [{ g: B.g, mw: B.mw, idx: B.idx }]; S.slabs++; S.synth = (S.synth || 0) + 1; made++; }
+      synB.clear();
+    }
+    root.updateMatrixWorld(true); const pg = TEAR.internals.pages[0] || (TEAR.internals.alloc(8, 8, true), TEAR.internals.pages[0]);
+    uHole = uHole || { value: null }; uHole.value = pg.tex; hooked = new Set(); _depth = null;
+    root.traverse(o => {
+      if (!o.isMesh || !o.geometry || !o.geometry.attributes.position || o.userData.tearMerged || /^T_/.test(o.name)) return;
+      const g = o.geometry, pos = g.attributes.position, ix = g.index, nt = ix ? ix.count / 3 : pos.count / 3; S.meshes++; const dg = S.diag[o.name + '/' + (o.material && o.material.name)] = { tris: nt, slanted: 0, noCell: 0, noMatch: 0, adopted: 0, areaAdopted: 0, areaAll: 0 };
+      if (!g.attributes.huv) { const a = new THREE.BufferAttribute(new Float32Array(pos.count * 2), 2); a.setUsage(THREE.DynamicDrawUsage); g.setAttribute('huv', a); }
+      const mw = o.matrixWorld, own = new Int32Array(pos.count).fill(-1);
+      for (let t = 0; t < nt; t++) {
+        const i0 = ix ? ix.getX(t * 3) : t * 3, i1 = ix ? ix.getX(t * 3 + 1) : t * 3 + 1, i2 = ix ? ix.getX(t * 3 + 2) : t * 3 + 2; S.tris++;
+        _a.fromBufferAttribute(pos, i0).applyMatrix4(mw); _b.fromBufferAttribute(pos, i1).applyMatrix4(mw); _c.fromBufferAttribute(pos, i2).applyMatrix4(mw);
+        _n.subVectors(_b, _a).cross(_c.clone().sub(_a)); const len = _n.length(); if (len < 1e-9) continue; _n.multiplyScalar(1 / len); dg.areaAll += len / 2;
+        const ax = Math.abs(_n.x) > .85 ? 0 : Math.abs(_n.y) > .85 ? 1 : Math.abs(_n.z) > .85 ? 2 : -1; if (ax < 0) { dg.slanted++; continue; }
+        const cx = (_a.x + _b.x + _c.x) / 3, cy = (_a.y + _b.y + _c.y) / 3, cz = (_a.z + _b.z + _c.z) / 3, cc = [cx, cy, cz], L = cells.get(key(cx, cz)); if (!L) { dg.noCell++; synth(o, g, mw, own, ax, cc, [i0, i1, i2]); continue; }
+        let best = -1, bv = 1e18;
+        for (const i of L) { const c = D.colliders[i]; if (!slabsByCol.get(i)[ax]) continue; let inside = true;
+          for (let k = 0; k < 3; k++) if (k !== ax && (cc[k] < c[k] - TOL || cc[k] > c[k + 3] + TOL)) { inside = false; break; }
+          if (!inside) continue; const d = Math.min(Math.abs(cc[ax] - c[ax]), Math.abs(cc[ax] - c[ax + 3])); if (d > TOL) continue; const v = vol(i); if (v < bv) { bv = v; best = i; } }
+        if (best < 0) { dg.noMatch++; synth(o, g, mw, own, ax, cc, [i0, i1, i2]); continue; } dg.adopted++; dg.areaAdopted += len / 2; const P_ = slabsByCol.get(best)[ax];
+        for (const vi of [i0, i1, i2]) if (own[vi] < 0) { own[vi] = P_.id; (P_.vlist.find(q => q.g === g) || (P_.vlist[P_.vlist.push({ g, mw, idx: [] }) - 1])).idx.push(vi); S.verts++; }
+        S.adopted++;
+      }
+      if (o.material && !hooked.has(o.material)) { hookMaterial(o.material); hooked.add(o.material); }
+      o.customDepthMaterial = depthMat();
+    });
+    flushSynth(PM);
+  }
+  let _depth = null;
+  function depthMat() { if (_depth) return _depth; const [m, d] = TEAR.internals.tearMaterials(new THREE.MeshStandardMaterial(), uHole.value); m.dispose(); d.userData.uHole = uHole; return _depth = d; }
+  // the baked material cuts the holes like the tear panels (same mask, same torn-rim look); one extra branch inside the EXISTING program
+  function hookMaterial(m) {
+    const prev = m.onBeforeCompile, prevKey = m.customProgramCacheKey ? m.customProgramCacheKey() : '';
+    m.onBeforeCompile = function (sh) {
+      if (prev) prev.call(m, sh); sh.uniforms.uHole = uHole;
+      sh.vertexShader = 'attribute vec2 huv;\nvarying vec2 vHuv;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vHuv = huv;');
+      sh.fragmentShader = 'uniform sampler2D uHole;\nvarying vec2 vHuv;\n' + sh.fragmentShader.replace('void main() {', 'void main() {\n vec4 hm = texture2D(uHole, vHuv); if (hm.r > .5) discard;');
+      if (m.isMeshStandardMaterial) sh.fragmentShader = sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+        { float g = hm.g; float fl = .5 + .5 * sin((vHuv.x * 3.0 + vHuv.y) * 16640.0);
+          vec3 core = vec3(.97, .95, .91) * (.88 + .12 * fl), lip = vec3(.18, .14, .1);
+          diffuseColor.rgb = mix(diffuseColor.rgb, core, smoothstep(.4, .55, g));
+          diffuseColor.rgb = mix(diffuseColor.rgb, lip, smoothstep(.82, .97, g) * .8); }`);
+    };
+    m.customProgramCacheKey = () => prevKey + '+bakedHole1'; m.needsUpdate = true;
+  }
+  // the slab's mask rectangle now exists: write each of its baked vertices' huv (panel-local metres -> atlas uv)
+  function writeHuv(P_) {
+    S.rasterised++; const Sz = TEAR.R.atlas, ppm = P_.ppm; _inv.copy(P_.mesh.matrixWorld).invert();
+    for (const { g, mw, idx } of P_.vlist) { const pos = g.attributes.position, h = g.attributes.huv; let lo = 1e9, hi = -1;
+      for (const vi of idx) { _a.fromBufferAttribute(pos, vi).applyMatrix4(mw).applyMatrix4(_inv); const u = _a.x + P_.w / 2, v = _a.y + P_.h / 2;
+        h.setXY(vi, (P_.rect.x + Math.max(0, Math.min(P_.w, u)) * ppm) / Sz, (P_.rect.y + Math.max(0, Math.min(P_.h, v)) * ppm) / Sz); if (vi < lo) lo = vi; if (vi > hi) hi = vi; }
+      if (hi - lo + 1 < h.count * .3) h.updateRange = { offset: lo * 2, count: (hi - lo + 1) * 2 }; else h.updateRange = { offset: 0, count: -1 }; h.needsUpdate = true; }
+  }
+  const info = () => Object.assign({ pages: TEAR.internals.pages.length }, S);
+  // slab axes present for a collider (the marks-only proxy must not answer on those faces)
+  const axesOf = i => { const L = slabsByCol && slabsByCol.get(i); return L ? (L[0] ? 1 : 0) | (L[1] ? 2 : 0) | (L[2] ? 4 : 0) : 0; };
+  return { build, adopt, classOf, noHole, axesOf, info, S, AX };
 })();
 /* ================= deaths that match what killed you ================= */
 const DEATH_OF = { nova: 'blast', seeker: 'blast', nade: 'blast', breacher: 'blast', judge: 'blast', cryo: 'freeze', inferno: 'burn', arc: 'shock', helix: 'vapor', void: 'vapor',

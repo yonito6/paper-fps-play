@@ -120,7 +120,10 @@
       let chunk = THREE.ShaderChunk.lights_fragment_maps.replace('lightMapTexel.rgb * lightMapIntensity', 'lightMapTexel.rgb * lightMapTexel.rgb * lightMapIntensity * pmK.w');
       // lmOnly (FULL BAKE): the lightmap IS the light (sun + sky + bounce + AO + shadows from Cycles): no hemisphere added, no real-time
       // sun; the frame equals the Blender render for every static surface and costs nothing per frame
-      if (u.flags.lmOnly) chunk = chunk.replace('irradiance += lightMapIrradiance;', 'irradiance = lightMapIrradiance;');
+      // WP-D1: movers' shadows from the live shadow map take away the bake's SUN share (06-paper-look.js ART_SH_GLSL / artDynShadow)
+      const dyn = u.flags.lmOnly && typeof ART_SH_GLSL !== 'undefined';
+      if (dyn) { Object.assign(sh.uniforms, ART_SH_U); f = f.replace('#include <shadowmap_pars_fragment>', '#include <shadowmap_pars_fragment>' + String.fromCharCode(10) + ART_SH_GLSL); }
+      if (u.flags.lmOnly) chunk = chunk.replace('irradiance += lightMapIrradiance;', dyn ? 'irradiance = lightMapIrradiance * artDynShadow(lightMapTexel.rgb);' : 'irradiance = lightMapIrradiance;');
       f = f.replace('#include <lights_fragment_maps>', chunk);
       if (u.flags.lmOnly) f = f.replace('#include <lights_fragment_end>', '#include <lights_fragment_end>\n reflectedLight.directDiffuse = vec3(0.0); reflectedLight.directSpecular = vec3(0.0);');
     }
@@ -150,7 +153,7 @@
       mean: { value: new THREE.Vector4(...(new THREE.Color(L.mean || 0x808080).convertSRGBToLinear().toArray()), o.flat ?? 0) } };
     m.userData.paper = kind; m.userData.tile = tile;
     m.onBeforeCompile = HOOK;
-    m.customProgramCacheKey = () => 'pm2|' + (tri ? 't' : 'u') + (m.userData.pm.flags.lm ? 'L' : '') + (m.userData.pm.flags.lmOnly ? 'O' : '') + (decal ? 'd' : '');
+    m.customProgramCacheKey = () => 'pm3|' + (tri ? 't' : 'u') + (m.userData.pm.flags.lm ? 'L' : '') + (m.userData.pm.flags.lmOnly ? 'O' : '') + (decal ? 'd' : '');
     return (PM._mats[key] = m);
   };
   PM.tune = function (m, o) { const k = m.userData.pm && m.userData.pm.k.value; if (!k) return; if (o.macro !== undefined) k.x = o.macro; if (o.sheen !== undefined) k.y = o.sheen; if (o.lmScale !== undefined) k.w = o.lmScale; if (o.flat !== undefined) m.userData.pm.mean.value.w = o.flat; };

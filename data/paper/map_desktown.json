@@ -160,7 +160,7 @@
    0,
    45,
    "floor",
-   "cutting mat",
+   "cutting mat [noHole:desk]",
    "thick",
    85
   ],
@@ -172,7 +172,7 @@
    11.0,
    34.0,
    "solid",
-   "building",
+   "building [noHole:map edge]",
    "thick",
    6.0
   ],
@@ -1552,7 +1552,7 @@
    9.0,
    34.0,
    "solid",
-   "building",
+   "building [noHole:map edge]",
    "thick",
    8.0
   ],
@@ -1948,7 +1948,7 @@
    10.0,
    -21.0,
    "solid",
-   "building",
+   "building [noHole:map edge]",
    "thick",
    9.0
   ],
@@ -2056,7 +2056,7 @@
    11.0,
    34.0,
    "solid",
-   "building",
+   "building [noHole:map edge]",
    "thick",
    6.0
   ],
@@ -3436,7 +3436,7 @@
    9.0,
    34.0,
    "solid",
-   "building",
+   "building [noHole:map edge]",
    "thick",
    8.0
   ],
@@ -3832,7 +3832,7 @@
    10.0,
    -21.0,
    "solid",
-   "building",
+   "building [noHole:map edge]",
    "thick",
    9.0
   ],
@@ -4384,7 +4384,7 @@
    9.0,
    34.0,
    "solid",
-   "building",
+   "building [noHole:map edge]",
    "thick",
    8.0
   ],

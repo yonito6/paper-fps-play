@@ -31,7 +31,7 @@
   /* ---------- tiers ---------- */
   // maxPR/shadow/bloom/msaa are read by the game's own applyQuality(); the rest is ours.
   const TIERS = {
-    performance: { label: 'Performance', maxPR: .7, shadow: 0, bloom: false, msaa: 0, aa: 1, sharp: .35, ao: 0, fog: 0, probe: 0, aniso: 4, hd: false, grain: .02, bloomK: .8 },
+    performance: { label: 'Performance', maxPR: .7, shadow: 1024, bloom: false, msaa: 0, aa: 1, sharp: .35, ao: 0, fog: 0, probe: 0, aniso: 4, hd: false, grain: .02, bloomK: .8 },
     balanced: { label: 'Balanced', maxPR: .85, shadow: 2048, bloom: true, msaa: 0, aa: 1, sharp: .4, ao: 1, fog: 1, probe: .75, aniso: 8, hd: true, grain: .016, bloomK: 1 },
     high: { label: 'High', maxPR: 1, shadow: 2048, bloom: true, msaa: 0, aa: 1, sharp: .3, ao: 1, fog: 1, probe: 1, aniso: 16, hd: true, grain: .012, bloomK: 1 },
     ultra: { label: 'Ultra', maxPR: 1.5, shadow: 4096, bloom: true, msaa: 4, aa: 0, sharp: .25, ao: 1, fog: 1, probe: 1, aniso: 16, hd: true, grain: .01, bloomK: 1.05 },

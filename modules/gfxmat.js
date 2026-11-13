@@ -351,10 +351,11 @@ void main(){ vUv = uv; vA = aA; vec4 mvPosition = modelViewMatrix * instanceMatr
 }`,
       fragmentShader: `#include <common>
 #include <fog_pars_fragment>
-varying vec2 vUv; varying float vA;
+varying vec2 vUv; varying float vA; uniform vec3 uTint; uniform float uLen;
 void main(){
-  vec2 p = vUv * 2.0 - 1.0; float r2 = dot(p, p);
-  float a = 0.85 * pow(1.0 - smoothstep(0.04, 1.0, r2), 1.4) * vA;   // wide soft disc with a darker core: reads clearly under feet
+  // WP-D1: a CAPSULE along the sun direction (the feet + the start of the body's shadow), never a round disc; warm multiply, never black
+  vec2 p = vUv * 2.0 - 1.0; float q = clamp(p.y, -uLen, uLen); float sd = length(vec2(p.x, p.y - q)) / (1.0 - uLen * 0.6);
+  float a = pow(1.0 - smoothstep(0.05, 1.0, sd), 1.6) * vA;
   #ifdef USE_FOG
     #ifdef FOG_EXP2
       float fd = fogDensity * vFogDepth; a *= exp(-fd * fd);
@@ -363,9 +364,11 @@ void main(){
     #endif
   #endif
   if (a < 0.003) discard;
-  gl_FragColor = vec4(0.0, 0.0, 0.0, a);
+  gl_FragColor = vec4(mix(vec3(1.0), uTint, a), 1.0);   // multiply blend: the surface keeps its colour, darkened toward the refs' warm shadow
 }`,
-      transparent: true, depthWrite: false, fog: true, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
+      transparent: true, depthWrite: false, fog: true, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3,
+      blending: T.CustomBlending, blendEquation: T.AddEquation, blendSrc: T.DstColorFactor, blendDst: T.ZeroFactor });
+    mat.uniforms.uTint = { value: new T.Color(.42, .33, .36) }; mat.uniforms.uLen = { value: .45 };
     const im = new T.InstancedMesh(g, mat, CS.n); im.frustumCulled = false; im.renderOrder = 1; im.name = 'gm_contact'; im.visible = false;
     const z = new T.Matrix4().makeScale(0, 0, 0); for (let i = 0; i < CS.n; i++) im.setMatrixAt(i, z);
     CS.im = im; scene.add(im);
@@ -374,9 +377,13 @@ void main(){
   function updateContact() {
     if (!CS.im || typeof robots === 'undefined') return;
     const on = M.level >= 1 && !M.noContact; CS.im.visible = on;   // noContact: test switch
-    let az = 0, sunH = .7;
-    if (typeof sun !== 'undefined' && sun) { const dx = -sun.position.x, dz = -sun.position.z; az = Math.atan2(dx, dz); sunH = Math.max(.25, sun.position.clone().normalize().y); }
-    const stretch = Math.min(1.4, 1 + .6 * (1 - sunH) + .05);
+    let az = 0, sunH = .7, sx = 0, sz = 0;
+    if (typeof sun !== 'undefined' && sun) { const v = sun.position.clone().sub(sun.target.position).normalize(); az = Math.atan2(-v.x, -v.z); sunH = Math.max(.25, v.y); const h = Math.hypot(v.x, v.z) || 1; sx = -v.x / h; sz = -v.z / h; }
+    // WP-D1: with the live shadow map on (06-paper-look ART_SH) this is only the contact AO at the boots; without it a short capsule
+    // stand-in shadow that leans away from the sun (Performance without shadows, or the art pass off)
+    const live = typeof ART_SH !== 'undefined' && ART_SH.on && renderer.shadowMap.enabled;
+    const stretch = Math.min(1.4, 1 + .6 * (1 - sunH) + .05), W = live ? .62 : .8, D = live ? .95 : 1.9 * stretch, off = live ? .1 : .55;
+    CS.im.material.uniforms.uLen.value = live ? .3 : .5;
     let i = 0;
     for (const r of robots) {
       const b = r.gmBlob || (r.gmBlob = r.root && typeof HB !== 'undefined' && HB ? r.root.children.find(c => c.geometry === HB.blob) : null);
@@ -385,7 +392,7 @@ void main(){
       let show = on && r.root.visible;
       if (show) {
         const p = r.root.position, g = typeof groundAt === 'function' ? groundAt(p.x, p.z, p.y + .6, .4) : p.y, air = Math.max(0, p.y - g);
-        _cm.position.set(p.x, g + .025, p.z); _cm.rotation.set(0, az, 0); _cm.scale.set(1.9, 1, 1.9 * stretch); _cm.updateMatrix(); CS.im.setMatrixAt(i, _cm.matrix);
+        _cm.position.set(p.x + sx * off, g + .025, p.z + sz * off); _cm.rotation.set(0, az, 0); _cm.scale.set(W, 1, D); _cm.updateMatrix(); CS.im.setMatrixAt(i, _cm.matrix);
         CS.a.array[i] = Math.max(0, 1 - air * .6) * (r.dead && r.deadT > 4 ? .6 : 1);
       } else { _cm.scale.set(0, 0, 0); _cm.updateMatrix(); CS.im.setMatrixAt(i, _cm.matrix); CS.a.array[i] = 0; }
       i++;
